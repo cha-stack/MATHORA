@@ -1,26 +1,40 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #482b78;
+  --foreground: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-titan: var(--font-titan-one);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom text outline styling for cartoon game style */
+.game-title-mathora {
+  font-family: var(--font-titan-one), cursive, sans-serif;
+  color: #ffffff;
+  -webkit-text-stroke: 5px #f4ad21;
+  paint-order: stroke fill;
+  filter: drop-shadow(0px 7px 0px rgba(0, 0, 0, 0.25));
+}
+
+.game-title-sub {
+  font-family: var(--font-titan-one), cursive, sans-serif;
+  color: #ffffff;
+  -webkit-text-stroke: 3.5px #f4ad21;
+  paint-order: stroke fill;
+  filter: drop-shadow(0px 5px 0px rgba(0, 0, 0, 0.22));
+}
+
+.game-font {
+  font-family: var(--font-titan-one), cursive, sans-serif;
 }
