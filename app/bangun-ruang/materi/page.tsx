@@ -12,8 +12,11 @@ const SHAPES_DATA: Record<
   {
     name: string;
     sisi: string;
+    sisiDetail: string;
     rusuk: string;
+    rusukDetail: string;
     titikSudut: string;
+    titikSudutDetail: string;
     rumusL: string;
     rumusV: string;
     jaringDesc: string;
@@ -21,66 +24,87 @@ const SHAPES_DATA: Record<
 > = {
   kubus: {
     name: "Kubus",
-    sisi: "6 (persegi sama besar)",
-    rusuk: "12 (sama panjang)",
-    titikSudut: "8",
+    sisi: "6 Sisi",
+    sisiDetail: "Semua berupa persegi datar yang kongruen (luas sama).",
+    rusuk: "12 Rusuk",
+    rusukDetail: "12 garis lurus yang semuanya sama panjang.",
+    titikSudut: "8 Titik Sudut",
+    titikSudutDetail: "Pertemuan dari setiap 3 rusuk kubus.",
     rumusL: "L = 6s²",
     rumusV: "V = s³",
-    jaringDesc: "Terdiri dari 6 persegi identik yang dapat dilipat menjadi kotak.",
+    jaringDesc: "Terdiri dari 6 bujur sangkar/persegi yang tersusun membentuk pola salib.",
   },
   balok: {
     name: "Balok",
-    sisi: "6 (3 pasang persegi panjang)",
-    rusuk: "12",
-    titikSudut: "8",
+    sisi: "6 Sisi",
+    sisiDetail: "3 pasang persegi panjang yang saling berhadapan kongruen.",
+    rusuk: "12 Rusuk",
+    rusukDetail: "Terbagi jadi 4 rusuk panjang, 4 rusuk lebar, dan 4 rusuk tinggi.",
+    titikSudut: "8 Titik Sudut",
+    titikSudutDetail: "Setiap sudut pertemuan siku-siku (90 derajat).",
     rumusL: "L = 2(pl + pt + lt)",
     rumusV: "V = p × l × t",
     jaringDesc: "Terdiri dari 3 pasang persegi panjang yang saling berhadapan.",
   },
   prisma: {
     name: "Prisma Segitiga",
-    sisi: "5 (2 segitiga, 3 persegi panjang)",
-    rusuk: "9",
-    titikSudut: "6",
+    sisi: "5 Sisi",
+    sisiDetail: "2 sisi segitiga (alas & tutup) + 3 persegi panjang tegak.",
+    rusuk: "9 Rusuk",
+    rusukDetail: "6 rusuk alas/tutup segitiga + 3 rusuk tegak (tinggi prisma).",
+    titikSudut: "6 Titik Sudut",
+    titikSudutDetail: "3 di bagian bawah alas dan 3 di bagian atas tutup.",
     rumusL: "L = 2 × L.alas + Kel.alas × t",
     rumusV: "V = Luas alas × t",
-    jaringDesc: "Dua segitiga sejajar sebagai tutup dan alas, serta 3 persegi panjang tegak.",
+    jaringDesc: "Dua segitiga sejajar sebagai alas dan tutup, dikelilingi 3 persegi panjang tegak.",
   },
   limas: {
     name: "Limas Persegi",
-    sisi: "5 (1 persegi, 4 segitiga)",
-    rusuk: "8",
-    titikSudut: "5",
-    rumusL: "L = L.alas + Jumlah L.segitiga",
+    sisi: "5 Sisi",
+    sisiDetail: "1 persegi (alas) + 4 segitiga selimut yang meruncing.",
+    rusuk: "8 Rusuk",
+    rusukDetail: "4 rusuk alas persegi + 4 rusuk miring menuju puncak.",
+    titikSudut: "5 Titik Sudut",
+    titikSudutDetail: "4 sudut pada alas persegi + 1 puncak limas.",
+    rumusL: "L = L.alas + Jumlah 4 L.segitiga",
     rumusV: "V = ⅓ × Luas alas × t",
-    jaringDesc: "Satu persegi di dasar dengan 4 segitiga yang meruncing ke satu puncak.",
+    jaringDesc: "Satu persegi di bagian dasar dengan 4 daun segitiga yang melipat ke puncak.",
   },
   tabung: {
     name: "Tabung (Silinder)",
-    sisi: "3 (2 lingkaran, 1 selimut melengkung)",
-    rusuk: "2 (rusuk lengkung)",
-    titikSudut: "0",
+    sisi: "3 Sisi",
+    sisiDetail: "2 sisi datar lingkaran (alas & tutup) + 1 selimut melengkung.",
+    rusuk: "2 Rusuk Lengkung",
+    rusukDetail: "Keliling lingkaran alas dan keliling lingkaran tutup (berupa kurva melingkar).",
+    titikSudut: "0 Titik Sudut",
+    titikSudutDetail: "Tidak memiliki sudut runcing karena bentuknya melengkung halus.",
     rumusL: "L = 2πr(r + t)",
     rumusV: "V = πr²t",
-    jaringDesc: "Dua lingkaran identik (atas & bawah) dan 1 persegi panjang berukuran 2πr × t.",
+    jaringDesc: "Dua lingkaran identik (atas & bawah) dan 1 persegi panjang bentangan selimut (2πr × t).",
   },
   kerucut: {
     name: "Kerucut",
-    sisi: "2 (1 lingkaran, 1 selimut)",
-    rusuk: "1 (rusuk lengkung)",
-    titikSudut: "1 (titik puncak)",
-    rumusL: "L = πr(r + s), dengan s = √(r² + t²)",
+    sisi: "2 Sisi",
+    sisiDetail: "1 sisi datar lingkaran (alas) + 1 sisi selimut melengkung.",
+    rusuk: "1 Rusuk Lengkung",
+    rusukDetail: "Berupa garis keliling tepi lingkaran alas.",
+    titikSudut: "1 Titik Puncak",
+    titikSudutDetail: "Titik temu runcing di ujung atas kerucut (puncak).",
+    rumusL: "L = πr(r + s), s = √(r² + t²)",
     rumusV: "V = ⅓πr²t",
-    jaringDesc: "Satu lingkaran alas dan satu juring lingkaran dengan jari-jari s.",
+    jaringDesc: "Satu lingkaran alas dan satu juring lingkaran melengkung dengan radius garis pelukis (s).",
   },
   bola: {
     name: "Bola",
-    sisi: "1 (bidang lengkung penuh)",
-    rusuk: "0",
-    titikSudut: "0",
+    sisi: "1 Sisi Melengkung",
+    sisiDetail: "Seluruh permukaan bola adalah 1 bidang lengkung utuh tanpa batas datar.",
+    rusuk: "0 Rusuk",
+    rusukDetail: "Tidak memiliki rusuk/garis patahan tepi sama sekali.",
+    titikSudut: "0 Titik Sudut",
+    titikSudutDetail: "Permukaannya mulus melengkung ke segala arah tanpa sudut.",
     rumusL: "L = 4πr²",
     rumusV: "V = ⁴⁄₃πr³",
-    jaringDesc: "Tidak memiliki jaring-jaring datar karena melengkung ke segala arah.",
+    jaringDesc: "Bola tidak memiliki jaring-jaring datar karena melengkung ke segala arah (seperti kulit jeruk).",
   },
 };
 
@@ -89,10 +113,13 @@ export default function BangunRuangMateri() {
   const [activeTab, setActiveTab] = useState<"3D" | "LAB" | "JARING">("3D");
   const [selectedShape, setSelectedShape] = useState<ShapeType>("tabung");
 
+  // Mode Sorot (Highlighting)
+  const [highlightMode, setHighlightMode] = useState<"ALL" | "SISI" | "RUSUK" | "TITIK">("ALL");
+
   // State rotasi 3D (bisa digeser dengan mouse/touch atau slider)
-  const [rotX, setRotX] = useState(-0.5);
-  const [rotY, setRotY] = useState(0.6);
-  const [autoRotate, setAutoRotate] = useState(true);
+  const [rotX, setRotX] = useState(-0.45);
+  const [rotY, setRotY] = useState(0.65);
+  const [autoRotate, setAutoRotate] = useState(false);
 
   // State simulasi Lab Ukuran
   const [radius, setRadius] = useState(7);
@@ -106,14 +133,13 @@ export default function BangunRuangMateri() {
   useEffect(() => {
     if (!autoRotate) return;
     const interval = setInterval(() => {
-      setRotY((prev) => (prev + 0.02 > Math.PI ? -Math.PI : prev + 0.02));
+      setRotY((prev) => (prev + 0.015 > Math.PI ? -Math.PI : prev + 0.015));
     }, 40);
     return () => clearInterval(interval);
   }, [autoRotate]);
 
   // Kalkulasi nilai lab
   const pi = useFractionPi ? 22 / 7 : 3.14;
-  const piLabel = useFractionPi ? "22/7" : "3,14";
   const sKerucut = Math.sqrt(radius * radius + height * height);
 
   let luasPermukaan = 0;
@@ -133,76 +159,132 @@ export default function BangunRuangMateri() {
     volume = (4 / 3) * pi * radius * radius * radius;
   }
 
-  // Engine Proyeksi 3D Wireframe Sederhana
+  // Engine Proyeksi 3D Berwarna
   const get3DGeometry = (shape: ShapeType) => {
-    const lines: Array<[[number, number, number], [number, number, number]]> = [];
-    const rings: Array<{ y: number; r: number; n: number }> = [];
+    const lines: Array<{ p1: [number, number, number]; p2: [number, number, number]; isCurved?: boolean }> = [];
+    const rings: Array<{ y: number; r: number; n: number; isRim?: boolean }> = [];
+    const faces: Array<Array<[number, number, number]>> = [];
+    const vertices: Array<[number, number, number]> = [];
 
     if (shape === "kubus") {
-      const a = 1;
+      const a = 0.95;
       const pts: Array<[number, number, number]> = [];
       for (let i = 0; i < 8; i++) {
-        pts.push([(i & 1 ? 1 : -1) * a, (i & 2 ? 1 : -1) * a, (i & 4 ? 1 : -1) * a]);
+        const pt: [number, number, number] = [
+          (i & 1 ? 1 : -1) * a,
+          (i & 2 ? 1 : -1) * a,
+          (i & 4 ? 1 : -1) * a,
+        ];
+        pts.push(pt);
+        vertices.push(pt);
       }
       for (let i = 0; i < 8; i++) {
         for (let j = i + 1; j < 8; j++) {
           const d = i ^ j;
-          if (d === 1 || d === 2 || d === 4) lines.push([pts[i], pts[j]]);
+          if (d === 1 || d === 2 || d === 4) lines.push({ p1: pts[i], p2: pts[j] });
         }
       }
+      // 6 Faces
+      faces.push([pts[0], pts[1], pts[3], pts[2]]); // front
+      faces.push([pts[4], pts[5], pts[7], pts[6]]); // back
+      faces.push([pts[0], pts[1], pts[5], pts[4]]); // bottom
+      faces.push([pts[2], pts[3], pts[7], pts[6]]); // top
+      faces.push([pts[0], pts[2], pts[6], pts[4]]); // left
+      faces.push([pts[1], pts[3], pts[7], pts[5]]); // right
     } else if (shape === "balok") {
-      const w = 1.4, h = 0.8, d = 0.6;
+      const w = 1.3, h = 0.8, d = 0.7;
       const pts: Array<[number, number, number]> = [];
       for (let i = 0; i < 8; i++) {
-        pts.push([(i & 1 ? 1 : -1) * w, (i & 2 ? 1 : -1) * h, (i & 4 ? 1 : -1) * d]);
+        const pt: [number, number, number] = [
+          (i & 1 ? 1 : -1) * w,
+          (i & 2 ? 1 : -1) * h,
+          (i & 4 ? 1 : -1) * d,
+        ];
+        pts.push(pt);
+        vertices.push(pt);
       }
       for (let i = 0; i < 8; i++) {
         for (let j = i + 1; j < 8; j++) {
           const diff = i ^ j;
-          if (diff === 1 || diff === 2 || diff === 4) lines.push([pts[i], pts[j]]);
+          if (diff === 1 || diff === 2 || diff === 4) lines.push({ p1: pts[i], p2: pts[j] });
         }
       }
+      faces.push([pts[0], pts[1], pts[3], pts[2]]);
+      faces.push([pts[4], pts[5], pts[7], pts[6]]);
+      faces.push([pts[0], pts[1], pts[5], pts[4]]);
+      faces.push([pts[2], pts[3], pts[7], pts[6]]);
     } else if (shape === "tabung") {
-      rings.push({ y: 1, r: 0.9, n: 24 });
-      rings.push({ y: -1, r: 0.9, n: 24 });
-      for (let i = 0; i < 4; i++) {
-        const theta = (i * Math.PI) / 2;
-        lines.push([
-          [0.9 * Math.cos(theta), 1, 0.9 * Math.sin(theta)],
-          [0.9 * Math.cos(theta), -1, 0.9 * Math.sin(theta)],
-        ]);
-      }
-    } else if (shape === "kerucut") {
-      rings.push({ y: -1, r: 0.9, n: 24 });
+      rings.push({ y: 1.0, r: 0.95, n: 32, isRim: true });
+      rings.push({ y: -1.0, r: 0.95, n: 32, isRim: true });
       for (let i = 0; i < 6; i++) {
         const theta = (i * Math.PI) / 3;
-        lines.push([[0.9 * Math.cos(theta), -1, 0.9 * Math.sin(theta)], [0, 1.2, 0]]);
+        lines.push({
+          p1: [0.95 * Math.cos(theta), 1.0, 0.95 * Math.sin(theta)],
+          p2: [0.95 * Math.cos(theta), -1.0, 0.95 * Math.sin(theta)],
+          isCurved: true,
+        });
+      }
+    } else if (shape === "kerucut") {
+      rings.push({ y: -1.0, r: 1.0, n: 32, isRim: true });
+      const apex: [number, number, number] = [0, 1.25, 0];
+      vertices.push(apex);
+      for (let i = 0; i < 6; i++) {
+        const theta = (i * Math.PI) / 3;
+        lines.push({
+          p1: [1.0 * Math.cos(theta), -1.0, 1.0 * Math.sin(theta)],
+          p2: apex,
+          isCurved: true,
+        });
       }
     } else if (shape === "bola") {
-      rings.push({ y: 0, r: 1.0, n: 28 });
-      rings.push({ y: 0.5, r: 0.866, n: 28 });
-      rings.push({ y: -0.5, r: 0.866, n: 28 });
+      rings.push({ y: 0, r: 1.05, n: 32 });
+      rings.push({ y: 0.55, r: 0.89, n: 32 });
+      rings.push({ y: -0.55, r: 0.89, n: 32 });
     } else if (shape === "limas") {
-      const c: Array<[number, number, number]> = [[-1, -1, -1], [1, -1, -1], [1, -1, 1], [-1, -1, 1]];
-      const top: [number, number, number] = [0, 1.2, 0];
+      const c: Array<[number, number, number]> = [
+        [-0.95, -0.9, -0.95],
+        [0.95, -0.9, -0.95],
+        [0.95, -0.9, 0.95],
+        [-0.95, -0.9, 0.95],
+      ];
+      const apex: [number, number, number] = [0, 1.25, 0];
+      vertices.push(apex);
+      c.forEach((pt) => vertices.push(pt));
+
       for (let i = 0; i < 4; i++) {
-        lines.push([c[i], c[(i + 1) % 4]]);
-        lines.push([c[i], top]);
+        lines.push({ p1: c[i], p2: c[(i + 1) % 4] });
+        lines.push({ p1: c[i], p2: apex });
+      }
+      faces.push([c[0], c[1], c[2], c[3]]);
+      for (let i = 0; i < 4; i++) {
+        faces.push([c[i], c[(i + 1) % 4], apex]);
       }
     } else if (shape === "prisma") {
-      const b: Array<[number, number, number]> = [[-1, -1, -0.8], [1, -1, -0.8], [0, -1, 0.9]];
-      const t: Array<[number, number, number]> = b.map((p) => [p[0], 1, p[2]]);
+      const b: Array<[number, number, number]> = [
+        [-0.95, -0.95, -0.8],
+        [0.95, -0.95, -0.8],
+        [0, -0.95, 0.9],
+      ];
+      const t: Array<[number, number, number]> = b.map((p) => [p[0], 0.95, p[2]]);
+      b.forEach((pt) => vertices.push(pt));
+      t.forEach((pt) => vertices.push(pt));
+
       for (let i = 0; i < 3; i++) {
-        lines.push([b[i], b[(i + 1) % 3]]);
-        lines.push([t[i], t[(i + 1) % 3]]);
-        lines.push([b[i], t[i]]);
+        lines.push({ p1: b[i], p2: b[(i + 1) % 3] });
+        lines.push({ p1: t[i], p2: t[(i + 1) % 3] });
+        lines.push({ p1: b[i], p2: t[i] });
+      }
+      faces.push([b[0], b[1], b[2]]);
+      faces.push([t[0], t[1], t[2]]);
+      for (let i = 0; i < 3; i++) {
+        faces.push([b[i], b[(i + 1) % 3], t[(i + 1) % 3], t[i]]);
       }
     }
 
-    return { lines, rings };
+    return { lines, rings, faces, vertices };
   };
 
-  // Proyeksikan 3D titik ke layar 2D
+  // Proyeksikan 3D titik ke 2D koordinat layar SVG
   const project = (p: [number, number, number]): [number, number, boolean] => {
     const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
     const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
@@ -212,18 +294,23 @@ export default function BangunRuangMateri() {
     const y1 = p[1] * cosX - z1 * sinX;
     const z2 = p[1] * sinX + z1 * cosX;
 
-    const scale = 85;
+    const scale = 80;
     return [150 + x1 * scale, 130 - y1 * scale, z2 > 0];
   };
 
   const currentGeom = get3DGeometry(selectedShape);
   const shapeInfo = SHAPES_DATA[selectedShape];
 
+  // Warna khusus untuk membedakan Sisi, Rusuk, Titik
+  const colorSisiFill = highlightMode === "RUSUK" ? "rgba(255,255,255,0.05)" : "rgba(254, 240, 138, 0.45)"; // Kuning lembut
+  const colorRusukStroke = highlightMode === "SISI" ? "#6b7280" : "#2563eb"; // Biru terang tajam untuk rusuk
+  const colorTitikFill = "#ef4444"; // Merah menyala untuk titik sudut
+
   return (
     <GameShell backUrl="/dashboard/siswa" showBack={true}>
       <div className="flex w-full flex-col items-center">
         {/* Main Card */}
-        <div className="relative w-full max-w-5xl rounded-[32px] sm:rounded-[42px] border-[7px] border-white bg-[#e4d3ff]/90 p-5 sm:p-8 shadow-2xl backdrop-blur-xs flex flex-col items-center min-h-[600px] justify-between">
+        <div className="relative w-full max-w-5xl rounded-[32px] sm:rounded-[42px] border-[7px] border-white bg-[#e4d3ff]/90 p-5 sm:p-8 shadow-2xl backdrop-blur-xs flex flex-col items-center min-h-[610px] justify-between">
           {/* Header & Tabs */}
           <div className="w-full flex flex-col items-center gap-3">
             <h2 className="game-font text-2xl sm:text-4xl text-[#2a2830] font-bold text-center">
@@ -241,7 +328,7 @@ export default function BangunRuangMateri() {
                   activeTab === "3D" ? "bg-[#7251a8] text-white shadow" : "text-[#422376] hover:bg-white/80"
                 }`}
               >
-                🔄 Model 3D Bisa Diputar
+                🔄 Model 3D Berwarna
               </button>
               <button
                 onClick={() => {
@@ -269,7 +356,7 @@ export default function BangunRuangMateri() {
           </div>
 
           {/* Sub Selector Bangun Ruang */}
-          <div className="flex flex-wrap gap-2 justify-center my-3 w-full">
+          <div className="flex flex-wrap gap-2 justify-center my-2.5 w-full">
             {(Object.keys(SHAPES_DATA) as ShapeType[]).map((shapeKey) => (
               <button
                 key={shapeKey}
@@ -293,6 +380,35 @@ export default function BangunRuangMateri() {
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 items-center my-auto animate-in fade-in duration-200">
               {/* 3D Canvas Box */}
               <div className="flex flex-col items-center">
+                {/* Mode Sorot Bagian (Sisi / Rusuk / Titik Sudut) */}
+                <div className="flex items-center gap-1.5 bg-white/90 p-1 rounded-xl border border-purple-200 mb-2 shadow-xs">
+                  <span className="text-[11px] font-bold text-[#422376] px-1.5">Sorot:</span>
+                  <button
+                    onClick={() => { playClick(); setHighlightMode("ALL"); }}
+                    className={`px-2 py-0.5 rounded-lg text-xs font-bold ${highlightMode === "ALL" ? "bg-[#7251a8] text-white" : "text-gray-700"}`}
+                  >
+                    Semua
+                  </button>
+                  <button
+                    onClick={() => { playClick(); setHighlightMode("SISI"); }}
+                    className={`px-2 py-0.5 rounded-lg text-xs font-bold ${highlightMode === "SISI" ? "bg-[#f59e0b] text-white" : "text-amber-800"}`}
+                  >
+                    🟡 Sisi
+                  </button>
+                  <button
+                    onClick={() => { playClick(); setHighlightMode("RUSUK"); }}
+                    className={`px-2 py-0.5 rounded-lg text-xs font-bold ${highlightMode === "RUSUK" ? "bg-[#2563eb] text-white" : "text-blue-800"}`}
+                  >
+                    🔵 Rusuk
+                  </button>
+                  <button
+                    onClick={() => { playClick(); setHighlightMode("TITIK"); }}
+                    className={`px-2 py-0.5 rounded-lg text-xs font-bold ${highlightMode === "TITIK" ? "bg-[#ef4444] text-white" : "text-red-800"}`}
+                  >
+                    🔴 Titik
+                  </button>
+                </div>
+
                 <div
                   onPointerDown={(e) => {
                     isDragging.current = true;
@@ -309,10 +425,27 @@ export default function BangunRuangMateri() {
                   onPointerUp={() => {
                     isDragging.current = false;
                   }}
-                  className="relative size-[280px] sm:size-[300px] rounded-3xl border-4 border-white bg-gradient-to-b from-purple-100 to-indigo-100 shadow-lg cursor-grab active:cursor-grabbing overflow-hidden flex items-center justify-center select-none"
+                  className="relative size-[280px] sm:size-[300px] rounded-3xl border-4 border-white bg-gradient-to-b from-[#f3e8ff] to-[#e0e7ff] shadow-lg cursor-grab active:cursor-grabbing overflow-hidden flex items-center justify-center select-none"
                 >
                   <svg viewBox="0 0 300 260" className="w-full h-full">
-                    {/* Render Rings */}
+                    {/* 1. Render Bidang Sisi (Faces Poligon) */}
+                    {currentGeom.faces.map((face, fIdx) => {
+                      const pts = face.map((p) => project(p));
+                      const isFront = pts.some((pt) => pt[2]);
+                      const ptsStr = pts.map((pt) => `${pt[0]},${pt[1]}`).join(" ");
+                      return (
+                        <polygon
+                          key={`face-${fIdx}`}
+                          points={ptsStr}
+                          fill={highlightMode === "RUSUK" ? "transparent" : isFront ? colorSisiFill : "rgba(254, 240, 138, 0.15)"}
+                          stroke="#d97706"
+                          strokeWidth={highlightMode === "SISI" ? "2" : "0.5"}
+                          strokeOpacity={isFront ? 0.8 : 0.2}
+                        />
+                      );
+                    })}
+
+                    {/* 2. Render Rusuk Lengkung (Rings) */}
                     {currentGeom.rings.map((ring, rIdx) => {
                       const pts: Array<[number, number, boolean]> = [];
                       for (let i = 0; i <= ring.n; i++) {
@@ -333,9 +466,9 @@ export default function BangunRuangMateri() {
                                 y1={pt[1]}
                                 x2={next[0]}
                                 y2={next[1]}
-                                stroke="#422376"
-                                strokeWidth={isFront ? 2.5 : 1.2}
-                                strokeDasharray={isFront ? "none" : "3 3"}
+                                stroke={ring.isRim ? colorRusukStroke : "#9333ea"}
+                                strokeWidth={ring.isRim ? (isFront ? 4 : 2) : (isFront ? 2 : 1)}
+                                strokeDasharray={isFront ? "none" : "4 3"}
                                 opacity={isFront ? 1 : 0.4}
                               />
                             );
@@ -344,10 +477,10 @@ export default function BangunRuangMateri() {
                       );
                     })}
 
-                    {/* Render Lines */}
+                    {/* 3. Render Garis Rusuk (Edges) */}
                     {currentGeom.lines.map((line, lIdx) => {
-                      const p1 = project(line[0]);
-                      const p2 = project(line[1]);
+                      const p1 = project(line.p1);
+                      const p2 = project(line.p2);
                       const isFront = p1[2] || p2[2];
                       return (
                         <line
@@ -356,65 +489,101 @@ export default function BangunRuangMateri() {
                           y1={p1[1]}
                           x2={p2[0]}
                           y2={p2[1]}
-                          stroke="#1cd8a4"
-                          strokeWidth={isFront ? 3.5 : 1.5}
-                          strokeDasharray={isFront ? "none" : "4 3"}
+                          stroke={colorRusukStroke}
+                          strokeWidth={isFront ? (highlightMode === "RUSUK" ? 5 : 3.5) : 1.8}
+                          strokeDasharray={isFront ? "none" : "5 4"}
                           opacity={isFront ? 1 : 0.45}
                           strokeLinecap="round"
                         />
                       );
                     })}
+
+                    {/* 4. Render Titik Sudut (Vertices) */}
+                    {(highlightMode === "ALL" || highlightMode === "TITIK") &&
+                      currentGeom.vertices.map((v, vIdx) => {
+                        const pt = project(v);
+                        return (
+                          <circle
+                            key={`vert-${vIdx}`}
+                            cx={pt[0]}
+                            cy={pt[1]}
+                            r={highlightMode === "TITIK" ? 7 : 5}
+                            fill={colorTitikFill}
+                            stroke="#ffffff"
+                            strokeWidth={2}
+                            opacity={pt[2] ? 1 : 0.6}
+                          />
+                        );
+                      })}
                   </svg>
-                  <span className="absolute bottom-2 text-[11px] font-bold text-purple-900 bg-white/70 px-2.5 py-0.5 rounded-full">
+                  <span className="absolute bottom-2 text-[11px] font-bold text-purple-900 bg-white/80 px-2.5 py-0.5 rounded-full shadow-xs">
                     🖐️ Sentuh & Geser untuk Memutar 360°
                   </span>
                 </div>
 
-                {/* Rotasi Controls */}
-                <div className="mt-3 flex items-center gap-3">
-                  <label className="flex items-center gap-1.5 text-xs font-bold text-[#2a2830] cursor-pointer bg-white/80 px-3 py-1 rounded-xl shadow-xs">
-                    <input
-                      type="checkbox"
-                      checked={autoRotate}
-                      onChange={(e) => setAutoRotate(e.target.checked)}
-                      className="accent-[#7251a8]"
-                    />
-                    Putar Otomatis
-                  </label>
+                {/* Legend Keterangan Warna */}
+                <div className="mt-2.5 flex items-center justify-center gap-3 text-[11px] font-bold">
+                  <span className="flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-amber-900 border border-amber-300">
+                    <span className="size-2.5 rounded-full bg-amber-400 inline-block"></span> Sisi (Permukaan)
+                  </span>
+                  <span className="flex items-center gap-1 rounded-md bg-blue-100 px-2 py-0.5 text-blue-900 border border-blue-300">
+                    <span className="size-2.5 rounded-full bg-blue-600 inline-block"></span> Rusuk (Garis Tepi)
+                  </span>
+                  <span className="flex items-center gap-1 rounded-md bg-red-100 px-2 py-0.5 text-red-900 border border-red-300">
+                    <span className="size-2.5 rounded-full bg-red-500 inline-block"></span> Titik Sudut
+                  </span>
                 </div>
               </div>
 
-              {/* Info Card */}
+              {/* Info Card Rinci & Jelas */}
               <div className="flex flex-col gap-3 rounded-2xl border-4 border-white bg-white/95 p-5 shadow">
-                <span className="game-font text-2xl font-bold text-[#7251a8]">
-                  {shapeInfo.name}
-                </span>
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="game-font text-2xl font-bold text-[#7251a8]">
+                    {shapeInfo.name}
+                  </span>
+                  <span className="text-xs font-bold rounded-full bg-purple-100 px-2.5 py-1 text-purple-800">
+                    {selectedShape === "tabung" || selectedShape === "kerucut" || selectedShape === "bola"
+                      ? "Sisi Lengkung"
+                      : "Sisi Datar"}
+                  </span>
+                </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-[#2a2830]">
-                  <div className="rounded-xl bg-purple-50 p-2 border border-purple-100">
-                    <span className="block text-[#7251a8] font-bold">Banyak Sisi:</span>
-                    {shapeInfo.sisi}
+                <div className="flex flex-col gap-2.5 text-xs font-semibold text-[#2a2830]">
+                  {/* Sisi Detail */}
+                  <div className="rounded-xl bg-amber-50 p-2.5 border-2 border-amber-200">
+                    <div className="flex items-center justify-between font-bold text-amber-900 mb-0.5">
+                      <span className="text-sm">🟡 Sisi: {shapeInfo.sisi}</span>
+                      <span className="text-[10px] bg-amber-200/80 px-2 py-0.5 rounded-md">Bidang Luar</span>
+                    </div>
+                    <p className="text-amber-950 font-medium leading-relaxed">{shapeInfo.sisiDetail}</p>
                   </div>
-                  <div className="rounded-xl bg-purple-50 p-2 border border-purple-100">
-                    <span className="block text-[#7251a8] font-bold">Banyak Rusuk:</span>
-                    {shapeInfo.rusuk}
+
+                  {/* Rusuk Detail */}
+                  <div className="rounded-xl bg-blue-50 p-2.5 border-2 border-blue-200">
+                    <div className="flex items-center justify-between font-bold text-blue-900 mb-0.5">
+                      <span className="text-sm">🔵 Rusuk: {shapeInfo.rusuk}</span>
+                      <span className="text-[10px] bg-blue-200/80 px-2 py-0.5 rounded-md">Garis Batas</span>
+                    </div>
+                    <p className="text-blue-950 font-medium leading-relaxed">{shapeInfo.rusukDetail}</p>
                   </div>
-                  <div className="rounded-xl bg-purple-50 p-2 border border-purple-100">
-                    <span className="block text-[#7251a8] font-bold">Titik Sudut:</span>
-                    {shapeInfo.titikSudut}
-                  </div>
-                  <div className="rounded-xl bg-purple-50 p-2 border border-purple-100">
-                    <span className="block text-[#7251a8] font-bold">Jenis:</span>
-                    {selectedShape === "tabung" || selectedShape === "kerucut" || selectedShape === "bola" ? "Sisi Lengkung" : "Sisi Datar"}
+
+                  {/* Titik Sudut Detail */}
+                  <div className="rounded-xl bg-red-50 p-2.5 border-2 border-red-200">
+                    <div className="flex items-center justify-between font-bold text-red-900 mb-0.5">
+                      <span className="text-sm">🔴 Titik Sudut: {shapeInfo.titikSudut}</span>
+                      <span className="text-[10px] bg-red-200/80 px-2 py-0.5 rounded-md">Pojok Pertemuan</span>
+                    </div>
+                    <p className="text-red-950 font-medium leading-relaxed">{shapeInfo.titikSudutDetail}</p>
                   </div>
                 </div>
 
-                <div className="mt-1 rounded-xl bg-amber-50 p-3 border-2 border-amber-200">
-                  <span className="text-xs font-bold text-amber-800 uppercase block mb-1">
-                    Rumus Matematika:
+                {/* Rumus Ringkas */}
+                <div className="mt-1 rounded-xl bg-purple-50 p-3 border-2 border-purple-200">
+                  <span className="text-[11px] font-bold text-purple-900 uppercase block mb-1">
+                    Rumus Luas & Volume:
                   </span>
-                  <p className="text-sm font-bold text-[#2a2830]">{shapeInfo.rumusL}</p>
-                  <p className="text-sm font-bold text-[#2a2830] mt-0.5">{shapeInfo.rumusV}</p>
+                  <p className="text-xs sm:text-sm font-bold text-[#2a2830]">{shapeInfo.rumusL}</p>
+                  <p className="text-xs sm:text-sm font-bold text-[#2a2830] mt-0.5">{shapeInfo.rumusV}</p>
                 </div>
               </div>
             </div>
