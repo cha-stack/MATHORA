@@ -97,6 +97,10 @@ export default function Home() {
 
       {/* Title Section (Header) */}
       <div className="relative z-10 mt-6 sm:mt-10 flex flex-col items-center text-center">
+        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[#f8f298] px-4 py-1 text-xs sm:text-sm font-bold text-[#422376] shadow-md border-2 border-white">
+          <span>🎓</span>
+          <span>PKM SMP ISLAM PARUNG</span>
+        </div>
         <h1 className="game-title-mathora text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-wider uppercase leading-none">
           MATHORA
         </h1>
@@ -202,12 +206,12 @@ export default function Home() {
                 onClick={() => {
                   setShowExitModal(false);
                   if (typeof window !== "undefined") {
-                    window.close();
+                    window.location.href = "https://www.google.com";
                   }
                 }}
                 className="flex-1 rounded-2xl border-4 border-white bg-[#e05f1e] py-2.5 game-font text-lg text-white shadow-[0px_4px_0px_0px_#aaafaf] hover:brightness-110 active:translate-y-1 active:shadow-none cursor-pointer"
               >
-                Ya, Keluar
+                Ya, Keluar Chrome
               </button>
             </div>
           </div>

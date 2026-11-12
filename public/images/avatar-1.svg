@@ -7,6 +7,7 @@
   <path d="M 38 62 Q 50 74 62 62" stroke="#2a2830" stroke-width="4" stroke-linecap="round" fill="none"/>
   <circle cx="26" cy="54" r="5" fill="#ff9999" opacity="0.6"/>
   <circle cx="74" cy="54" r="5" fill="#ff9999" opacity="0.6"/>
-  <path d="M 28 26 L 40 32 L 32 36 Z" fill="#e05f1e"/>
-  <path d="M 72 26 L 60 32 L 68 36 Z" fill="#e05f1e"/>
+  <!-- Telinga Kucing Karakter -->
+  <polygon points="26,14 42,32 20,32" fill="#e05f1e" stroke="#ffffff" stroke-width="2"/>
+  <polygon points="74,14 58,32 80,32" fill="#e05f1e" stroke="#ffffff" stroke-width="2"/>
 </svg>

@@ -6,7 +6,12 @@ import GameShell from "@/components/GameShell";
 import { getCurrentUser } from "@/lib/auth";
 
 export default function DashboardSiswa() {
-  const [displayName, setDisplayName] = useState("Dardar");
+  const [displayName, setDisplayName] = useState(() => {
+    if (typeof window !== "undefined") {
+      return getCurrentUser()?.username || "Siswa";
+    }
+    return "Siswa";
+  });
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -19,79 +24,69 @@ export default function DashboardSiswa() {
     <GameShell backUrl="/login" showBack={true}>
       <div className="flex w-full flex-col items-center">
         {/* Welcome Text */}
-        <div className="w-full text-left px-2 sm:px-6 mb-8 sm:mb-12">
+        <div className="w-full text-left px-2 sm:px-6 mb-8 sm:mb-10">
+          <div className="inline-block rounded-full bg-[#f8f298] px-4 py-1 text-xs sm:text-sm font-bold text-[#422376] mb-2 shadow">
+            Siswa SMP Islam Parung
+          </div>
           <h2 className="game-font text-3xl sm:text-5xl text-white font-bold mb-2">
             Halo {displayName},
           </h2>
           <p className="text-white/90 text-lg sm:text-2xl font-medium">
-            Udah siap belajar MTK blom hari enih?
+            Udah siap belajar matematika seru hari ini?
           </p>
         </div>
 
-        {/* Roadmap Timeline with Cards */}
-        <div className="relative w-full max-w-5xl py-8">
-          {/* Main Horizontal Connecting Bar */}
-          <div className="absolute top-1/2 left-8 right-8 h-4 -translate-y-1/2 rounded-full bg-[#a8b7b8] border-2 border-white shadow-md hidden md:block" />
-
-          {/* Cards & Nodes Container */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 items-center">
-            {/* 1. Materi SPLDV (Kiri Atas) */}
-            <div className="flex flex-col items-center">
-              <Link
-                href="/spldv"
-                className="group relative flex h-48 w-full max-w-[320px] flex-col items-center justify-center rounded-[32px] border-[7px] border-white bg-[#f8f298] p-6 text-center shadow-[0px_7px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-1 active:shadow-none cursor-pointer"
-              >
-                <span className="game-font text-3xl sm:text-4xl text-[#2a2830] font-bold">
-                  Materi SPLDV
+        {/* Siswa Hanya Punya 2 Fitur: Materi & Game Kompetitif */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl px-2">
+          {/* Card 1: Materi Pembelajaran */}
+          <Link
+            href="/materi"
+            className="group relative flex flex-col justify-between rounded-[36px] border-[8px] border-white bg-gradient-to-b from-[#fef08a] to-[#fde047] p-8 shadow-[0px_8px_0px_0px_#aaafaf] transition-all hover:scale-103 active:translate-y-1 active:shadow-none cursor-pointer min-h-[280px]"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="rounded-full bg-[#e05f1e] px-4 py-1 text-xs font-bold text-white shadow">
+                  Eksplorasi
                 </span>
-                <span className="mt-3 inline-block rounded-full bg-[#e05f1e] px-4 py-1 text-xs sm:text-sm font-bold text-white shadow">
-                  Klik untuk Mulai
-                </span>
-              </Link>
-              {/* Connector Pin */}
-              <div className="mt-4 hidden md:flex flex-col items-center">
-                <div className="h-6 w-3 bg-white" />
-                <div className="size-10 rounded-full border-4 border-white bg-[#f8f298] shadow-md" />
+                <span className="text-4xl">📚</span>
               </div>
+              <h3 className="game-font text-3xl sm:text-4xl text-[#2a2830] font-bold mb-2">
+                Materi Belajar
+              </h3>
+              <p className="text-[#2a2830]/85 text-sm sm:text-base font-semibold leading-relaxed">
+                Buka materi SPLDV bertahap (dengan Pre-test & Post-test) serta model 3D Bangun Ruang yang bisa diputar 360°.
+              </p>
             </div>
-
-            {/* 2. Materi Bangun Ruang (Tengah Bawah) */}
-            <div className="flex flex-col-reverse md:flex-col items-center md:pt-16">
-              {/* Connector Pin */}
-              <div className="mb-4 hidden md:flex flex-col items-center">
-                <div className="size-10 rounded-full border-4 border-white bg-[#d3e9ff] shadow-md" />
-                <div className="h-6 w-3 bg-white" />
-              </div>
-              <Link
-                href="/bangun-ruang/materi"
-                className="group relative flex h-48 w-full max-w-[320px] flex-col items-center justify-center rounded-[32px] border-[7px] border-white bg-[#d3e9ff] p-6 text-center shadow-[0px_7px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-1 active:shadow-none cursor-pointer"
-              >
-                <span className="game-font text-3xl sm:text-4xl text-[#2a2830] font-bold">
-                  Materi Bangun Ruang
-                </span>
-                <span className="mt-3 inline-block rounded-full bg-[#5e65e9] px-4 py-1 text-xs sm:text-sm font-bold text-white shadow">
-                  3D Interaktif &rarr;
-                </span>
-              </Link>
+            <div className="mt-6 flex items-center justify-between font-bold text-[#e05f1e] pt-4 border-t border-amber-300">
+              <span className="game-font text-lg">Mulai Belajar</span>
+              <span className="text-2xl group-hover:translate-x-2 transition-transform">&rarr;</span>
             </div>
+          </Link>
 
-            {/* 3. Game Kompetitif (Kanan Atas) */}
-            <div className="flex flex-col items-center">
-              <div className="group relative flex h-48 w-full max-w-[320px] flex-col items-center justify-center rounded-[32px] border-[7px] border-white bg-[#ffd3d3] p-6 text-center shadow-[0px_7px_0px_0px_#aaafaf] opacity-90">
-                <span className="game-font text-3xl sm:text-4xl text-[#2a2830] font-bold">
-                  Game Kompetitif
+          {/* Card 2: Game Kompetitif Tarik Tambang */}
+          <Link
+            href="/game-kompetitif"
+            className="group relative flex flex-col justify-between rounded-[36px] border-[8px] border-white bg-gradient-to-b from-[#ffd3d3] to-[#fca5a5] p-8 shadow-[0px_8px_0px_0px_#aaafaf] transition-all hover:scale-103 active:translate-y-1 active:shadow-none cursor-pointer min-h-[280px]"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="rounded-full bg-[#dc2626] px-4 py-1 text-xs font-bold text-white shadow">
+                  Adu Cepat Tim
                 </span>
-                <span className="mt-3 inline-block rounded-full bg-zinc-500 px-4 py-1 text-xs sm:text-sm font-bold text-white">
-                  Terkunci
-                </span>
+                <span className="text-4xl">🚩</span>
               </div>
-              {/* Connector Pin */}
-              <div className="mt-4 hidden md:flex flex-col items-center">
-                <div className="h-6 w-3 bg-white" />
-                <div className="size-10 rounded-full border-4 border-white bg-[#ffd3d3] shadow-md" />
-              </div>
+              <h3 className="game-font text-3xl sm:text-4xl text-[#2a2830] font-bold mb-2">
+                Game Kompetitif
+              </h3>
+              <p className="text-[#2a2830]/85 text-sm sm:text-base font-semibold leading-relaxed">
+                Tarik Tambang Online bersama teman kelas! Jawab cepat soal matematika untuk menarik tali tambang ke timmu!
+              </p>
             </div>
-          </div>
+            <div className="mt-6 flex items-center justify-between font-bold text-[#dc2626] pt-4 border-t border-rose-300">
+              <span className="game-font text-lg">Masuk Game Tim</span>
+              <span className="text-2xl group-hover:translate-x-2 transition-transform">&rarr;</span>
+            </div>
+          </Link>
         </div>
       </div>
     </GameShell>
