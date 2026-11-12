@@ -52,6 +52,14 @@ interface MathQuestion {
   explanation: string;
 }
 
+const INITIAL_QUESTION: MathQuestion = {
+  id: "init",
+  categoryTag: "SPLDV",
+  question: "",
+  answer: 0,
+  explanation: "",
+};
+
 // Generator soal dengan variasi model soal yang kaya & dinamis
 function makeQuestion(materi: string, diff: "easy" | "medium" | "hard"): MathQuestion {
   _qSeq++;
@@ -685,7 +693,7 @@ export default function GameKompetitifPage() {
   const [winner, setWinner] = useState<"Pemain 1" | "Pemain 2" | "AI Bot" | "Seri / Imbang" | null>(null);
 
   // Soal & Notifikasi
-  const [currentQ, setCurrentQ] = useState<MathQuestion>(() => makeQuestion("SPLDV", "medium"));
+  const [currentQ, setCurrentQ] = useState<MathQuestion>(INITIAL_QUESTION);
   const [lastRoundNotice, setLastRoundNotice] = useState<string | null>(null);
   const [cheerReaction, setCheerReaction] = useState<string>("hebat!");
 

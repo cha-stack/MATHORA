@@ -326,18 +326,41 @@ const SHAPE_MATERI: Record<ShapeType, ShapeMateriDetail> = {
   },
 };
 
+const SHAPE_SAMPLE_CHALLENGE: Record<ShapeType, { dims: [number, number, number]; ask: string; answer: number; unit: string }> = {
+  kubus: { dims: [8, 8, 8], ask: "Berapakah Volume kubus (s = 8)?", answer: 512, unit: "cm³" },
+  balok: { dims: [12, 5, 10], ask: "Berapakah Volume akuarium (12×5×10)?", answer: 600, unit: "cm³" },
+  prisma: { dims: [6, 8, 15], ask: "Berapakah Volume prisma tersebut?", answer: 360, unit: "cm³" },
+  limas: { dims: [10, 10, 12], ask: "Berapakah Volume limas tersebut?", answer: 400, unit: "cm³" },
+  tabung: { dims: [7, 14, 10], ask: "Berapakah Volume kaleng tabung?", answer: 1540, unit: "cm³" },
+  kerucut: { dims: [6, 12, 8], ask: "Berapakah garis pelukis s (cm)?", answer: 10, unit: "cm" },
+  bola: { dims: [7, 14, 7], ask: "Berapakah Luas Permukaan bola?", answer: 616, unit: "cm²" },
+};
+
 export default function BangunRuangMateriPage() {
-  const { playClick } = useSound();
+  const { playClick, playCorrect } = useSound();
   const [activeViewTab, setActiveViewTab] = useState<BangunViewTab>("lab3d");
   const [selectedShape, setSelectedShape] = useState<ShapeType>("kubus");
   const [showJaring, setShowJaring] = useState(false);
-  const [showExampleSteps, setShowExampleSteps] = useState(true);
+  const [showExampleSteps, setShowExampleSteps] = useState(false);
   const [dashboardUrl, setDashboardUrl] = useState("/dashboard/siswa");
+  const [autoSpin, setAutoSpin] = useState(false);
+  const [challengeInput, setChallengeInput] = useState("");
+  const [challengeStatus, setChallengeStatus] = useState<"idle" | "right" | "wrong">("idle");
+  const [catFilter, setCatFilter] = useState<"all" | "datar" | "lengkung">("all");
+  const [quickQuizPick, setQuickQuizPick] = useState<number | null>(null);
 
   useEffect(() => {
     const u = getCurrentUser();
     setDashboardUrl(u?.role === "guru" ? "/dashboard/guru" : "/dashboard/siswa");
   }, []);
+
+  useEffect(() => {
+    if (!autoSpin) return;
+    const t = setInterval(() => {
+      setRotY((prev) => prev + 0.025);
+    }, 30);
+    return () => clearInterval(t);
+  }, [autoSpin]);
 
   // Mode 2 POV (Dimensi -> Hasil  ATAU  Input Volume/LP -> Cari Dimensi)
   const [povMode, setPovMode] = useState<PovMode>("dimensi_to_hasil");
@@ -948,16 +971,25 @@ export default function BangunRuangMateriPage() {
                     Isometrik
                   </button>
                   <button
-                    onClick={() => { playClick(); setRotX(-1.15); setRotY(0.2); }}
+                    onClick={() => { playClick(); setAutoSpin(false); setRotX(-1.15); setRotY(0.2); }}
                     className="rounded-full border border-white/60 bg-white/15 px-2.5 py-1 text-[11px] font-semibold hover:bg-white hover:text-[#126b7c] transition-all cursor-pointer"
                   >
                     Tampak Atas
                   </button>
                   <button
-                    onClick={handleReset}
+                    onClick={() => { playClick(); setAutoSpin((s) => !s); }}
+                    className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all cursor-pointer ${
+                      autoSpin
+                        ? "bg-amber-300 text-amber-950 border-amber-200 shadow"
+                        : "border-white/60 bg-white/15 hover:bg-white hover:text-[#126b7c]"
+                    }`}
+                  >
+                    {autoSpin ? "⏸ Stop Putar" : "🔄 Putar Otomatis"}
+                  </button>
+                  <button
+                    onClick={() => { setAutoSpin(false); handleReset(); }}
                     className="flex items-center gap-1 rounded-full border-2 border-white/80 bg-white/30 px-3 py-1 text-xs font-semibold hover:bg-white hover:text-[#126b7c] transition-all cursor-pointer shadow-xs active:scale-95"
                   >
-                    <span>🔄</span>
                     <span>Reset</span>
                   </button>
                 </div>
@@ -1670,7 +1702,12 @@ export default function BangunRuangMateriPage() {
                   return (
                     <button
                       key={shape}
-                      onClick={() => { handleSelectShape(shape); setShowExampleSteps(true); }}
+                      onClick={() => {
+                        handleSelectShape(shape);
+                        setShowExampleSteps(false);
+                        setChallengeInput("");
+                        setChallengeStatus("idle");
+                      }}
                       className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border-2 ${
                         isSel
                           ? "bg-[#5e65e9] text-white border-[#5e65e9] shadow"
@@ -1743,7 +1780,7 @@ export default function BangunRuangMateriPage() {
                   </div>
                 </div>
 
-                {/* Kanan: Contoh Benda Nyata & Contoh Soal */}
+                {/* Kanan: Contoh Benda Nyata & Contoh Soal Interaktif */}
                 <div className="lg:col-span-5 flex flex-col gap-4">
                   <div className="rounded-[28px] border-4 border-white bg-[#f8f298] p-5 shadow">
                     <h4 className="font-bold text-sm text-[#422376] mb-1">🏠 Contoh Benda di Sekitar:</h4>
@@ -1755,19 +1792,64 @@ export default function BangunRuangMateriPage() {
                   <div className="rounded-[28px] border-4 border-white bg-white p-5 shadow flex flex-col gap-3 flex-1">
                     <div className="flex items-center justify-between">
                       <span className="rounded-full bg-[#e05f1e] text-white px-3 py-1 text-xs font-bold">
-                        📝 Contoh Soal {currentCfg.name}
+                        🎯 Tantangan Hitung {currentCfg.name}
                       </span>
                       <button
                         onClick={() => { playClick(); setShowExampleSteps((prev) => !prev); }}
                         className="text-xs font-bold text-[#5e65e9] underline cursor-pointer"
                       >
-                        {showExampleSteps ? "Sembunyikan Pembahasan" : "Tampilkan Pembahasan"}
+                        {showExampleSteps ? "Tutup Pembahasan" : "Buka Pembahasan"}
                       </button>
                     </div>
 
                     <p className="text-sm font-bold text-[#2a2830] leading-relaxed bg-gray-50 p-3.5 rounded-2xl border border-gray-200">
                       {currentMateri.contohSoal}
                     </p>
+
+                    {/* Mini Interactive Challenge Input */}
+                    {(() => {
+                      const ch = SHAPE_SAMPLE_CHALLENGE[selectedShape];
+                      return (
+                        <div className="rounded-2xl bg-purple-50 border border-purple-200 p-3.5 flex flex-col gap-2">
+                          <span className="text-xs font-bold text-[#422376]">{ch.ask}</span>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              value={challengeInput}
+                              onChange={(e) => {
+                                setChallengeInput(e.target.value);
+                                setChallengeStatus("idle");
+                              }}
+                              placeholder="Ketik jawaban..."
+                              className="flex-1 rounded-xl border-2 border-purple-300 bg-white px-3 py-1.5 text-sm font-bold text-[#2a2830]"
+                            />
+                            <span className="text-xs font-bold text-gray-600">{ch.unit}</span>
+                            <button
+                              onClick={() => {
+                                const val = parseFloat(challengeInput);
+                                if (Math.abs(val - ch.answer) < 0.01) {
+                                  playCorrect();
+                                  setChallengeStatus("right");
+                                  setShowExampleSteps(true);
+                                } else {
+                                  playClick();
+                                  setChallengeStatus("wrong");
+                                }
+                              }}
+                              className="rounded-xl bg-[#5e65e9] text-white px-3.5 py-1.5 text-xs font-bold cursor-pointer hover:brightness-110"
+                            >
+                              Cek!
+                            </button>
+                          </div>
+                          {challengeStatus === "right" && (
+                            <span className="text-xs font-bold text-emerald-700">🎉 Benar sekali! Jawabannya {ch.answer} {ch.unit}!</span>
+                          )}
+                          {challengeStatus === "wrong" && (
+                            <span className="text-xs font-bold text-rose-700">✗ Belum tepat, coba cek rumusnya atau klik Buka Pembahasan!</span>
+                          )}
+                        </div>
+                      );
+                    })()}
 
                     {showExampleSteps && (
                       <div className="rounded-2xl bg-emerald-50/80 border border-emerald-200 p-3.5 flex flex-col gap-1.5">
@@ -1782,10 +1864,19 @@ export default function BangunRuangMateriPage() {
                     )}
 
                     <button
-                      onClick={() => { playClick(); setActiveViewTab("lab3d"); }}
+                      onClick={() => {
+                        playClick();
+                        const [dP, dL, dT] = SHAPE_SAMPLE_CHALLENGE[selectedShape].dims;
+                        setValP(dP);
+                        setValL(dL);
+                        setValT(dT);
+                        if (selectedShape === "kerucut") setPiMode("3.14");
+                        else if (currentCfg.category === "lengkung") setPiMode("22/7");
+                        setActiveViewTab("lab3d");
+                      }}
                       className="mt-auto rounded-2xl border-2 border-white bg-[#126b7c] hover:bg-[#0e5664] text-white font-bold py-2.5 px-4 shadow cursor-pointer text-sm transition-all"
                     >
-                      🔬 Uji Langsung {currentCfg.name} di Lab 3D &rarr;
+                      🔬 Muat Angka Soal Ini ke Lab 3D &rarr;
                     </button>
                   </div>
                 </div>
@@ -1793,29 +1884,95 @@ export default function BangunRuangMateriPage() {
             </div>
           )}
 
-          {/* TAB 3: PERBANDINGAN 7 BANGUN RUANG */}
+          {/* TAB 3: PERBANDINGAN 7 BANGUN RUANG + FILTER + KUIS CEPAT */}
           {activeViewTab === "perbandingan" && (
             <div className="flex flex-col gap-4 animate-in fade-in duration-200">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="rounded-[24px] border-4 border-white bg-sky-50 p-4 shadow">
-                  <h4 className="game-font text-lg font-semibold text-sky-900 mb-1">
-                    🧊 Kelompok 1: Bangun Ruang Sisi Datar
-                  </h4>
-                  <p className="text-xs sm:text-sm font-medium text-gray-700">
-                    Seluruh sisinya berbentuk bidang datar poligon (persegi, persegi panjang, segitiga): <b>Kubus, Balok, Prisma, dan Limas</b>. Rumus volumenya selalu mengacu pada <b>Luas Alas × Tinggi</b> (atau ⅓ × Luas Alas × Tinggi untuk bangun meruncing seperti Limas).
-                  </p>
+              {/* Filter & Kuis Cepat Interaktif */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+                <div className="md:col-span-5 rounded-[24px] border-4 border-white bg-[#f8f298] p-4 shadow flex flex-col justify-between gap-2">
+                  <div>
+                    <span className="text-xs font-bold uppercase text-[#422376]">⚡ Tebak Cepat Rumus!</span>
+                    <p className="text-xs sm:text-sm font-bold text-[#2a2830] mt-1">
+                      Jika sebuah kerucut dan tabung memiliki jari-jari (r) serta tinggi (t) yang persis sama, maka Volume Kerucut = ... × Volume Tabung?
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "⅓ kali", ok: true },
+                      { label: "½ kali", ok: false },
+                      { label: "⅔ kali", ok: false },
+                    ].map((opt, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          if (opt.ok) playCorrect(); else playClick();
+                          setQuickQuizPick(idx);
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border-2 border-white cursor-pointer transition-all ${
+                          quickQuizPick !== null
+                            ? opt.ok
+                              ? "bg-emerald-400 text-emerald-950"
+                              : quickQuizPick === idx
+                              ? "bg-rose-200 border-rose-400 text-rose-900"
+                              : "bg-rose-50/90 border-rose-200 text-rose-800/80"
+                            : "bg-white text-[#2a2830] hover:bg-purple-50"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="rounded-[24px] border-4 border-white bg-rose-50 p-4 shadow">
-                  <h4 className="game-font text-lg font-semibold text-rose-900 mb-1">
-                    🎈 Kelompok 2: Bangun Ruang Sisi Lengkung
-                  </h4>
-                  <p className="text-xs sm:text-sm font-medium text-gray-700">
-                    Memiliki minimal satu sisi yang melengkung dan melibatkan konstanta <b>π (22/7 atau 3,14)</b>: <b>Tabung, Kerucut, dan Bola</b>. Gunakan π = 22/7 jika jari-jari (r) kelipatan 7!
-                  </p>
+
+                <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={() => { playClick(); setCatFilter(catFilter === "datar" ? "all" : "datar"); }}
+                    className={`text-left rounded-[24px] border-4 border-white p-4 shadow cursor-pointer transition-all ${
+                      catFilter === "datar" ? "bg-sky-200 ring-2 ring-sky-600 scale-102" : "bg-sky-50 hover:bg-sky-100"
+                    }`}
+                  >
+                    <h4 className="game-font text-base font-semibold text-sky-900 mb-1">
+                      🧊 Sisi Datar (Klik untuk Filter)
+                    </h4>
+                    <p className="text-xs font-medium text-gray-700">
+                      Kubus, Balok, Prisma, Limas. Sisi berupa bidang datar poligon.
+                    </p>
+                  </button>
+                  <button
+                    onClick={() => { playClick(); setCatFilter(catFilter === "lengkung" ? "all" : "lengkung"); }}
+                    className={`text-left rounded-[24px] border-4 border-white p-4 shadow cursor-pointer transition-all ${
+                      catFilter === "lengkung" ? "bg-rose-200 ring-2 ring-rose-600 scale-102" : "bg-rose-50 hover:bg-rose-100"
+                    }`}
+                  >
+                    <h4 className="game-font text-base font-semibold text-rose-900 mb-1">
+                      🎈 Sisi Lengkung (Klik untuk Filter)
+                    </h4>
+                    <p className="text-xs font-medium text-gray-700">
+                      Tabung, Kerucut, Bola. Menggunakan π (22/7 atau 3,14).
+                    </p>
+                  </button>
                 </div>
               </div>
 
               <div className="rounded-[28px] border-4 border-white bg-white p-4 sm:p-5 shadow overflow-x-auto">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <span className="font-bold text-xs sm:text-sm text-[#422376]">
+                    Tabel Perbandingan Bangun Ruang
+                  </span>
+                  <div className="flex gap-1.5">
+                    {(["all", "datar", "lengkung"] as const).map((cf) => (
+                      <button
+                        key={cf}
+                        onClick={() => { playClick(); setCatFilter(cf); }}
+                        className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer ${
+                          catFilter === cf ? "bg-[#5e65e9] text-white" : "bg-purple-100 text-purple-900"
+                        }`}
+                      >
+                        {cf === "all" ? "Semua (7)" : cf === "datar" ? "Sisi Datar (4)" : "Sisi Lengkung (3)"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <table className="w-full text-left border-collapse text-xs sm:text-sm">
                   <thead>
                     <tr className="border-b-2 border-purple-200 text-[#422376]">
@@ -1827,7 +1984,9 @@ export default function BangunRuangMateriPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(["kubus", "balok", "prisma", "limas", "tabung", "kerucut", "bola"] as ShapeType[]).map((sh) => (
+                    {(["kubus", "balok", "prisma", "limas", "tabung", "kerucut", "bola"] as ShapeType[])
+                      .filter((sh) => catFilter === "all" || SHAPES_CONFIG[sh].category === catFilter)
+                      .map((sh) => (
                       <tr key={sh} className="border-b border-gray-100 hover:bg-purple-50/60">
                         <td className="py-2.5 px-3 font-bold text-[#2a2830]">{SHAPES_CONFIG[sh].name}</td>
                         <td className="py-2.5 px-3">

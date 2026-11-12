@@ -6,14 +6,15 @@ import Link from "next/link";
 import GameShell from "@/components/GameShell";
 import { useSound } from "@/components/SoundContext";
 import { SECTION_1_POSTTEST, SECTION_2_POSTTEST, buildPosttestPool, QuestionItem } from "@/lib/questions";
-import { getMateriProgress, saveMateriProgress, getCurrentUser } from "@/lib/auth";
+import { getSectionState, saveSectionState, getCurrentUser } from "@/lib/auth";
 import ScratchpadModal from "@/components/ScratchpadModal";
 
 function PosttestContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sectionParam = searchParams.get("section");
-  const sectionNum = sectionParam === "2" ? 2 : 1;
+  const parsedSec = Number(sectionParam);
+  const sectionNum = (parsedSec >= 1 && parsedSec <= 5 ? parsedSec : 1) as 1 | 2 | 3 | 4 | 5;
 
   const { playClick, playCorrect } = useSound();
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
@@ -25,33 +26,22 @@ function PosttestContent() {
       router.replace(`/spldv/materi?section=${sectionNum}`);
       return;
     }
-    const p = getMateriProgress();
-    if (sectionNum === 1) {
-      if (!p.section1_pretest) {
-        alert("Kamu harus mengerjakan Pre-Test Section 1 terlebih dahulu!");
-        router.replace("/spldv/pretest?section=1");
-      } else if (!p.section1_materi) {
-        alert("Kamu harus mempelajari Materi Section 1 terlebih dahulu sebelum Post-Test!");
-        router.replace("/spldv/materi?section=1");
-      }
-    } else {
-      if (!p.section2_unlocked) {
-        alert("Section 2 masih terkunci!");
-        router.replace("/spldv");
-      } else if (!p.section2_pretest) {
-        alert("Kamu harus mengerjakan Pre-Test Section 2 terlebih dahulu!");
-        router.replace("/spldv/pretest?section=2");
-      } else if (!p.section2_materi) {
-        alert("Kamu harus mempelajari Materi Section 2 terlebih dahulu sebelum Post-Test!");
-        router.replace("/spldv/materi?section=2");
-      }
+    const st = getSectionState(sectionNum);
+    if (sectionNum > 1 && !st.unlocked) {
+      alert(`Section ${sectionNum} masih terkunci!`);
+      router.replace("/spldv");
+    } else if (!st.pretest) {
+      alert(`Kamu harus mengerjakan Pre-Test Section ${sectionNum} terlebih dahulu!`);
+      router.replace(`/spldv/pretest?section=${sectionNum}`);
+    } else if (!st.materi) {
+      alert(`Kamu harus mempelajari Materi Section ${sectionNum} terlebih dahulu sebelum Post-Test!`);
+      router.replace(`/spldv/materi?section=${sectionNum}`);
     }
   }, [sectionNum, router]);
 
   const questions: QuestionItem[] = useMemo(
     () => buildPosttestPool(sectionNum, 3, sectionNum * 200),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [sectionNum]
   );
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -91,21 +81,13 @@ function PosttestContent() {
     } else {
       const finalScore = Math.round((correctCount / questions.length) * 100);
 
-      // Selesaikan Post-test & Simpan Skor serta Kunci Unlock Section 2
-      if (sectionNum === 1) {
-        saveMateriProgress({
-          section1_posttest: true,
-          section1_posttest_score: finalScore,
-          section1_posttest_correct: correctCount,
-          section2_unlocked: true,
-        });
-      } else {
-        saveMateriProgress({
-          section2_posttest: true,
-          section2_posttest_score: finalScore,
-          section2_posttest_correct: correctCount,
-        });
-      }
+      // Selesaikan Post-test & otomatis buka Section berikutnya (jika < 5)
+      saveSectionState(sectionNum, {
+        posttest: true,
+        posttest_score: finalScore,
+        posttest_correct: correctCount,
+        posttest_total: questions.length,
+      });
       setIsFinished(true);
     }
   };
@@ -141,9 +123,9 @@ function PosttestContent() {
             Kamu berhasil menjawab benar <b>{correctCount}</b> dari <b>{questions.length}</b> soal!
           </p>
 
-          {sectionNum === 1 && (
+          {sectionNum < 5 && (
             <div className="my-4 rounded-2xl bg-emerald-100 border-2 border-emerald-400 p-3 text-xs sm:text-sm font-bold text-emerald-900">
-              🔓 Selamat! Section 2 (Variabel & Koefisien) sekarang sudah TERBUKA!
+              🔓 Selamat! Section {sectionNum + 1} sekarang sudah TERBUKA!
             </div>
           )}
 
@@ -154,12 +136,12 @@ function PosttestContent() {
             >
               Kembali ke Menu SPLDV
             </Link>
-            {sectionNum === 1 && (
+            {sectionNum < 5 && (
               <Link
-                href="/spldv/pretest?section=2"
+                href={`/spldv/pretest?section=${sectionNum + 1}`}
                 className="rounded-2xl border-4 border-white bg-[#1cd8a4] px-6 py-2.5 game-font text-base font-bold text-[#144837] shadow hover:scale-103"
               >
-                Lanjut ke Section 2 &rarr;
+                Lanjut ke Section {sectionNum + 1} &rarr;
               </Link>
             )}
           </div>

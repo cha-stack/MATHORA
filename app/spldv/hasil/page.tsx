@@ -4,40 +4,31 @@ import Link from "next/link";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import GameShell from "@/components/GameShell";
-import { getMateriProgress } from "@/lib/auth";
+import { getSectionState } from "@/lib/auth";
 
 function HasilEvaluasiContent() {
   const searchParams = useSearchParams();
   const secParam = searchParams.get("section");
   const typeParam = searchParams.get("type"); // "pre" | "post"
 
-  const sectionNum = secParam === "2" ? 2 : 1;
+  const parsedSec = Number(secParam);
+  const sectionNum = parsedSec >= 1 && parsedSec <= 5 ? parsedSec : 1;
   const isPosttest = typeParam === "post";
 
   const [score, setScore] = useState<number>(100);
   const [correctCount, setCorrectCount] = useState<number>(3);
-  const [totalCount, setTotalCount] = useState<number>(isPosttest ? 3 : 4);
+  const [totalCount, setTotalCount] = useState<number>(6);
 
   useEffect(() => {
-    const p = getMateriProgress();
+    const st = getSectionState(sectionNum);
     if (isPosttest) {
-      if (sectionNum === 1) {
-        if (p.section1_posttest_score !== undefined) setScore(p.section1_posttest_score);
-        if (p.section1_posttest_correct !== undefined) setCorrectCount(p.section1_posttest_correct);
-      } else {
-        if (p.section2_posttest_score !== undefined) setScore(p.section2_posttest_score);
-        if (p.section2_posttest_correct !== undefined) setCorrectCount(p.section2_posttest_correct);
-      }
-      setTotalCount(3);
+      if (st.posttest_score !== undefined) setScore(st.posttest_score);
+      if (st.posttest_correct !== undefined) setCorrectCount(st.posttest_correct);
+      setTotalCount(st.posttest_total ?? 6);
     } else {
-      if (sectionNum === 1) {
-        if (p.section1_pretest_score !== undefined) setScore(p.section1_pretest_score);
-        if (p.section1_pretest_correct !== undefined) setCorrectCount(p.section1_pretest_correct);
-      } else {
-        if (p.section2_pretest_score !== undefined) setScore(p.section2_pretest_score);
-        if (p.section2_pretest_correct !== undefined) setCorrectCount(p.section2_pretest_correct);
-      }
-      setTotalCount(4);
+      if (st.pretest_score !== undefined) setScore(st.pretest_score);
+      if (st.pretest_correct !== undefined) setCorrectCount(st.pretest_correct);
+      setTotalCount(st.pretest_total ?? 6);
     }
   }, [sectionNum, isPosttest]);
 
@@ -88,9 +79,9 @@ function HasilEvaluasiContent() {
             Kamu menjawab benar <b>{correctCount}</b> dari <b>{totalCount}</b> soal.
           </p>
 
-          {isPosttest && sectionNum === 1 && isLulus && (
+          {isPosttest && sectionNum < 5 && isLulus && (
             <div className="mt-3 rounded-2xl bg-emerald-100 border-2 border-emerald-400 p-2.5 text-xs sm:text-sm font-bold text-emerald-900">
-              🔓 Section 2 (Variabel & Koefisien) sudah Terbuka!
+              🔓 Section {sectionNum + 1} sudah Terbuka!
             </div>
           )}
         </div>
@@ -106,10 +97,10 @@ function HasilEvaluasiContent() {
           
           {isPosttest ? (
             <Link
-              href={sectionNum === 1 ? "/spldv/pretest?section=2" : "/spldv"}
+              href={sectionNum < 5 ? `/spldv/pretest?section=${sectionNum + 1}` : "/spldv"}
               className="flex-1 rounded-2xl border-4 border-white bg-[#1cd8a4] py-3 game-font text-base sm:text-lg font-bold text-[#144837] shadow-[0px_4px_0px_0px_#028560] hover:scale-102 active:translate-y-1 active:shadow-none"
             >
-              {sectionNum === 1 ? "Lanjut Sec. 2 &rarr;" : "Kembali ke Menu"}
+              {sectionNum < 5 ? `Lanjut Sec. ${sectionNum + 1} →` : "Kembali ke Menu"}
             </Link>
           ) : (
             <Link

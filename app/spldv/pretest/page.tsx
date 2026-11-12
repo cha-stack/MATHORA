@@ -6,14 +6,15 @@ import Link from "next/link";
 import GameShell from "@/components/GameShell";
 import { useSound } from "@/components/SoundContext";
 import { SECTION_1_PRETEST, SECTION_2_PRETEST, buildPretestPool, QuestionItem } from "@/lib/questions";
-import { getMateriProgress, saveMateriProgress, getCurrentUser } from "@/lib/auth";
+import { getSectionState, saveSectionState, getCurrentUser } from "@/lib/auth";
 import ScratchpadModal from "@/components/ScratchpadModal";
 
 function PretestContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sectionParam = searchParams.get("section");
-  const sectionNum = sectionParam === "2" ? 2 : 1;
+  const parsedSec = Number(sectionParam);
+  const sectionNum = (parsedSec >= 1 && parsedSec <= 5 ? parsedSec : 1) as 1 | 2 | 3 | 4 | 5;
 
   const { playClick, playCorrect } = useSound();
 
@@ -27,21 +28,19 @@ function PretestContent() {
       router.replace(`/spldv/materi?section=${sectionNum}`);
       return;
     }
-    if (sectionNum === 2) {
-      const p = getMateriProgress();
-      if (!p.section2_unlocked) {
-        alert("Section 2 masih terkunci!");
+    if (sectionNum > 1) {
+      const st = getSectionState(sectionNum);
+      if (!st.unlocked) {
+        alert(`Section ${sectionNum} masih terkunci! Selesaikan Section ${sectionNum - 1} terlebih dahulu.`);
         router.replace("/spldv");
       }
     }
   }, [sectionNum, router]);
 
   // Pool soal: statis (terstandarisasi) + generated (variatif tiap sesi)
-  // useMemo dengan seed konstan awal agar aman saat prerender
   const questions: QuestionItem[] = useMemo(
     () => buildPretestPool(sectionNum, 3, sectionNum * 100),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [sectionNum]
   );
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -83,20 +82,13 @@ function PretestContent() {
       // Hitung skor akhir pre-test
       const finalScore = Math.round((userScore / questions.length) * 100);
 
-      // Simpan progress & skor
-      if (sectionNum === 1) {
-        saveMateriProgress({
-          section1_pretest: true,
-          section1_pretest_score: finalScore,
-          section1_pretest_correct: userScore,
-        });
-      } else {
-        saveMateriProgress({
-          section2_pretest: true,
-          section2_pretest_score: finalScore,
-          section2_pretest_correct: userScore,
-        });
-      }
+      // Simpan progress & skor via helper per section (1..5)
+      saveSectionState(sectionNum, {
+        pretest: true,
+        pretest_score: finalScore,
+        pretest_correct: userScore,
+        pretest_total: questions.length,
+      });
 
       // Tampilkan screen hasil evaluasi pre-test
       setIsFinished(true);
