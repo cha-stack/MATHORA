@@ -15,8 +15,9 @@ export default function LoginSiswa() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     playClick();
     setErrorMessage("");
@@ -26,14 +27,21 @@ export default function LoginSiswa() {
       return;
     }
 
-    const result = loginUser(username, password, "siswa");
-    if (!result.success) {
-      setErrorMessage(result.message);
-      return;
-    }
+    setIsLoading(true);
+    try {
+      const result = await loginUser(username, password, "siswa");
+      if (!result.success) {
+        setErrorMessage(result.message);
+        setIsLoading(false);
+        return;
+      }
 
-    // Login Berhasil -> menuju Dashboard Siswa
-    router.push("/dashboard/siswa");
+      // Login Berhasil -> menuju Dashboard Siswa
+      router.push("/dashboard/siswa");
+    } catch {
+      setErrorMessage("Terjadi kendala saat login. Silakan coba lagi.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -200,10 +208,11 @@ export default function LoginSiswa() {
           {/* Login Button */}
           <button
             onClick={() => handleSubmit()}
-            className="group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white bg-[#1cd8a4] shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
+            disabled={isLoading}
+            className="group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white bg-[#1cd8a4] disabled:opacity-80 shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
           >
             <span className="game-font text-2xl sm:text-3xl font-bold text-white drop-shadow-[0px_2px_0px_#aaafaf]">
-              Login
+              {isLoading ? "Masuk..." : "Login"}
             </span>
           </button>
         </div>

@@ -15,8 +15,9 @@ export default function LupaPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleReset = (e: React.FormEvent) => {
+  const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     playClick();
     setSuccessMessage("");
@@ -32,14 +33,21 @@ export default function LupaPasswordPage() {
       return;
     }
 
-    const res = resetPasswordByEmail(email, newPassword);
-    if (!res.success) {
-      setErrorMessage(res.message);
-    } else {
-      setSuccessMessage(res.message);
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
+    setIsLoading(true);
+    try {
+      const res = await resetPasswordByEmail(email, newPassword);
+      if (!res.success) {
+        setErrorMessage(res.message);
+        setIsLoading(false);
+      } else {
+        setSuccessMessage(res.message);
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      }
+    } catch {
+      setErrorMessage("Gagal mereset password. Silakan coba lagi.");
+      setIsLoading(false);
     }
   };
 
@@ -110,9 +118,10 @@ export default function LupaPasswordPage() {
 
           <button
             type="submit"
-            className="mt-2 w-full rounded-2xl border-4 border-white bg-[#1cd8a4] py-3 game-font text-base font-bold text-[#144837] shadow-[0px_4px_0px_0px_#028560] hover:scale-102 active:translate-y-1 cursor-pointer"
+            disabled={isLoading}
+            className="mt-2 w-full rounded-2xl border-4 border-white bg-[#1cd8a4] disabled:opacity-80 py-3 game-font text-base font-bold text-[#144837] shadow-[0px_4px_0px_0px_#028560] hover:scale-102 active:translate-y-1 cursor-pointer"
           >
-            Simpan Password Baru
+            {isLoading ? "Menyimpan..." : "Simpan Password Baru"}
           </button>
         </form>
 

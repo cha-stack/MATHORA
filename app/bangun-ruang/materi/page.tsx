@@ -326,14 +326,329 @@ const SHAPE_MATERI: Record<ShapeType, ShapeMateriDetail> = {
   },
 };
 
-const SHAPE_SAMPLE_CHALLENGE: Record<ShapeType, { dims: [number, number, number]; ask: string; answer: number; unit: string }> = {
-  kubus: { dims: [8, 8, 8], ask: "Berapakah Volume kubus (s = 8)?", answer: 512, unit: "cm³" },
-  balok: { dims: [12, 5, 10], ask: "Berapakah Volume akuarium (12×5×10)?", answer: 600, unit: "cm³" },
-  prisma: { dims: [6, 8, 15], ask: "Berapakah Volume prisma tersebut?", answer: 360, unit: "cm³" },
-  limas: { dims: [10, 10, 12], ask: "Berapakah Volume limas tersebut?", answer: 400, unit: "cm³" },
-  tabung: { dims: [7, 14, 10], ask: "Berapakah Volume kaleng tabung?", answer: 1540, unit: "cm³" },
-  kerucut: { dims: [6, 12, 8], ask: "Berapakah garis pelukis s (cm)?", answer: 10, unit: "cm" },
-  bola: { dims: [7, 14, 7], ask: "Berapakah Luas Permukaan bola?", answer: 616, unit: "cm²" },
+interface ChallengeQuestion {
+  id: string;
+  story: string;
+  dims: [number, number, number];
+  piMode?: "22/7" | "3.14";
+  fieldA: {
+    label: string;
+    unit: string;
+    answer: number;
+    placeholder?: string;
+  };
+  fieldB?: {
+    label: string;
+    unit: string;
+    answer: number;
+    placeholder?: string;
+  };
+  pembahasan: string[];
+}
+
+const SHAPE_CHALLENGES: Record<ShapeType, ChallengeQuestion[]> = {
+  kubus: [
+    {
+      id: "kubus-1",
+      story: "Sebuah rubik mainan berbentuk kubus memiliki panjang rusuk s = 8 cm. Hitunglah Volume dan Luas Permukaannya!",
+      dims: [8, 8, 8],
+      fieldA: { label: "Volume Kubus (V)", unit: "cm³", answer: 512, placeholder: "Misal: 512" },
+      fieldB: { label: "Luas Permukaan Kubus (LP)", unit: "cm²", answer: 384, placeholder: "Misal: 384" },
+      pembahasan: [
+        "Diketahui panjang rusuk s = 8 cm.",
+        "Volume (V) = s³ = 8 × 8 × 8 = 512 cm³.",
+        "Luas Permukaan (LP) = 6 × s² = 6 × (8 × 8) = 6 × 64 = 384 cm².",
+      ],
+    },
+    {
+      id: "kubus-2",
+      story: "Sebuah kotak kado berbentuk kubus memiliki panjang rusuk s = 10 cm. Berapakah Volume dan Luas Permukaannya?",
+      dims: [10, 10, 10],
+      fieldA: { label: "Volume Kubus (V)", unit: "cm³", answer: 1000, placeholder: "Misal: 1000" },
+      fieldB: { label: "Luas Permukaan Kubus (LP)", unit: "cm²", answer: 600, placeholder: "Misal: 600" },
+      pembahasan: [
+        "Diketahui rusuk kubus s = 10 cm.",
+        "Volume (V) = s³ = 10 × 10 × 10 = 1.000 cm³.",
+        "Luas Permukaan (LP) = 6 × s² = 6 × (10 × 10) = 6 × 100 = 600 cm².",
+      ],
+    },
+    {
+      id: "kubus-3",
+      story: "Dadu hiasan memiliki panjang rusuk s = 5 cm. Hitunglah Volume dan Luas Permukaannya!",
+      dims: [5, 5, 5],
+      fieldA: { label: "Volume Kubus (V)", unit: "cm³", answer: 125, placeholder: "Misal: 125" },
+      fieldB: { label: "Luas Permukaan Kubus (LP)", unit: "cm²", answer: 150, placeholder: "Misal: 150" },
+      pembahasan: [
+        "Diketahui rusuk kubus s = 5 cm.",
+        "Volume (V) = s³ = 5 × 5 × 5 = 125 cm³.",
+        "Luas Permukaan (LP) = 6 × s² = 6 × 25 = 150 cm².",
+      ],
+    },
+    {
+      id: "kubus-4",
+      story: "Cetakan es batu berbentuk kubus dengan panjang rusuk s = 6 cm. Berapakah Volume dan Luas Permukaannya?",
+      dims: [6, 6, 6],
+      fieldA: { label: "Volume Kubus (V)", unit: "cm³", answer: 216, placeholder: "Misal: 216" },
+      fieldB: { label: "Luas Permukaan Kubus (LP)", unit: "cm²", answer: 216, placeholder: "Misal: 216" },
+      pembahasan: [
+        "Diketahui panjang rusuk s = 6 cm.",
+        "Volume (V) = s³ = 6 × 6 × 6 = 216 cm³.",
+        "Luas Permukaan (LP) = 6 × s² = 6 × 36 = 216 cm².",
+      ],
+    },
+  ],
+  balok: [
+    {
+      id: "balok-1",
+      story: "Akuarium balok berukuran p = 12 cm, l = 5 cm, dan t = 10 cm. Hitunglah Volume dan Luas Permukaannya!",
+      dims: [12, 5, 10],
+      fieldA: { label: "Volume Balok (V)", unit: "cm³", answer: 600, placeholder: "Misal: 600" },
+      fieldB: { label: "Luas Permukaan Balok (LP)", unit: "cm²", answer: 460, placeholder: "Misal: 460" },
+      pembahasan: [
+        "Diketahui p = 12 cm, l = 5 cm, t = 10 cm.",
+        "Volume (V) = p × l × t = 12 × 5 × 10 = 600 cm³.",
+        "Luas Permukaan (LP) = 2 × (p×l + p×t + l×t) = 2 × (60 + 120 + 50) = 2 × 230 = 460 cm².",
+      ],
+    },
+    {
+      id: "balok-2",
+      story: "Sebuah kotak sepatu memiliki ukuran p = 10 cm, l = 6 cm, dan t = 8 cm. Tentukan Volume dan Luas Permukaannya!",
+      dims: [10, 6, 8],
+      fieldA: { label: "Volume Balok (V)", unit: "cm³", answer: 480, placeholder: "Misal: 480" },
+      fieldB: { label: "Luas Permukaan Balok (LP)", unit: "cm²", answer: 376, placeholder: "Misal: 376" },
+      pembahasan: [
+        "Diketahui p = 10 cm, l = 6 cm, t = 8 cm.",
+        "Volume (V) = 10 × 6 × 8 = 480 cm³.",
+        "Luas Permukaan (LP) = 2 × (60 + 80 + 48) = 2 × 188 = 376 cm².",
+      ],
+    },
+    {
+      id: "balok-3",
+      story: "Balok kayu mini berukuran p = 15 cm, l = 8 cm, dan t = 10 cm. Berapakah Volume dan Luas Permukaannya?",
+      dims: [15, 8, 10],
+      fieldA: { label: "Volume Balok (V)", unit: "cm³", answer: 1200, placeholder: "Misal: 1200" },
+      fieldB: { label: "Luas Permukaan Balok (LP)", unit: "cm²", answer: 700, placeholder: "Misal: 700" },
+      pembahasan: [
+        "Diketahui p = 15 cm, l = 8 cm, t = 10 cm.",
+        "Volume (V) = 15 × 8 × 10 = 1.200 cm³.",
+        "Luas Permukaan (LP) = 2 × (120 + 150 + 80) = 2 × 350 = 700 cm².",
+      ],
+    },
+    {
+      id: "balok-4",
+      story: "Sebuah tempat pensil berukuran p = 8 cm, l = 4 cm, dan t = 6 cm. Hitunglah Volume dan Luas Permukaannya!",
+      dims: [8, 4, 6],
+      fieldA: { label: "Volume Balok (V)", unit: "cm³", answer: 192, placeholder: "Misal: 192" },
+      fieldB: { label: "Luas Permukaan Balok (LP)", unit: "cm²", answer: 208, placeholder: "Misal: 208" },
+      pembahasan: [
+        "Diketahui p = 8 cm, l = 4 cm, t = 6 cm.",
+        "Volume (V) = 8 × 4 × 6 = 192 cm³.",
+        "Luas Permukaan (LP) = 2 × (32 + 48 + 24) = 2 × 104 = 208 cm².",
+      ],
+    },
+  ],
+  prisma: [
+    {
+      id: "prisma-1",
+      story: "Sebuah tenda prisma alas segitiga siku-siku dengan alas 6 cm, tinggi alas 8 cm, dan tinggi prisma 15 cm. Hitung Volume dan Luas Permukaannya!",
+      dims: [6, 8, 15],
+      fieldA: { label: "Volume Prisma (V)", unit: "cm³", answer: 360, placeholder: "Misal: 360" },
+      fieldB: { label: "Luas Permukaan Prisma (LP)", unit: "cm²", answer: 408, placeholder: "Misal: 408" },
+      pembahasan: [
+        "Luas Alas Segitiga = ½ × a × ta = ½ × 6 × 8 = 24 cm².",
+        "Volume Prisma = Luas Alas × t_prisma = 24 × 15 = 360 cm³.",
+        "Sisi miring segitiga alas = √(6² + 8²) = 10 cm → Keliling Alas = 6 + 8 + 10 = 24 cm.",
+        "Luas Permukaan = (2 × Luas Alas) + (Keliling × t) = 2(24) + 24(15) = 48 + 360 = 408 cm².",
+      ],
+    },
+    {
+      id: "prisma-2",
+      story: "Kemasan cokelat berbentuk prisma segitiga siku-siku memiliki alas 3 cm, tinggi segitiga 4 cm, dan panjang prisma 10 cm. Hitung Volume dan Luas Permukaannya!",
+      dims: [3, 4, 10],
+      fieldA: { label: "Volume Prisma (V)", unit: "cm³", answer: 60, placeholder: "Misal: 60" },
+      fieldB: { label: "Luas Permukaan Prisma (LP)", unit: "cm²", answer: 132, placeholder: "Misal: 132" },
+      pembahasan: [
+        "Luas Alas Segitiga = ½ × 3 × 4 = 6 cm².",
+        "Volume Prisma = Luas Alas × t = 6 × 10 = 60 cm³.",
+        "Sisi miring segitiga = √(3² + 4²) = 5 cm → Keliling Alas = 3 + 4 + 5 = 12 cm.",
+        "Luas Permukaan = (2 × 6) + (12 × 10) = 12 + 120 = 132 cm².",
+      ],
+    },
+    {
+      id: "prisma-3",
+      story: "Atap rumah miniatur prisma segitiga siku-siku memiliki alas 8 cm, tinggi segitiga 6 cm, dan tinggi prisma 12 cm. Tentukan Volume dan Luas Permukaannya!",
+      dims: [8, 6, 12],
+      fieldA: { label: "Volume Prisma (V)", unit: "cm³", answer: 288, placeholder: "Misal: 288" },
+      fieldB: { label: "Luas Permukaan Prisma (LP)", unit: "cm²", answer: 336, placeholder: "Misal: 336" },
+      pembahasan: [
+        "Luas Alas Segitiga = ½ × 8 × 6 = 24 cm².",
+        "Volume Prisma = 24 × 12 = 288 cm³.",
+        "Sisi miring segitiga = √(8² + 6²) = 10 cm → Keliling = 8 + 6 + 10 = 24 cm.",
+        "Luas Permukaan = (2 × 24) + (24 × 12) = 48 + 288 = 336 cm².",
+      ],
+    },
+  ],
+  limas: [
+    {
+      id: "limas-1",
+      story: "Piramida mini berpenampang alas persegi sisi 10 cm dan tinggi limas 12 cm. Hitunglah Volume dan Luas Permukaannya!",
+      dims: [10, 10, 12],
+      fieldA: { label: "Volume Limas (V)", unit: "cm³", answer: 400, placeholder: "Misal: 400" },
+      fieldB: { label: "Luas Permukaan Limas (LP)", unit: "cm²", answer: 360, placeholder: "Misal: 360" },
+      pembahasan: [
+        "Luas Alas Persegi = 10 × 10 = 100 cm².",
+        "Volume (V) = ⅓ × Luas Alas × t = ⅓ × 100 × 12 = 400 cm³.",
+        "Tinggi segitiga sisi tegak = √((10÷2)² + 12²) = √(25 + 144) = 13 cm.",
+        "Luas 4 segitiga tegak = 4 × (½ × 10 × 13) = 260 cm² → Luas Permukaan = 100 + 260 = 360 cm².",
+      ],
+    },
+    {
+      id: "limas-2",
+      story: "Kue limas persegi memiliki sisi alas 6 cm dan tinggi limas 4 cm. Berapakah Volume dan Luas Permukaannya?",
+      dims: [6, 6, 4],
+      fieldA: { label: "Volume Limas (V)", unit: "cm³", answer: 48, placeholder: "Misal: 48" },
+      fieldB: { label: "Luas Permukaan Limas (LP)", unit: "cm²", answer: 96, placeholder: "Misal: 96" },
+      pembahasan: [
+        "Luas Alas = 6 × 6 = 36 cm².",
+        "Volume (V) = ⅓ × 36 × 4 = 48 cm³.",
+        "Tinggi segitiga sisi tegak = √(3² + 4²) = 5 cm.",
+        "Luas Permukaan = 36 + 4 × (½ × 6 × 5) = 36 + 60 = 96 cm².",
+      ],
+    },
+    {
+      id: "limas-3",
+      story: "Monumen limas persegi beralas sisi 8 cm dan tinggi limas 3 cm. Tentukan Volume dan Luas Permukaannya!",
+      dims: [8, 8, 3],
+      fieldA: { label: "Volume Limas (V)", unit: "cm³", answer: 64, placeholder: "Misal: 64" },
+      fieldB: { label: "Luas Permukaan Limas (LP)", unit: "cm²", answer: 144, placeholder: "Misal: 144" },
+      pembahasan: [
+        "Luas Alas = 8 × 8 = 64 cm².",
+        "Volume (V) = ⅓ × 64 × 3 = 64 cm³.",
+        "Tinggi segitiga sisi tegak = √(4² + 3²) = 5 cm.",
+        "Luas Permukaan = 64 + 4 × (½ × 8 × 5) = 64 + 80 = 144 cm².",
+      ],
+    },
+  ],
+  tabung: [
+    {
+      id: "tabung-1",
+      story: "Sebuah kaleng berbentuk tabung memiliki jari-jari r = 7 cm dan tinggi t = 10 cm (π = 22/7). Hitung Volume dan Luas Permukaannya!",
+      dims: [7, 14, 10],
+      piMode: "22/7",
+      fieldA: { label: "Volume Tabung (V)", unit: "cm³", answer: 1540, placeholder: "Misal: 1540" },
+      fieldB: { label: "Luas Permukaan Tabung (LP)", unit: "cm²", answer: 748, placeholder: "Misal: 748" },
+      pembahasan: [
+        "Luas Alas = 22/7 × 7² = 154 cm².",
+        "Volume (V) = Luas Alas × t = 154 × 10 = 1.540 cm³.",
+        "Luas Permukaan (LP) = 2 × π × r × (r + t) = 2 × 22/7 × 7 × (7 + 10) = 44 × 17 = 748 cm².",
+      ],
+    },
+    {
+      id: "tabung-2",
+      story: "Drum air silinder mini memiliki jari-jari r = 7 cm dan tinggi t = 20 cm (π = 22/7). Hitung Volume dan Luas Permukaannya!",
+      dims: [7, 14, 20],
+      piMode: "22/7",
+      fieldA: { label: "Volume Tabung (V)", unit: "cm³", answer: 3080, placeholder: "Misal: 3080" },
+      fieldB: { label: "Luas Permukaan Tabung (LP)", unit: "cm²", answer: 1188, placeholder: "Misal: 1188" },
+      pembahasan: [
+        "Luas Alas = 22/7 × 7² = 154 cm².",
+        "Volume (V) = 154 × 20 = 3.080 cm³.",
+        "Luas Permukaan (LP) = 2 × 22/7 × 7 × (7 + 20) = 44 × 27 = 1.188 cm².",
+      ],
+    },
+    {
+      id: "tabung-3",
+      story: "Wadah tabung besar memiliki jari-jari r = 14 cm dan tinggi t = 10 cm (π = 22/7). Hitunglah Volume dan Luas Permukaannya!",
+      dims: [14, 28, 10],
+      piMode: "22/7",
+      fieldA: { label: "Volume Tabung (V)", unit: "cm³", answer: 6160, placeholder: "Misal: 6160" },
+      fieldB: { label: "Luas Permukaan Tabung (LP)", unit: "cm²", answer: 2112, placeholder: "Misal: 2112" },
+      pembahasan: [
+        "Luas Alas = 22/7 × 14 × 14 = 616 cm².",
+        "Volume (V) = 616 × 10 = 6.160 cm³.",
+        "Luas Permukaan (LP) = 2 × 22/7 × 14 × (14 + 10) = 88 × 24 = 2.112 cm².",
+      ],
+    },
+  ],
+  kerucut: [
+    {
+      id: "kerucut-1",
+      story: "Sebuah topi ulang tahun berbentuk kerucut memiliki jari-jari r = 6 cm dan tinggi t = 8 cm (π = 3,14). Hitung garis pelukis (s) dan Luas Permukaannya!",
+      dims: [6, 12, 8],
+      piMode: "3.14",
+      fieldA: { label: "Garis Pelukis (s)", unit: "cm", answer: 10, placeholder: "Misal: 10" },
+      fieldB: { label: "Luas Permukaan Kerucut (LP)", unit: "cm²", answer: 301.44, placeholder: "Misal: 301.44" },
+      pembahasan: [
+        "Garis Pelukis (s) = √(r² + t²) = √(6² + 8²) = √(36 + 64) = √100 = 10 cm.",
+        "Luas Permukaan (LP) = π × r × (r + s) = 3,14 × 6 × (6 + 10) = 18,84 × 16 = 301,44 cm².",
+      ],
+    },
+    {
+      id: "kerucut-2",
+      story: "Cone es krim memiliki jari-jari r = 7 cm dan tinggi t = 24 cm (π = 22/7). Hitung garis pelukis (s) dan Volumenya!",
+      dims: [7, 14, 24],
+      piMode: "22/7",
+      fieldA: { label: "Garis Pelukis (s)", unit: "cm", answer: 25, placeholder: "Misal: 25" },
+      fieldB: { label: "Volume Kerucut (V)", unit: "cm³", answer: 1232, placeholder: "Misal: 1232" },
+      pembahasan: [
+        "Garis Pelukis (s) = √(7² + 24²) = √(49 + 576) = √625 = 25 cm.",
+        "Volume Kerucut (V) = ⅓ × π × r² × t = ⅓ × 22/7 × 49 × 24 = ⅓ × 154 × 24 = 1.232 cm³.",
+      ],
+    },
+    {
+      id: "kerucut-3",
+      story: "Tumpeng kerucut mini memiliki jari-jari r = 3 cm dan tinggi t = 4 cm (π = 3,14). Tentukan garis pelukis (s) dan Luas Permukaannya!",
+      dims: [3, 6, 4],
+      piMode: "3.14",
+      fieldA: { label: "Garis Pelukis (s)", unit: "cm", answer: 5, placeholder: "Misal: 5" },
+      fieldB: { label: "Luas Permukaan Kerucut (LP)", unit: "cm²", answer: 75.36, placeholder: "Misal: 75.36" },
+      pembahasan: [
+        "Garis Pelukis (s) = √(3² + 4²) = √25 = 5 cm.",
+        "Luas Permukaan = π × r × (r + s) = 3,14 × 3 × (3 + 5) = 9,42 × 8 = 75,36 cm².",
+      ],
+    },
+  ],
+  bola: [
+    {
+      id: "bola-1",
+      story: "Sebuah globe berbentuk bola memiliki jari-jari r = 7 cm (diameter 14 cm, π = 22/7). Hitunglah Luas Permukaan dan Volumenya (bulatkan 2 desimal)!",
+      dims: [7, 14, 7],
+      piMode: "22/7",
+      fieldA: { label: "Luas Permukaan Bola (LP)", unit: "cm²", answer: 616, placeholder: "Misal: 616" },
+      fieldB: { label: "Volume Bola (V)", unit: "cm³", answer: 1437.33, placeholder: "Misal: 1437.33" },
+      pembahasan: [
+        "Diketahui jari-jari r = 7 cm.",
+        "Luas Permukaan Bola (LP) = 4 × π × r² = 4 × 22/7 × 7² = 616 cm².",
+        "Volume Bola (V) = ⁴⁄₃ × π × r³ = ⁴⁄₃ × 22/7 × 343 = 4.312 ÷ 3 ≈ 1.437,33 cm³.",
+      ],
+    },
+    {
+      id: "bola-2",
+      story: "Sebuah kelereng bola kaca memiliki jari-jari r = 3 cm (π = 3,14). Hitung Luas Permukaan dan Volumenya!",
+      dims: [3, 6, 3],
+      piMode: "3.14",
+      fieldA: { label: "Luas Permukaan Bola (LP)", unit: "cm²", answer: 113.04, placeholder: "Misal: 113.04" },
+      fieldB: { label: "Volume Bola (V)", unit: "cm³", answer: 113.04, placeholder: "Misal: 113.04" },
+      pembahasan: [
+        "Diketahui r = 3 cm.",
+        "Luas Permukaan Bola (LP) = 4 × π × r² = 4 × 3,14 × 9 = 113,04 cm².",
+        "Volume Bola (V) = ⁴⁄₃ × π × r³ = ⁴⁄₃ × 3,14 × 27 = 4 × 3,14 × 9 = 113,04 cm³.",
+      ],
+    },
+    {
+      id: "bola-3",
+      story: "Sebuah bola basket mini memiliki jari-jari r = 10 cm (π = 3,14). Hitunglah Luas Permukaan dan Volumenya (bulatkan 2 desimal)!",
+      dims: [10, 20, 10],
+      piMode: "3.14",
+      fieldA: { label: "Luas Permukaan Bola (LP)", unit: "cm²", answer: 1256, placeholder: "Misal: 1256" },
+      fieldB: { label: "Volume Bola (V)", unit: "cm³", answer: 4186.67, placeholder: "Misal: 4186.67" },
+      pembahasan: [
+        "Diketahui r = 10 cm.",
+        "Luas Permukaan Bola (LP) = 4 × π × r² = 4 × 3,14 × 100 = 1.256 cm².",
+        "Volume Bola (V) = ⁴⁄₃ × π × r³ = ⁴⁄₃ × 3,14 × 1000 = 12.560 ÷ 3 ≈ 4.186,67 cm³.",
+      ],
+    },
+  ],
 };
 
 export default function BangunRuangMateriPage() {
@@ -344,8 +659,19 @@ export default function BangunRuangMateriPage() {
   const [showExampleSteps, setShowExampleSteps] = useState(false);
   const [dashboardUrl, setDashboardUrl] = useState("/dashboard/siswa");
   const [autoSpin, setAutoSpin] = useState(false);
-  const [challengeInput, setChallengeInput] = useState("");
-  const [challengeStatus, setChallengeStatus] = useState<"idle" | "right" | "wrong">("idle");
+  // Tantangan Mini Soal Interaktif (Multi-soal & Jawab Volume + LP)
+  const [challengeIdxByShape, setChallengeIdxByShape] = useState<Record<ShapeType, number>>({
+    kubus: 0,
+    balok: 0,
+    prisma: 0,
+    limas: 0,
+    tabung: 0,
+    kerucut: 0,
+    bola: 0,
+  });
+  const [challengeInputA, setChallengeInputA] = useState("");
+  const [challengeInputB, setChallengeInputB] = useState("");
+  const [challengeStatus, setChallengeStatus] = useState<"idle" | "both_right" | "a_right" | "b_right" | "wrong">("idle");
   const [catFilter, setCatFilter] = useState<"all" | "datar" | "lengkung">("all");
   const [quickQuizPick, setQuickQuizPick] = useState<number | null>(null);
 
@@ -371,10 +697,15 @@ export default function BangunRuangMateriPage() {
   const piVal = piMode === "22/7" ? 22 / 7 : 3.14;
   const piStr = piMode === "22/7" ? "22/7" : "3,14";
 
-  // Nilai Dimensi (Tidak dibatasi 12 — bebas angka berapapun!)
-  const [valP, setValP] = useState<number>(6);
-  const [valL, setValL] = useState<number>(6);
-  const [valT, setValT] = useState<number>(6);
+  // Nilai Dimensi (Bebas angka berapapun atau string kosong saat pengguna menghapus untuk ketik angka baru)
+  const [valP, setValP] = useState<string | number>(6);
+  const [valL, setValL] = useState<string | number>(6);
+  const [valT, setValT] = useState<string | number>(6);
+
+  // Nilai numerik aman untuk perhitungan rumus & visualisasi 3D
+  const numP = typeof valP === "number" ? valP : (parseFloat(String(valP)) || 0);
+  const numL = typeof valL === "number" ? valL : (parseFloat(String(valL)) || 0);
+  const numT = typeof valT === "number" ? valT : (parseFloat(String(valT)) || 0);
 
   // Input untuk POV 2 (Jika siswa sudah tahu Volume atau Luas Permukaan)
   const [reverseTargetInput, setReverseTargetInput] = useState<string>("216");
@@ -388,6 +719,59 @@ export default function BangunRuangMateriPage() {
   const lastPos = useRef({ x: 0, y: 0 });
 
   const currentCfg = SHAPES_CONFIG[selectedShape];
+  const currentChallenges = SHAPE_CHALLENGES[selectedShape];
+  const curChallengeIdx = challengeIdxByShape[selectedShape] % currentChallenges.length;
+  const currentChallenge = currentChallenges[curChallengeIdx];
+
+  const handleNextChallenge = () => {
+    playClick();
+    setChallengeIdxByShape((prev) => ({
+      ...prev,
+      [selectedShape]: (prev[selectedShape] + 1) % currentChallenges.length,
+    }));
+    setChallengeInputA("");
+    setChallengeInputB("");
+    setChallengeStatus("idle");
+    setShowExampleSteps(false);
+  };
+
+  const handleCheckChallenge = () => {
+    const valA = parseFloat(challengeInputA.replace(",", "."));
+    const valB = parseFloat(challengeInputB.replace(",", "."));
+    const correctA = !isNaN(valA) && Math.abs(valA - currentChallenge.fieldA.answer) < 0.05;
+    const correctB = currentChallenge.fieldB
+      ? !isNaN(valB) && Math.abs(valB - currentChallenge.fieldB.answer) < 0.05
+      : true;
+
+    if (correctA && correctB) {
+      playCorrect();
+      setChallengeStatus("both_right");
+      setShowExampleSteps(true);
+    } else if (correctA && !correctB) {
+      playClick();
+      setChallengeStatus("a_right");
+    } else if (!correctA && correctB) {
+      playClick();
+      setChallengeStatus("b_right");
+    } else {
+      playClick();
+      setChallengeStatus("wrong");
+    }
+  };
+
+  const handleLoadChallengeToLab = () => {
+    playClick();
+    const [dP, dL, dT] = currentChallenge.dims;
+    setValP(dP);
+    setValL(dL);
+    setValT(dT);
+    if (currentChallenge.piMode) {
+      setPiMode(currentChallenge.piMode);
+    } else if (currentCfg.category === "lengkung") {
+      setPiMode("22/7");
+    }
+    setActiveViewTab("lab3d");
+  };
 
   const handleSelectShape = (shape: ShapeType) => {
     playClick();
@@ -399,6 +783,10 @@ export default function BangunRuangMateriPage() {
     setReverseError(null);
     const defVol = Math.round(cfg.calcVol(cfg.defaultP, cfg.defaultL, cfg.defaultT, piVal));
     setReverseTargetInput(String(defVol));
+    setChallengeInputA("");
+    setChallengeInputB("");
+    setChallengeStatus("idle");
+    setShowExampleSteps(false);
   };
 
   const handleReset = () => {
@@ -412,21 +800,42 @@ export default function BangunRuangMateriPage() {
     setReverseError(null);
   };
 
-  // Update dimensi aman untuk nilai besar & kubus/bola
-  const handleDimChange = (dim: "P" | "L" | "T", rawVal: number) => {
-    const clean = isNaN(rawVal) || rawVal <= 0 ? 1 : rawVal;
+  // Update dimensi leluasa: izinkan input manual kosong saat mengetik tanpa dipaksa menjadi 0 atau 1
+  const handleDimChange = (dim: "P" | "L" | "T", rawVal: string | number) => {
+    if (typeof rawVal === "string") {
+      if (rawVal === "") {
+        if (selectedShape === "kubus") {
+          setValP("");
+          setValL("");
+          setValT("");
+        } else if (selectedShape === "bola") {
+          setValP("");
+          setValL("");
+          setValT("");
+        } else {
+          if (dim === "P") setValP("");
+          if (dim === "L") setValL("");
+          if (dim === "T") setValT("");
+        }
+        return;
+      }
+      const parsed = parseFloat(rawVal);
+      if (isNaN(parsed) || parsed < 0) return;
+    }
+
     if (selectedShape === "kubus") {
-      setValP(clean);
-      setValL(clean);
-      setValT(clean);
+      setValP(rawVal);
+      setValL(rawVal);
+      setValT(rawVal);
     } else if (selectedShape === "bola") {
-      setValP(clean);
-      setValL(clean * 2);
-      setValT(clean);
+      const n = typeof rawVal === "number" ? rawVal : parseFloat(String(rawVal)) || 0;
+      setValP(rawVal);
+      setValL(typeof rawVal === "string" ? (rawVal === "" ? "" : String(n * 2)) : n * 2);
+      setValT(rawVal);
     } else {
-      if (dim === "P") setValP(clean);
-      if (dim === "L") setValL(clean);
-      if (dim === "T") setValT(clean);
+      if (dim === "P") setValP(rawVal);
+      if (dim === "L") setValL(rawVal);
+      if (dim === "T") setValT(rawVal);
     }
   };
 
@@ -439,6 +848,10 @@ export default function BangunRuangMateriPage() {
       setReverseError("Masukkan angka Volume atau Luas Permukaan yang valid (> 0).");
       return;
     }
+
+    const curP = numP || 1;
+    const curL = numL || 1;
+    const curT = numT || 1;
 
     if (selectedShape === "kubus") {
       const s =
@@ -460,67 +873,67 @@ export default function BangunRuangMateriPage() {
       setValT(rounded);
     } else if (selectedShape === "balok") {
       if (knownTarget === "volume") {
-        const tNew = targetVal / (valP * valL);
+        const tNew = targetVal / (curP * curL);
         setValT(Math.round(tNew * 100) / 100);
       } else {
-        const num = targetVal / 2 - valP * valL;
+        const num = targetVal / 2 - curP * curL;
         if (num <= 0) {
           setReverseError(
-            `Luas Permukaan terlalu kecil! Dengan p=${valP} & l=${valL}, LP minimal harus > ${fmtNum(
-              2 * valP * valL
+            `Luas Permukaan terlalu kecil! Dengan p=${curP} & l=${curL}, LP minimal harus > ${fmtNum(
+              2 * curP * curL
             )} cm².`
           );
           return;
         }
-        const tNew = num / (valP + valL);
+        const tNew = num / (curP + curL);
         setValT(Math.round(tNew * 100) / 100);
       }
     } else if (selectedShape === "tabung") {
       if (knownTarget === "volume") {
         if (tabungSolveFor === "t") {
-          const tNew = targetVal / (piVal * valP * valP);
+          const tNew = targetVal / (piVal * curP * curP);
           setValT(Math.round(tNew * 100) / 100);
         } else {
-          const rNew = Math.sqrt(targetVal / (piVal * valT));
+          const rNew = Math.sqrt(targetVal / (piVal * curT));
           setValP(Math.round(rNew * 100) / 100);
         }
       } else {
-        // Diketahui LP, cari t (given r = valP)
-        const baseAreas = 2 * piVal * valP * valP;
+        // Diketahui LP, cari t (given r = curP)
+        const baseAreas = 2 * piVal * curP * curP;
         if (targetVal <= baseAreas) {
           setReverseError(
-            `Luas Permukaan harus > ${fmtNum(baseAreas)} cm² untuk jari-jari r=${valP} cm!`
+            `Luas Permukaan harus > ${fmtNum(baseAreas)} cm² untuk jari-jari r=${curP} cm!`
           );
           return;
         }
-        const tNew = targetVal / (2 * piVal * valP) - valP;
+        const tNew = targetVal / (2 * piVal * curP) - curP;
         setValT(Math.round(tNew * 100) / 100);
       }
     } else if (selectedShape === "kerucut") {
       if (knownTarget === "volume") {
         if (tabungSolveFor === "t") {
-          const tNew = (3 * targetVal) / (piVal * valP * valP);
+          const tNew = (3 * targetVal) / (piVal * curP * curP);
           setValT(Math.round(tNew * 100) / 100);
         } else {
-          const rNew = Math.sqrt((3 * targetVal) / (piVal * valT));
+          const rNew = Math.sqrt((3 * targetVal) / (piVal * curT));
           setValP(Math.round(rNew * 100) / 100);
         }
       } else {
-        const minLP = piVal * valP * valP;
+        const minLP = piVal * curP * curP;
         if (targetVal <= minLP) {
-          setReverseError(`LP terlalu kecil! Untuk r=${valP} cm, LP harus > ${fmtNum(minLP)} cm².`);
+          setReverseError(`LP terlalu kecil! Untuk r=${curP} cm, LP harus > ${fmtNum(minLP)} cm².`);
           return;
         }
-        const sPelukis = targetVal / (piVal * valP) - valP;
-        if (sPelukis <= valP) {
-          setReverseError(`Garis pelukis (s = ${fmtNum(sPelukis)}) harus > jari-jari r = ${valP} cm!`);
+        const sPelukis = targetVal / (piVal * curP) - curP;
+        if (sPelukis <= curP) {
+          setReverseError(`Garis pelukis (s = ${fmtNum(sPelukis)}) harus > jari-jari r = ${curP} cm!`);
           return;
         }
-        const tNew = Math.sqrt(sPelukis * sPelukis - valP * valP);
+        const tNew = Math.sqrt(sPelukis * sPelukis - curP * curP);
         setValT(Math.round(tNew * 100) / 100);
       }
     } else if (selectedShape === "prisma") {
-      const luasAlas = 0.5 * valP * valL;
+      const luasAlas = 0.5 * curP * curL;
       if (knownTarget === "volume") {
         const tNew = targetVal / luasAlas;
         setValT(Math.round(tNew * 100) / 100);
@@ -531,18 +944,18 @@ export default function BangunRuangMateriPage() {
           );
           return;
         }
-        const miring = Math.sqrt((valP / 2) ** 2 + valL ** 2);
-        const keliling = valP + 2 * miring;
+        const miring = Math.sqrt((curP / 2) ** 2 + curL ** 2);
+        const keliling = curP + 2 * miring;
         const tNew = (targetVal - 2 * luasAlas) / keliling;
         setValT(Math.round(tNew * 100) / 100);
       }
     } else if (selectedShape === "limas") {
       if (knownTarget === "volume") {
-        const tNew = (3 * targetVal) / (valP * valL);
+        const tNew = (3 * targetVal) / (curP * curL);
         setValT(Math.round(tNew * 100) / 100);
       } else {
-        if (targetVal <= valP * valL) {
-          setReverseError(`LP limas harus lebih besar dari Luas Alas (> ${fmtNum(valP * valL)} cm²)!`);
+        if (targetVal <= curP * curL) {
+          setReverseError(`LP limas harus lebih besar dari Luas Alas (> ${fmtNum(curP * curL)} cm²)!`);
           return;
         }
         // Binary search tinggi limas t dari LP
@@ -550,7 +963,7 @@ export default function BangunRuangMateriPage() {
         let high = 10000;
         for (let iter = 0; iter < 50; iter++) {
           const mid = (low + high) / 2;
-          const lpMid = currentCfg.calcLP(valP, valL, mid, piVal);
+          const lpMid = currentCfg.calcLP(curP, curL, mid, piVal);
           if (lpMid < targetVal) low = mid;
           else high = mid;
         }
@@ -560,14 +973,14 @@ export default function BangunRuangMateriPage() {
   };
 
   // Hasil Perhitungan Aktif
-  const calculatedVol = currentCfg.calcVol(valP, valL, valT, piVal);
-  const calculatedLP = currentCfg.calcLP(valP, valL, valT, piVal);
+  const calculatedVol = currentCfg.calcVol(numP, numL, numT, piVal);
+  const calculatedLP = currentCfg.calcLP(numP, numL, numT, piVal);
 
   // Bangun proses pengerjaan manual langkah demi langkah
   const getManualSteps = () => {
-    const pF = fmtNum(valP);
-    const lF = fmtNum(valL);
-    const tF = fmtNum(valT);
+    const pF = fmtNum(numP);
+    const lF = fmtNum(numL);
+    const tF = fmtNum(numT);
     const vF = fmtNum(calculatedVol);
     const lpF = fmtNum(calculatedLP);
 
@@ -612,14 +1025,14 @@ export default function BangunRuangMateriPage() {
           ? [
               `Diketahui: V = ${tvF} cm³, p = ${pF} cm, l = ${lF} cm`,
               `Rumus: V = p × l × t`,
-              `Substitusi: ${tvF} = ${pF} × ${lF} × t = ${fmtNum(valP * valL)} × t`,
-              `Diperoleh Tinggi (t) = ${tvF} ÷ ${fmtNum(valP * valL)} = ${tF} cm`,
+              `Substitusi: ${tvF} = ${pF} × ${lF} × t = ${fmtNum(numP * numL)} × t`,
+              `Diperoleh Tinggi (t) = ${tvF} ÷ ${fmtNum(numP * numL)} = ${tF} cm`,
             ]
           : [
               `Diketahui: LP = ${tvF} cm², p = ${pF} cm, l = ${lF} cm`,
               `Rumus: LP = 2 × (p×l + p×t + l×t)`,
-              `LP / 2 = ${pF}×${lF} + t(${pF} + ${lF})  →  ${fmtNum(targetVal / 2)} = ${fmtNum(valP * valL)} + ${fmtNum(valP + valL)}t`,
-              `Diperoleh Tinggi (t) = ${fmtNum(targetVal / 2 - valP * valL)} ÷ ${fmtNum(valP + valL)} = ${tF} cm`,
+              `LP / 2 = ${pF}×${lF} + t(${pF} + ${lF})  →  ${fmtNum(targetVal / 2)} = ${fmtNum(numP * numL)} + ${fmtNum(numP + numL)}t`,
+              `Diperoleh Tinggi (t) = ${fmtNum(targetVal / 2 - numP * numL)} ÷ ${fmtNum(numP + numL)} = ${tF} cm`,
             ];
       }
       if (selectedShape === "tabung") {
@@ -628,21 +1041,21 @@ export default function BangunRuangMateriPage() {
             ? [
                 `Diketahui: V = ${tvF} cm³, r = ${pF} cm, π = ${piStr}`,
                 `Rumus: V = π × r² × t`,
-                `Luas Alas = ${piStr} × ${pF}² = ${fmtNum(piVal * valP * valP)} cm²`,
-                `Diperoleh Tinggi (t) = ${tvF} ÷ ${fmtNum(piVal * valP * valP)} = ${tF} cm`,
+                `Luas Alas = ${piStr} × ${pF}² = ${fmtNum(piVal * numP * numP)} cm²`,
+                `Diperoleh Tinggi (t) = ${tvF} ÷ ${fmtNum(piVal * numP * numP)} = ${tF} cm`,
               ]
             : [
                 `Diketahui: V = ${tvF} cm³, t = ${tF} cm, π = ${piStr}`,
                 `Rumus: V = π × r² × t`,
-                `r² = ${tvF} ÷ (${piStr} × ${tF}) = ${fmtNum(targetVal / (piVal * valT))}`,
-                `Diperoleh Jari-jari (r) = √(${fmtNum(targetVal / (piVal * valT))}) = ${pF} cm`,
+                `r² = ${tvF} ÷ (${piStr} × ${tF}) = ${fmtNum(targetVal / (piVal * numT))}`,
+                `Diperoleh Jari-jari (r) = √(${fmtNum(targetVal / (piVal * numT))}) = ${pF} cm`,
               ];
         } else {
           return [
             `Diketahui: LP = ${tvF} cm², r = ${pF} cm, π = ${piStr}`,
             `Rumus: LP = 2 × π × r × (r + t)`,
-            `r + t = ${tvF} ÷ (2 × ${piStr} × ${pF}) = ${fmtNum(targetVal / (2 * piVal * valP))}`,
-            `Diperoleh Tinggi (t) = ${fmtNum(targetVal / (2 * piVal * valP))} - ${pF} = ${tF} cm`,
+            `r + t = ${tvF} ÷ (2 × ${piStr} × ${pF}) = ${fmtNum(targetVal / (2 * piVal * numP))}`,
+            `Diperoleh Tinggi (t) = ${fmtNum(targetVal / (2 * piVal * numP))} - ${pF} = ${tF} cm`,
           ];
         }
       }
@@ -655,7 +1068,7 @@ export default function BangunRuangMateriPage() {
             ]
           : [
               `Diketahui: LP = ${tvF} cm², r = ${pF} cm`,
-              `Garis pelukis (s) = LP ÷ (π×r) - r = ${fmtNum(targetVal / (piVal * valP) - valP)} cm`,
+              `Garis pelukis (s) = LP ÷ (π×r) - r = ${fmtNum(targetVal / (piVal * numP) - numP)} cm`,
               `Diperoleh Tinggi (t) = √(s² - r²) = ${tF} cm`,
             ];
       }
@@ -671,46 +1084,46 @@ export default function BangunRuangMateriPage() {
       case "kubus":
         return [
           `Volume (V) = s × s × s = ${pF} × ${pF} × ${pF} = ${vF} cm³`,
-          `Luas Permukaan (LP) = 6 × s² = 6 × (${pF}²) = 6 × ${fmtNum(valP * valP)} = ${lpF} cm²`,
+          `Luas Permukaan (LP) = 6 × s² = 6 × (${pF}²) = 6 × ${fmtNum(numP * numP)} = ${lpF} cm²`,
         ];
       case "balok":
         return [
           `Volume (V) = p × l × t = ${pF} × ${lF} × ${tF} = ${vF} cm³`,
-          `Luas Permukaan (LP) = 2 × (${pF}×${lF} + ${pF}×${tF} + ${lF}×${tF}) = 2 × (${fmtNum(valP * valL)} + ${fmtNum(valP * valT)} + ${fmtNum(valL * valT)}) = ${lpF} cm²`,
+          `Luas Permukaan (LP) = 2 × (${pF}×${lF} + ${pF}×${tF} + ${lF}×${tF}) = 2 × (${fmtNum(numP * numL)} + ${fmtNum(numP * numT)} + ${fmtNum(numL * numT)}) = ${lpF} cm²`,
         ];
       case "prisma": {
-        const luasAlas = 0.5 * valP * valL;
-        const miring = Math.sqrt((valP / 2) ** 2 + valL ** 2);
+        const luasAlas = 0.5 * numP * numL;
+        const miring = Math.sqrt((numP / 2) ** 2 + numL ** 2);
         return [
           `Luas Alas Segitiga = ½ × a × ta = ½ × ${pF} × ${lF} = ${fmtNum(luasAlas)} cm²`,
           `Volume (V) = Luas Alas × t = ${fmtNum(luasAlas)} × ${tF} = ${vF} cm³`,
-          `Sisi miring segitiga ≈ ${fmtNum(miring)} cm → Keliling Alas = ${fmtNum(valP + 2 * miring)} cm`,
-          `Luas Permukaan = (2 × ${fmtNum(luasAlas)}) + (${fmtNum(valP + 2 * miring)} × ${tF}) = ${lpF} cm²`,
+          `Sisi miring segitiga ≈ ${fmtNum(miring)} cm → Keliling Alas = ${fmtNum(numP + 2 * miring)} cm`,
+          `Luas Permukaan = (2 × ${fmtNum(luasAlas)}) + (${fmtNum(numP + 2 * miring)} × ${tF}) = ${lpF} cm²`,
         ];
       }
       case "limas":
         return [
-          `Luas Alas = ${pF} × ${lF} = ${fmtNum(valP * valL)} cm²`,
-          `Volume (V) = ⅓ × Luas Alas × t = ⅓ × ${fmtNum(valP * valL)} × ${tF} = ${vF} cm³`,
+          `Luas Alas = ${pF} × ${lF} = ${fmtNum(numP * numL)} cm²`,
+          `Volume (V) = ⅓ × Luas Alas × t = ⅓ × ${fmtNum(numP * numL)} × ${tF} = ${vF} cm³`,
           `Luas Permukaan (LP) = Luas Alas + 4 Segitiga Sisi Tegak = ${lpF} cm²`,
         ];
       case "tabung":
         return [
-          `Volume (V) = π × r² × t = ${piStr} × ${pF}² × ${tF} = ${piStr} × ${fmtNum(valP * valP)} × ${tF} = ${vF} cm³`,
+          `Volume (V) = π × r² × t = ${piStr} × ${pF}² × ${tF} = ${piStr} × ${fmtNum(numP * numP)} × ${tF} = ${vF} cm³`,
           `Luas Permukaan (LP) = 2 × π × r × (r + t) = 2 × ${piStr} × ${pF} × (${pF} + ${tF}) = ${lpF} cm²`,
         ];
       case "kerucut": {
-        const sPelukis = Math.sqrt(valP * valP + valT * valT);
+        const sPelukis = Math.sqrt(numP * numP + numT * numT);
         return [
           `Garis Pelukis (s) = √(r² + t²) = √(${pF}² + ${tF}²) = ${fmtNum(sPelukis)} cm`,
-          `Volume (V) = ⅓ × π × r² × t = ⅓ × ${piStr} × ${fmtNum(valP * valP)} × ${tF} = ${vF} cm³`,
+          `Volume (V) = ⅓ × π × r² × t = ⅓ × ${piStr} × ${fmtNum(numP * numP)} × ${tF} = ${vF} cm³`,
           `Luas Permukaan (LP) = π × r × (r + s) = ${piStr} × ${pF} × (${pF} + ${fmtNum(sPelukis)}) = ${lpF} cm²`,
         ];
       }
       case "bola":
         return [
           `Volume (V) = ⁴⁄₃ × π × r³ = ⁴⁄₃ × ${piStr} × ${pF}³ = ${vF} cm³`,
-          `Luas Permukaan (LP) = 4 × π × r² = 4 × ${piStr} × ${fmtNum(valP * valP)} = ${lpF} cm²`,
+          `Luas Permukaan (LP) = 4 × π × r² = 4 × ${piStr} × ${fmtNum(numP * numP)} = ${lpF} cm²`,
         ];
     }
   };
@@ -734,13 +1147,13 @@ export default function BangunRuangMateriPage() {
 
   const ptsToStr = (pts: Pt3D[]) => pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
 
-  const effL = selectedShape === "kubus" ? valP : selectedShape === "tabung" || selectedShape === "kerucut" || selectedShape === "bola" ? valP * 2 : valL;
-  const effT = selectedShape === "kubus" ? valP : selectedShape === "bola" ? valP * 2 : valT;
-  const maxDim = Math.max(valP, effL, effT, 1);
+  const effL = selectedShape === "kubus" ? numP : selectedShape === "tabung" || selectedShape === "kerucut" || selectedShape === "bola" ? numP * 2 : numL;
+  const effT = selectedShape === "kubus" ? numP : selectedShape === "bola" ? numP * 2 : numT;
+  const maxDim = Math.max(numP, effL, effT, 1);
   // Fit proporsi ke span maksimal 125px agar angka berapa pun tampil akurat tanpa keluar frame
   const normScale = 125 / maxDim;
 
-  const sx = (valP * normScale) / 2;
+  const sx = (numP * normScale) / 2;
   const sy = (effT * normScale) / 2;
   const sz = (effL * normScale) / 2;
 
@@ -795,7 +1208,7 @@ export default function BangunRuangMateriPage() {
     .sort((a, b) => a.avgZ - b.avgZ);
 
   // Proporsi Tabung, Kerucut, Bola dalam 3D
-  const radPx = selectedShape === "bola" ? Math.min(82, Math.max(42, (valP * normScale) / 2 + 28)) : Math.max(24, (valP * normScale) / 2);
+  const radPx = selectedShape === "bola" ? Math.min(82, Math.max(42, (numP * normScale) / 2 + 28)) : Math.max(24, (numP * normScale) / 2);
   const hPx = Math.max(38, effT * normScale);
 
   const SEG_CURVE = 24;
@@ -1020,16 +1433,16 @@ export default function BangunRuangMateriPage() {
                 {/* Live Dimensi Badge di Pojok Kiri Bawah */}
                 <div className="absolute bottom-3 left-3 z-20 flex flex-wrap gap-1.5">
                   <span className="bg-black/40 backdrop-blur-xs border border-white/30 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg">
-                    {currentCfg.pLabel}: {fmtNum(valP)} cm
+                    {currentCfg.pLabel}: {fmtNum(numP)} cm
                   </span>
                   {currentCfg.hasL && (
                     <span className="bg-black/40 backdrop-blur-xs border border-white/30 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg">
-                      {currentCfg.lLabel}: {fmtNum(valL)} cm
+                      {currentCfg.lLabel}: {fmtNum(numL)} cm
                     </span>
                   )}
                   {currentCfg.hasT && (
                     <span className="bg-black/40 backdrop-blur-xs border border-white/30 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg">
-                      {currentCfg.tLabel}: {fmtNum(valT)} cm
+                      {currentCfg.tLabel}: {fmtNum(numT)} cm
                     </span>
                   )}
                 </div>
@@ -1332,10 +1745,11 @@ export default function BangunRuangMateriPage() {
                           <div className="flex items-center gap-1">
                             <input
                               type="number"
-                              min={0.1}
+                              min={0}
                               step="any"
                               value={valP}
-                              onChange={(e) => handleDimChange("P", parseFloat(e.target.value))}
+                              onChange={(e) => handleDimChange("P", e.target.value)}
+                              placeholder="0"
                               className="w-20 rounded-lg border-2 border-purple-300 bg-white px-2 py-1 text-right font-bold text-sm text-[#5e65e9] focus:outline-none focus:border-[#5e65e9]"
                             />
                             <span className="text-xs text-gray-500">cm</span>
@@ -1343,9 +1757,9 @@ export default function BangunRuangMateriPage() {
                         </div>
                         <input
                           type="range"
-                          min={1}
-                          max={Math.max(50, Math.ceil(valP))}
-                          value={valP}
+                          min={0}
+                          max={Math.max(50, Math.ceil(numP))}
+                          value={numP}
                           onChange={(e) => handleDimChange("P", Number(e.target.value))}
                           className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-[#5e65e9]"
                         />
@@ -1359,10 +1773,11 @@ export default function BangunRuangMateriPage() {
                             <div className="flex items-center gap-1">
                               <input
                                 type="number"
-                                min={0.1}
+                                min={0}
                                 step="any"
                                 value={valL}
-                                onChange={(e) => handleDimChange("L", parseFloat(e.target.value))}
+                                onChange={(e) => handleDimChange("L", e.target.value)}
+                                placeholder="0"
                                 className="w-20 rounded-lg border-2 border-purple-300 bg-white px-2 py-1 text-right font-bold text-sm text-[#5e65e9] focus:outline-none focus:border-[#5e65e9]"
                               />
                               <span className="text-xs text-gray-500">cm</span>
@@ -1370,9 +1785,9 @@ export default function BangunRuangMateriPage() {
                           </div>
                           <input
                             type="range"
-                            min={1}
-                            max={Math.max(50, Math.ceil(valL))}
-                            value={valL}
+                            min={0}
+                            max={Math.max(50, Math.ceil(numL))}
+                            value={numL}
                             onChange={(e) => handleDimChange("L", Number(e.target.value))}
                             className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-[#5e65e9]"
                           />
@@ -1387,10 +1802,11 @@ export default function BangunRuangMateriPage() {
                             <div className="flex items-center gap-1">
                               <input
                                 type="number"
-                                min={0.1}
+                                min={0}
                                 step="any"
                                 value={valT}
-                                onChange={(e) => handleDimChange("T", parseFloat(e.target.value))}
+                                onChange={(e) => handleDimChange("T", e.target.value)}
+                                placeholder="0"
                                 className="w-20 rounded-lg border-2 border-purple-300 bg-white px-2 py-1 text-right font-bold text-sm text-[#5e65e9] focus:outline-none focus:border-[#5e65e9]"
                               />
                               <span className="text-xs text-gray-500">cm</span>
@@ -1398,9 +1814,9 @@ export default function BangunRuangMateriPage() {
                           </div>
                           <input
                             type="range"
-                            min={1}
-                            max={Math.max(50, Math.ceil(valT))}
-                            value={valT}
+                            min={0}
+                            max={Math.max(50, Math.ceil(numT))}
+                            value={numT}
                             onChange={(e) => handleDimChange("T", Number(e.target.value))}
                             className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-[#5e65e9]"
                           />
@@ -1504,12 +1920,13 @@ export default function BangunRuangMateriPage() {
                               </div>
                               <input
                                 type="number"
-                                min={0.1}
+                                min={0}
                                 step="any"
                                 value={tabungSolveFor === "t" ? valP : valT}
                                 onChange={(e) =>
-                                  handleDimChange(tabungSolveFor === "t" ? "P" : "T", parseFloat(e.target.value))
+                                  handleDimChange(tabungSolveFor === "t" ? "P" : "T", e.target.value)
                                 }
+                                placeholder="0"
                                 className="w-full rounded-xl border-2 border-purple-300 bg-white px-3 py-2 text-sm font-bold text-[#2a2830]"
                               />
                             </div>
@@ -1521,10 +1938,11 @@ export default function BangunRuangMateriPage() {
                                 </label>
                                 <input
                                   type="number"
-                                  min={0.1}
+                                  min={0}
                                   step="any"
                                   value={valP}
-                                  onChange={(e) => handleDimChange("P", parseFloat(e.target.value))}
+                                  onChange={(e) => handleDimChange("P", e.target.value)}
+                                  placeholder="0"
                                   className="w-full rounded-xl border-2 border-purple-300 bg-white px-2.5 py-2 text-sm font-bold text-[#2a2830]"
                                 />
                               </div>
@@ -1535,10 +1953,11 @@ export default function BangunRuangMateriPage() {
                                   </label>
                                   <input
                                     type="number"
-                                    min={0.1}
+                                    min={0}
                                     step="any"
                                     value={valL}
-                                    onChange={(e) => handleDimChange("L", parseFloat(e.target.value))}
+                                    onChange={(e) => handleDimChange("L", e.target.value)}
+                                    placeholder="0"
                                     className="w-full rounded-xl border-2 border-purple-300 bg-white px-2.5 py-2 text-sm font-bold text-[#2a2830]"
                                   />
                                 </div>
@@ -1704,9 +2123,6 @@ export default function BangunRuangMateriPage() {
                       key={shape}
                       onClick={() => {
                         handleSelectShape(shape);
-                        setShowExampleSteps(false);
-                        setChallengeInput("");
-                        setChallengeStatus("idle");
                       }}
                       className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border-2 ${
                         isSel
@@ -1790,71 +2206,141 @@ export default function BangunRuangMateriPage() {
                   </div>
 
                   <div className="rounded-[28px] border-4 border-white bg-white p-5 shadow flex flex-col gap-3 flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="rounded-full bg-[#e05f1e] text-white px-3 py-1 text-xs font-bold">
-                        🎯 Tantangan Hitung {currentCfg.name}
-                      </span>
-                      <button
-                        onClick={() => { playClick(); setShowExampleSteps((prev) => !prev); }}
-                        className="text-xs font-bold text-[#5e65e9] underline cursor-pointer"
-                      >
-                        {showExampleSteps ? "Tutup Pembahasan" : "Buka Pembahasan"}
-                      </button>
+                    {/* Header Tantangan */}
+                    <div className="flex flex-wrap items-center justify-between border-b border-gray-200 pb-2 gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-[#e05f1e] text-white px-3 py-1 text-xs font-bold">
+                          🎯 Tantangan Hitung {currentCfg.name}
+                        </span>
+                        <span className="rounded-full bg-purple-100 text-purple-800 px-2.5 py-0.5 text-[11px] font-bold">
+                          Soal {curChallengeIdx + 1} dari {currentChallenges.length}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handleNextChallenge}
+                          className="flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 text-xs font-bold shadow-sm transition-all cursor-pointer"
+                          title="Generate soal baru dengan angka berbeda"
+                        >
+                          <span>🎲</span>
+                          <span>Buat Soal Baru</span>
+                        </button>
+                        <button
+                          onClick={() => { playClick(); setShowExampleSteps((prev) => !prev); }}
+                          className="text-xs font-bold text-[#5e65e9] hover:underline cursor-pointer"
+                        >
+                          {showExampleSteps ? "Tutup Pembahasan" : "Buka Pembahasan"}
+                        </button>
+                      </div>
                     </div>
 
-                    <p className="text-sm font-bold text-[#2a2830] leading-relaxed bg-gray-50 p-3.5 rounded-2xl border border-gray-200">
-                      {currentMateri.contohSoal}
-                    </p>
+                    {/* Soal Cerita */}
+                    <div className="bg-amber-50/70 border border-amber-200/80 p-3.5 rounded-2xl flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800">
+                        Pertanyaan Soal #{curChallengeIdx + 1}:
+                      </span>
+                      <p className="text-sm font-bold text-[#2a2830] leading-relaxed">
+                        {currentChallenge.story}
+                      </p>
+                    </div>
 
-                    {/* Mini Interactive Challenge Input */}
-                    {(() => {
-                      const ch = SHAPE_SAMPLE_CHALLENGE[selectedShape];
-                      return (
-                        <div className="rounded-2xl bg-purple-50 border border-purple-200 p-3.5 flex flex-col gap-2">
-                          <span className="text-xs font-bold text-[#422376]">{ch.ask}</span>
-                          <div className="flex items-center gap-2">
+                    {/* Mini Interactive Challenge Input (Bisa Jawab Keduanya: Volume + Luas Permukaan!) */}
+                    <div className="rounded-2xl bg-purple-50 border border-purple-200 p-3.5 flex flex-col gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Input Jawaban A */}
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-bold text-[#422376]">
+                            1. {currentChallenge.fieldA.label}:
+                          </label>
+                          <div className="flex items-center gap-1.5">
                             <input
-                              type="number"
-                              value={challengeInput}
+                              type="text"
+                              inputMode="decimal"
+                              value={challengeInputA}
                               onChange={(e) => {
-                                setChallengeInput(e.target.value);
+                                setChallengeInputA(e.target.value);
                                 setChallengeStatus("idle");
                               }}
-                              placeholder="Ketik jawaban..."
-                              className="flex-1 rounded-xl border-2 border-purple-300 bg-white px-3 py-1.5 text-sm font-bold text-[#2a2830]"
+                              placeholder={currentChallenge.fieldA.placeholder || "Ketik jawaban..."}
+                              className="w-full rounded-xl border-2 border-purple-300 bg-white px-3 py-1.5 text-sm font-bold text-[#2a2830] focus:outline-none focus:border-purple-600"
                             />
-                            <span className="text-xs font-bold text-gray-600">{ch.unit}</span>
-                            <button
-                              onClick={() => {
-                                const val = parseFloat(challengeInput);
-                                if (Math.abs(val - ch.answer) < 0.01) {
-                                  playCorrect();
-                                  setChallengeStatus("right");
-                                  setShowExampleSteps(true);
-                                } else {
-                                  playClick();
-                                  setChallengeStatus("wrong");
-                                }
-                              }}
-                              className="rounded-xl bg-[#5e65e9] text-white px-3.5 py-1.5 text-xs font-bold cursor-pointer hover:brightness-110"
-                            >
-                              Cek!
-                            </button>
+                            <span className="text-xs font-bold text-gray-600 shrink-0">{currentChallenge.fieldA.unit}</span>
                           </div>
-                          {challengeStatus === "right" && (
-                            <span className="text-xs font-bold text-emerald-700">🎉 Benar sekali! Jawabannya {ch.answer} {ch.unit}!</span>
+                        </div>
+
+                        {/* Input Jawaban B (Jika ada, seperti Luas Permukaan) */}
+                        {currentChallenge.fieldB && (
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs font-bold text-[#422376]">
+                              2. {currentChallenge.fieldB.label}:
+                            </label>
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="text"
+                                inputMode="decimal"
+                                value={challengeInputB}
+                                onChange={(e) => {
+                                  setChallengeInputB(e.target.value);
+                                  setChallengeStatus("idle");
+                                }}
+                                placeholder={currentChallenge.fieldB.placeholder || "Ketik jawaban..."}
+                                className="w-full rounded-xl border-2 border-purple-300 bg-white px-3 py-1.5 text-sm font-bold text-[#2a2830] focus:outline-none focus:border-purple-600"
+                              />
+                              <span className="text-xs font-bold text-gray-600 shrink-0">{currentChallenge.fieldB.unit}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 pt-1 border-t border-purple-200/60">
+                        <div className="flex-1">
+                          {challengeStatus === "both_right" && (
+                            <span className="text-xs font-bold text-emerald-700 animate-in fade-in">
+                              🎉 Luar biasa! Semua jawaban kamu benar ({currentChallenge.fieldA.answer} {currentChallenge.fieldA.unit}
+                              {currentChallenge.fieldB ? ` & ${currentChallenge.fieldB.answer} ${currentChallenge.fieldB.unit}` : ""})!
+                            </span>
+                          )}
+                          {challengeStatus === "a_right" && (
+                            <span className="text-xs font-bold text-amber-700 animate-in fade-in">
+                              👍 Jawaban {currentChallenge.fieldA.label} sudah benar! Namun jawaban kedua belum tepat, coba cek lagi!
+                            </span>
+                          )}
+                          {challengeStatus === "b_right" && (
+                            <span className="text-xs font-bold text-amber-700 animate-in fade-in">
+                              👍 Jawaban {currentChallenge.fieldB?.label} sudah benar! Namun jawaban pertama belum tepat, coba cek lagi!
+                            </span>
                           )}
                           {challengeStatus === "wrong" && (
-                            <span className="text-xs font-bold text-rose-700">✗ Belum tepat, coba cek rumusnya atau klik Buka Pembahasan!</span>
+                            <span className="text-xs font-bold text-rose-700 animate-in fade-in">
+                              ✗ Jawaban belum tepat, silakan hitung kembali atau klik &ldquo;Buka Pembahasan&rdquo; di atas!
+                            </span>
+                          )}
+                          {challengeStatus === "idle" && (
+                            <span className="text-[11px] text-gray-500 font-medium">
+                              Ketik jawaban lalu klik Cek Jawaban!
+                            </span>
                           )}
                         </div>
-                      );
-                    })()}
 
+                        <button
+                          onClick={handleCheckChallenge}
+                          className="rounded-xl bg-[#5e65e9] hover:bg-[#4b52d4] text-white px-4 py-1.5 text-xs font-bold cursor-pointer transition-all shrink-0 shadow-sm"
+                        >
+                          Cek Jawaban!
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Langkah Pembahasan Dinamis Sesuai Soal Aktif */}
                     {showExampleSteps && (
-                      <div className="rounded-2xl bg-emerald-50/80 border border-emerald-200 p-3.5 flex flex-col gap-1.5">
-                        <span className="text-xs font-bold text-emerald-900">Langkah Pembahasan:</span>
-                        {currentMateri.pembahasan.map((step, i) => (
+                      <div className="rounded-2xl bg-emerald-50/80 border border-emerald-200 p-3.5 flex flex-col gap-1.5 animate-in fade-in">
+                        <div className="flex items-center justify-between border-b border-emerald-200 pb-1">
+                          <span className="text-xs font-bold text-emerald-900">
+                            📖 Langkah Pembahasan Soal #{curChallengeIdx + 1}:
+                          </span>
+                          <span className="text-[11px] font-semibold text-emerald-700">Lengkap</span>
+                        </div>
+                        {currentChallenge.pembahasan.map((step, i) => (
                           <div key={i} className="text-xs sm:text-sm font-medium text-gray-800 flex items-start gap-2">
                             <span className="font-bold text-emerald-700 shrink-0">{i + 1}.</span>
                             <span>{step}</span>
@@ -1864,19 +2350,11 @@ export default function BangunRuangMateriPage() {
                     )}
 
                     <button
-                      onClick={() => {
-                        playClick();
-                        const [dP, dL, dT] = SHAPE_SAMPLE_CHALLENGE[selectedShape].dims;
-                        setValP(dP);
-                        setValL(dL);
-                        setValT(dT);
-                        if (selectedShape === "kerucut") setPiMode("3.14");
-                        else if (currentCfg.category === "lengkung") setPiMode("22/7");
-                        setActiveViewTab("lab3d");
-                      }}
-                      className="mt-auto rounded-2xl border-2 border-white bg-[#126b7c] hover:bg-[#0e5664] text-white font-bold py-2.5 px-4 shadow cursor-pointer text-sm transition-all"
+                      onClick={handleLoadChallengeToLab}
+                      className="mt-auto rounded-2xl border-2 border-white bg-[#126b7c] hover:bg-[#0e5664] text-white font-bold py-2.5 px-4 shadow cursor-pointer text-sm transition-all flex items-center justify-center gap-2"
                     >
-                      🔬 Muat Angka Soal Ini ke Lab 3D &rarr;
+                      <span>🔬</span>
+                      <span>Muat Angka Soal #{curChallengeIdx + 1} Ini ke Lab 3D &rarr;</span>
                     </button>
                   </div>
                 </div>

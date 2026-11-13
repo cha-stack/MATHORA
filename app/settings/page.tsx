@@ -36,6 +36,7 @@ export default function SettingsPage() {
   const [selectedAvatar, setSelectedAvatar] = useState("/images/avatar-1.svg");
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const active = getCurrentUser();
@@ -46,7 +47,7 @@ export default function SettingsPage() {
     }
   }, []);
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     playClick();
     setSaveMessage("");
@@ -57,13 +58,20 @@ export default function SettingsPage() {
       return;
     }
 
-    const res = updateUserProfile(usernameInput, selectedAvatar);
-    if (!res.success) {
-      setSaveError(res.message);
-    } else {
-      setSaveMessage("Profil berhasil disimpan!");
-      setUser(res.user || null);
-      setTimeout(() => setSaveMessage(""), 3000);
+    setIsSaving(true);
+    try {
+      const res = await updateUserProfile(usernameInput, selectedAvatar);
+      setIsSaving(false);
+      if (!res.success) {
+        setSaveError(res.message);
+      } else {
+        setSaveMessage("Profil berhasil disimpan!");
+        setUser(res.user || null);
+        setTimeout(() => setSaveMessage(""), 3000);
+      }
+    } catch {
+      setIsSaving(false);
+      setSaveError("Gagal menyimpan profil.");
     }
   };
 
@@ -145,10 +153,11 @@ export default function SettingsPage() {
 
               <button
                 type="submit"
-                className="mt-1 flex items-center justify-center rounded-2xl border-4 border-white bg-[#1cd8a4] py-2.5 shadow-[0px_4px_0px_0px_#028560] transition-all hover:scale-102 active:translate-y-1 active:shadow-none cursor-pointer"
+                disabled={isSaving}
+                className="mt-1 flex items-center justify-center rounded-2xl border-4 border-white bg-[#1cd8a4] disabled:opacity-80 py-2.5 shadow-[0px_4px_0px_0px_#028560] transition-all hover:scale-102 active:translate-y-1 active:shadow-none cursor-pointer"
               >
                 <span className="game-font text-base sm:text-lg font-bold text-[#144837]">
-                  Simpan Perubahan Karakter
+                  {isSaving ? "Menyimpan..." : "Simpan Perubahan Karakter"}
                 </span>
               </button>
             </form>

@@ -72,7 +72,7 @@ export default function GameShell({
   const isSettingsActive = pathname.startsWith("/settings");
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-x-hidden bg-gradient-to-b from-[#482b78] via-[#65439e] to-[#916dcb] select-none p-3 sm:p-6 md:p-8">
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-x-hidden bg-gradient-to-b from-[#482b78] via-[#65439e] to-[#916dcb] select-none p-2 sm:p-6 md:p-8">
       {/* Background Math Formula Doodles */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-25">
         <div className="absolute top-10 -right-8 w-60 sm:w-80 md:w-[420px] rotate-[22deg]">
@@ -116,7 +116,7 @@ export default function GameShell({
       </div>
 
       {/* Top Navbar Header with PKM Mark */}
-      <header className="relative z-20 flex w-full max-w-7xl items-center justify-between rounded-[24px] sm:rounded-[32px] border-[5px] sm:border-[7px] border-white bg-[#d3e9ff] px-4 sm:px-8 py-3 sm:py-4 shadow-[0px_5px_0px_0px_#aaafaf]">
+      <header className="relative z-20 flex w-full max-w-7xl items-center justify-between rounded-[22px] sm:rounded-[32px] border-[4px] sm:border-[7px] border-white bg-[#d3e9ff] px-3.5 sm:px-8 py-2 sm:py-4 shadow-[0px_5px_0px_0px_#aaafaf]">
         <div className="flex items-center gap-3">
           <Link href={homeUrl} className="flex flex-col">
             <span className="game-title-mathora text-2xl sm:text-4xl font-bold tracking-wider uppercase leading-none">
@@ -151,7 +151,7 @@ export default function GameShell({
       </header>
 
       {/* Main Content Area */}
-      <div className="relative z-10 my-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center py-4">
+      <div className="relative z-10 my-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center py-2.5 sm:py-4">
         {children}
       </div>
 

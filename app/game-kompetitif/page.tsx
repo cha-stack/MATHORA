@@ -6,6 +6,7 @@ import GameShell from "@/components/GameShell";
 import CelebrationEffects from "@/components/CelebrationEffects";
 import { useSound } from "@/components/SoundContext";
 import { getCurrentUser } from "@/lib/auth";
+import { sbSaveGameScore } from "@/lib/supabase";
 
 // ─── TIPE & DATA MATERI (FIGMA 85:131) ────────────────────────────────────────
 
@@ -666,6 +667,116 @@ function makeQuestion(materi: string, diff: "easy" | "medium" | "hard"): MathQue
   }
 }
 
+interface CalculatorPanelProps {
+  title: string;
+  inputValue: string;
+  placeholder: string;
+  target: "P1" | "P2";
+  disabled?: boolean;
+  compactSide?: boolean;
+  extraClassName?: string;
+  onKeyPress: (key: string, target: "P1" | "P2") => void;
+}
+
+function CalculatorPanel({
+  title,
+  inputValue,
+  placeholder,
+  target,
+  disabled = false,
+  compactSide = false,
+  extraClassName = "",
+  onKeyPress,
+}: CalculatorPanelProps) {
+  const numBtnClass = compactSide
+    ? "rounded-lg sm:rounded-xl border-2 border-white bg-white hover:bg-gray-100 disabled:opacity-80 text-[#2a2830] font-bold text-base sm:text-xl py-2 sm:py-3 shadow-sm sm:shadow-md active:translate-y-0.5 transition-all cursor-pointer touch-manipulation"
+    : "rounded-xl border-2 border-white bg-white hover:bg-gray-100 disabled:opacity-80 text-[#2a2830] font-bold text-xl py-2.5 sm:py-3 shadow-md active:translate-y-1 transition-all cursor-pointer touch-manipulation";
+
+  const redBtnClass = compactSide
+    ? "rounded-lg sm:rounded-xl border-2 border-white bg-[#f86f72] hover:bg-[#ef4444] disabled:opacity-80 text-white font-bold text-sm sm:text-xl py-2 sm:py-3 shadow-sm sm:shadow-md active:translate-y-0.5 transition-all cursor-pointer touch-manipulation"
+    : "rounded-xl border-2 border-white bg-[#f86f72] hover:bg-[#ef4444] disabled:opacity-80 text-white font-bold text-xl py-2.5 sm:py-3 shadow-md active:translate-y-1 transition-all cursor-pointer touch-manipulation";
+
+  return (
+    <div
+      className={`rounded-[22px] sm:rounded-[32px] border-[4px] sm:border-[6px] border-white bg-[rgba(228,211,255,0.88)] ${
+        compactSide ? "p-2 sm:p-4" : "p-3 sm:p-4"
+      } shadow-xl flex flex-col items-center justify-between ${extraClassName}`}
+    >
+      <div className={`w-full text-center ${compactSide ? "mb-1 sm:mb-2" : "mb-1.5 sm:mb-2"}`}>
+        <h4 className={`game-font ${compactSide ? "text-base sm:text-3xl" : "text-xl sm:text-3xl"} text-[#2a2830] font-bold truncate`}>
+          {title}
+        </h4>
+      </div>
+
+      {/* Layar Input Kalkulator */}
+      <div
+        className={`w-full ${
+          compactSide ? "h-10 sm:h-14 text-lg sm:text-3xl px-2.5 sm:px-4 mb-2 sm:mb-3" : "h-12 sm:h-14 text-2xl sm:text-3xl px-4 mb-2.5 sm:mb-3"
+        } bg-white border-[3px] sm:border-[4px] border-[#7251a8] rounded-xl flex items-center justify-end font-mono font-bold text-[#1e1b4b] shadow-inner tracking-wider select-none overflow-x-auto`}
+      >
+        {inputValue ? (
+          inputValue
+        ) : (
+          <span className={`text-gray-300 font-sans font-normal ${compactSide ? "text-[11px] sm:text-sm" : "text-sm"}`}>
+            {placeholder}
+          </span>
+        )}
+      </div>
+
+      {/* Tombol-Tombol Keypad 4 Kolom */}
+      <div className={`grid grid-cols-4 ${compactSide ? "gap-1 sm:gap-2" : "gap-1.5 sm:gap-2"} w-full`}>
+        {["1", "2", "3"].map((n) => (
+          <button key={n} disabled={disabled} onClick={() => onKeyPress(n, target)} className={numBtnClass}>
+            {n}
+          </button>
+        ))}
+        <button disabled={disabled} onClick={() => onKeyPress("C", target)} className={redBtnClass} title="Hapus Semua">
+          C
+        </button>
+
+        {["4", "5", "6"].map((n) => (
+          <button key={n} disabled={disabled} onClick={() => onKeyPress(n, target)} className={numBtnClass}>
+            {n}
+          </button>
+        ))}
+        <button disabled={disabled} onClick={() => onKeyPress("-", target)} className={numBtnClass} title="Minus">
+          -
+        </button>
+
+        {["7", "8", "9"].map((n) => (
+          <button key={n} disabled={disabled} onClick={() => onKeyPress(n, target)} className={numBtnClass}>
+            {n}
+          </button>
+        ))}
+        <button disabled={disabled} onClick={() => onKeyPress(".", target)} className={numBtnClass}>
+          .
+        </button>
+
+        <button disabled={disabled} onClick={() => onKeyPress("0", target)} className={numBtnClass}>
+          0
+        </button>
+        <button
+          disabled={disabled}
+          onClick={() => onKeyPress("⌫", target)}
+          className={redBtnClass}
+          title="Hapus 1 Karakter"
+        >
+          ⌫
+        </button>
+        <button
+          disabled={disabled}
+          onClick={() => onKeyPress("ENTER", target)}
+          className={`col-span-2 ${
+            compactSide ? "rounded-lg sm:rounded-xl text-xs sm:text-lg py-2 sm:py-3" : "rounded-xl text-base sm:text-lg py-2.5 sm:py-3"
+          } border-2 border-white bg-[#55d274] hover:bg-[#22c55e] disabled:opacity-80 text-white font-bold shadow-md active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-1 touch-manipulation`}
+        >
+          Jawab ✓
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function GameKompetitifPage() {
   const { playClick, playCorrect, playWrong } = useSound();
 
@@ -701,19 +812,79 @@ export default function GameKompetitifPage() {
   const [p1Input, setP1Input] = useState<string>("");
   const [p2Input, setP2Input] = useState<string>("");
 
+  // Mode tata letak HP Portrait untuk 1 vs 1 ("side" = berdampingan di bawah soal, "tabletop" = P2 di atas menghadap lawan 180°)
+  const [mobilePortraitMode, setMobilePortraitMode] = useState<"side" | "tabletop">("side");
+
+  // ─── KONTROL ORIENTASI LANDSCAPE HP ─────────────────────────────────────────
+  const [isMobilePortrait, setIsMobilePortrait] = useState(false);
+
+  useEffect(() => {
+    const updateOrientationState = () => {
+      if (typeof window === "undefined") return;
+      const isMobile = window.innerWidth <= 900 || window.innerHeight <= 600;
+      const isPortrait = window.innerHeight > window.innerWidth;
+      setIsMobilePortrait(isMobile && isPortrait);
+    };
+
+    updateOrientationState();
+    window.addEventListener("resize", updateOrientationState);
+    window.addEventListener("orientationchange", updateOrientationState);
+    return () => {
+      window.removeEventListener("resize", updateOrientationState);
+      window.removeEventListener("orientationchange", updateOrientationState);
+    };
+  }, []);
+
+  const requestLandscapeMode = useCallback(async () => {
+    try {
+      // 1. Minta Fullscreen jika didukung browser HP (syarat Screen Orientation Lock API)
+      if (!document.fullscreenElement) {
+        const root = document.documentElement as any;
+        if (root.requestFullscreen) {
+          await root.requestFullscreen();
+        } else if (root.webkitRequestFullscreen) {
+          await root.webkitRequestFullscreen();
+        }
+      }
+
+      // 2. Kunci orientasi ke landscape
+      const screenAny = window.screen as any;
+      if (screenAny?.orientation?.lock) {
+        await screenAny.orientation.lock("landscape");
+      } else if (screenAny?.lockOrientation) {
+        screenAny.lockOrientation("landscape");
+      }
+    } catch (e) {
+      console.log("Landscape request note:", e);
+    }
+  }, []);
+
   const aiTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // ─── CEK KEMENANGAN AKHIR ──────────────────────────────────────────────────
   const finishGame = useCallback((p1: number, p2: number) => {
+    let resultWinner: "Pemain 1" | "Pemain 2" | "AI Bot" | "Seri / Imbang" = "Seri / Imbang";
     if (p1 > p2) {
-      setWinner("Pemain 1");
+      resultWinner = "Pemain 1";
     } else if (p2 > p1) {
-      setWinner(gameMode === "vsAI" ? "AI Bot" : "Pemain 2");
-    } else {
-      setWinner("Seri / Imbang");
+      resultWinner = gameMode === "vsAI" ? "AI Bot" : "Pemain 2";
     }
+    setWinner(resultWinner);
     setGameState("gameover");
-  }, [gameMode]);
+
+    // Catat ke riwayat Supabase di background
+    const user = getCurrentUser();
+    sbSaveGameScore({
+      player1: user?.username || "Pemain 1",
+      player2: gameMode === "vsAI" ? "AI Bot" : "Pemain 2",
+      materi: selectedMateri,
+      mode: gameMode,
+      difficulty,
+      score_p1: p1,
+      score_p2: p2,
+      winner: resultWinner,
+    }).catch(() => {});
+  }, [gameMode, selectedMateri, difficulty]);
 
   // Cek Knockout (Selisih 5 poin atau salah satu mencapai 10 poin)
   const checkEarlyKO = useCallback((p1: number, p2: number) => {
@@ -741,6 +912,9 @@ export default function GameKompetitifPage() {
   // ─── MULAI PERMAINAN (5 MENIT) ─────────────────────────────────────────────
   const handleStartGame = () => {
     playClick();
+    if (typeof window !== "undefined" && (window.innerWidth <= 900 || window.innerHeight > window.innerWidth)) {
+      requestLandscapeMode();
+    }
     setScoreP1(0);
     setScoreP2(0);
     setRoundNum(1);
@@ -911,8 +1085,8 @@ export default function GameKompetitifPage() {
     }
   };
 
-  // Pergeseran visual tali tambang (-130px ke kiri untuk P1, +130px ke kanan untuk P2)
-  const ropeShift = Math.max(-130, Math.min(130, (scoreP2 - scoreP1) * 32));
+  // Pergeseran visual tali tambang secara proporsional (%) agar responsif di HP Portrait maupun Desktop
+  const ropeShiftPct = Math.max(-22, Math.min(22, (scoreP2 - scoreP1) * 4.4));
 
   // Format Timer 5 Menit (MM:SS)
   const minutes = Math.floor(timeLeft / 60);
@@ -928,22 +1102,48 @@ export default function GameKompetitifPage() {
            ═══════════════════════════════════════════════════════════════════════ */}
         {gameState === "lobby" && (
           <div className="w-full max-w-5xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="rounded-[36px] border-[7px] border-white bg-[#ffd3d3] p-6 shadow-2xl backdrop-blur-xs">
+            <div className="rounded-[26px] sm:rounded-[36px] border-[5px] sm:border-[7px] border-white bg-[#ffd3d3] p-4 sm:p-6 shadow-2xl backdrop-blur-xs">
               
-              <div className="mb-6 text-center">
-                <span className="inline-block rounded-full bg-[#fd363a] px-4 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm mb-2">
+              <div className="mb-4 sm:mb-6 text-center">
+                <span className="inline-block rounded-full bg-[#fd363a] px-3 sm:px-4 py-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white shadow-sm mb-2">
                   ⚔️ Game Kompetitif Matematika
                 </span>
-                <h1 className="game-font text-3xl sm:text-5xl text-[#2a2830] font-bold tracking-wider">
+                <h1 className="game-font text-2xl sm:text-5xl text-[#2a2830] font-bold tracking-wider">
                   PILIH MATERI TARIK TAMBANG
                 </h1>
                 <p className="text-xs sm:text-sm text-gray-700 font-semibold mt-1">
                   Adu cepat mengetik jawaban kalkulator untuk menarik tali lawan!
                 </p>
+
+                {/* Banner Saran Landscape untuk Pengguna HP */}
+                {isMobilePortrait && (
+                  <div className="mt-3 mx-auto max-w-xl rounded-2xl border-2 sm:border-3 border-amber-300 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 p-2.5 sm:p-3 text-white shadow-lg flex items-center justify-between gap-2.5 animate-in fade-in">
+                    <div className="flex items-center gap-2 text-left">
+                      <span className="text-2xl animate-pulse">📱🔄</span>
+                      <div>
+                        <p className="game-font text-xs sm:text-sm font-bold text-yellow-100">
+                          Saran: Mainkan Dalam Mode Landscape (Mendatar)
+                        </p>
+                        <p className="text-[11px] text-white/90">
+                          Tampilan arena tarik tambang &amp; 2 kalkulator jauh lebih lega!
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        playClick();
+                        requestLandscapeMode();
+                      }}
+                      className="rounded-xl border-2 border-white bg-yellow-400 hover:bg-yellow-300 text-amber-950 font-bold px-3 py-1.5 text-xs shadow-md cursor-pointer active:scale-95 transition-all whitespace-nowrap shrink-0"
+                    >
+                      🔄 Beralih ke Landscape
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Grid 12 Materi */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3.5 mb-5 sm:mb-6">
                 {MATERI_LIST.map((m) => {
                   const isSelected = selectedMateri === m.id;
                   return (
@@ -953,16 +1153,16 @@ export default function GameKompetitifPage() {
                         playClick();
                         setSelectedMateri(m.id);
                       }}
-                      className={`relative flex flex-col items-center justify-center rounded-[24px] border-[5px] p-4 text-center transition-all cursor-pointer shadow-md ${
+                      className={`relative flex flex-col items-center justify-center rounded-[20px] sm:rounded-[24px] border-[4px] sm:border-[5px] p-3 sm:p-4 text-center transition-all cursor-pointer shadow-md ${
                         isSelected
                           ? "border-[#4fd74f] bg-white scale-104 shadow-lg ring-4 ring-green-300"
                           : "border-white bg-[#d3e9ff] hover:bg-white hover:scale-102"
                       }`}
                     >
-                      <div className={`size-12 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mb-2 shadow-sm ${m.bgColor || "bg-[#34b2cb]"}`}>
+                      <div className={`size-10 sm:size-12 rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-bold mb-1.5 sm:mb-2 shadow-sm ${m.bgColor || "bg-[#34b2cb]"}`}>
                         {m.icon}
                       </div>
-                      <span className="game-font text-base sm:text-lg font-bold text-[#2a2830]">
+                      <span className="game-font text-sm sm:text-lg font-bold text-[#2a2830] leading-tight">
                         {m.name}
                       </span>
                       {isSelected && (
@@ -976,13 +1176,13 @@ export default function GameKompetitifPage() {
               </div>
 
               {/* Pilihan Mode & Kesulitan */}
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-t-2 border-white/60 pt-5">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-[#2a2830]">Mode:</span>
-                  <div className="flex rounded-2xl border-4 border-white bg-white/70 p-1 shadow-sm">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-3.5 sm:gap-4 border-t-2 border-white/60 pt-4 sm:pt-5">
+                <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                  <span className="text-xs sm:text-sm font-bold text-[#2a2830]">Mode:</span>
+                  <div className="flex rounded-2xl border-[3px] sm:border-4 border-white bg-white/70 p-1 shadow-sm">
                     <button
                       onClick={() => { playClick(); setGameMode("1vs1"); }}
-                      className={`rounded-xl px-4 py-1.5 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                      className={`rounded-xl px-2.5 sm:px-4 py-1.5 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                         gameMode === "1vs1" ? "bg-[#34cc9e] text-white shadow" : "text-[#2a2830] hover:bg-gray-100"
                       }`}
                     >
@@ -990,7 +1190,7 @@ export default function GameKompetitifPage() {
                     </button>
                     <button
                       onClick={() => { playClick(); setGameMode("vsAI"); }}
-                      className={`rounded-xl px-4 py-1.5 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                      className={`rounded-xl px-2.5 sm:px-4 py-1.5 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                         gameMode === "vsAI" ? "bg-[#34cc9e] text-white shadow" : "text-[#2a2830] hover:bg-gray-100"
                       }`}
                     >
@@ -999,14 +1199,14 @@ export default function GameKompetitifPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-[#2a2830]">Kesulitan:</span>
-                  <div className="flex rounded-2xl border-4 border-white bg-white/70 p-1 shadow-sm">
+                <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                  <span className="text-xs sm:text-sm font-bold text-[#2a2830]">Kesulitan:</span>
+                  <div className="flex rounded-2xl border-[3px] sm:border-4 border-white bg-white/70 p-1 shadow-sm">
                     {(["easy", "medium", "hard"] as const).map((d) => (
                       <button
                         key={d}
                         onClick={() => { playClick(); setDifficulty(d); }}
-                        className={`rounded-xl px-3 py-1.5 text-xs sm:text-sm font-bold capitalize transition-all cursor-pointer ${
+                        className={`rounded-xl px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-bold capitalize transition-all cursor-pointer ${
                           difficulty === d ? "bg-[#fd363a] text-white shadow" : "text-[#2a2830] hover:bg-gray-100"
                         }`}
                       >
@@ -1018,7 +1218,7 @@ export default function GameKompetitifPage() {
 
                 <button
                   onClick={handleStartGame}
-                  className="rounded-full border-[6px] border-white bg-[#55d274] size-16 sm:size-20 flex items-center justify-center text-white shadow-[0px_6px_0px_0px_#2e8e46] hover:scale-110 active:translate-y-1 transition-all cursor-pointer shrink-0"
+                  className="rounded-full border-[5px] sm:border-[6px] border-white bg-[#55d274] size-16 sm:size-20 flex items-center justify-center text-white shadow-[0px_6px_0px_0px_#2e8e46] hover:scale-110 active:translate-y-1 transition-all cursor-pointer shrink-0"
                   title="Mulai Tarik Tambang"
                 >
                   <svg viewBox="0 0 24 24" fill="currentColor" className="size-8 sm:size-10 ml-1">
@@ -1032,98 +1232,133 @@ export default function GameKompetitifPage() {
         )}
 
         {/* ═══════════════════════════════════════════════════════════════════════
-            2. ARENA TARIK TAMBANG DENGAN KALKULATOR (FIGMA 87:365)
+            2. ARENA TARIK TAMBANG DENGAN KALKULATOR (RESPONSIF HP PORTRAIT & DESKTOP)
            ═══════════════════════════════════════════════════════════════════════ */}
         {gameState !== "lobby" && (
           <div className="flex w-full max-w-5xl flex-col items-center">
 
-            {/* ARENA VISUAL TARIK TAMBANG DUA KARAKTER (FIGMA 87:365) */}
-            <div className="relative w-full rounded-[32px] border-[7px] border-white bg-[#d3e9ff] p-4 shadow-2xl backdrop-blur-xs flex flex-col items-center mb-3 overflow-hidden">
-              
-              {/* Tombol Selesai Fleksibel di Kiri Atas Arena */}
-              <div className="absolute top-3 left-5 z-30">
+            {/* Banner Otomatis Saran Landscape di HP saat Bermain */}
+            {isMobilePortrait && (
+              <div className="w-full mb-2 px-3 py-1.5 rounded-xl border-2 border-amber-300 bg-amber-500/95 text-white flex items-center justify-between gap-2 shadow animate-in fade-in">
+                <span className="text-[11px] font-bold flex items-center gap-1">
+                  <span>📱🔄</span>
+                  <span>Miringkan HP ke mode Landscape untuk tampilan arena terbaik!</span>
+                </span>
                 <button
                   onClick={() => {
                     playClick();
-                    if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
-                    finishGame(scoreP1, scoreP2);
+                    requestLandscapeMode();
                   }}
-                  className="flex items-center gap-1.5 rounded-2xl border-[3px] border-white bg-[#f59e0b] hover:bg-[#d97706] px-4 py-1.5 text-xs sm:text-sm font-bold text-white shadow-[0px_3px_0px_0px_#b45309] active:translate-y-0.5 transition-all cursor-pointer"
-                  title="Selesaikan permainan sekarang dan tentukan pemenang dari skor saat ini"
+                  className="rounded-lg bg-yellow-300 text-amber-950 px-2 py-0.5 text-[11px] font-bold shadow hover:bg-yellow-200 active:scale-95 transition-all whitespace-nowrap shrink-0 cursor-pointer"
                 >
-                  <span>🏁</span>
-                  <span>Selesai</span>
+                  Putar Layar
                 </button>
               </div>
+            )}
 
-              {/* Balon Ucapan Komik di Kanan Atas ("hebat!") Sesuai Figma 87:590 */}
-              <div className="absolute top-3 right-6 z-30">
-                <div className="relative bg-white/95 border-3 border-[#2a2830] px-4 py-1 rounded-2xl shadow-md">
-                  <span className="game-font text-lg sm:text-2xl font-bold text-[#2a2830] tracking-wide uppercase">
+            {/* ARENA VISUAL TARIK TAMBANG DUA KARAKTER */}
+            <div className="relative w-full rounded-[22px] sm:rounded-[32px] border-[5px] sm:border-[7px] border-white bg-[#d3e9ff] p-2.5 sm:p-4 shadow-2xl backdrop-blur-xs flex flex-col items-center mb-2 sm:mb-3 overflow-hidden">
+              
+              {/* Baris Kontrol Atas Arena (Non-overlapping di layar HP sempit) */}
+              <div className="flex w-full items-center justify-between gap-2 z-30 mb-1">
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => {
+                      playClick();
+                      if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+                      finishGame(scoreP1, scoreP2);
+                    }}
+                    className="flex items-center gap-1 rounded-xl sm:rounded-2xl border-[2.5px] sm:border-[3px] border-white bg-[#f59e0b] hover:bg-[#d97706] px-2.5 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-sm font-bold text-white shadow-[0px_3px_0px_0px_#b45309] active:translate-y-0.5 transition-all cursor-pointer shrink-0"
+                    title="Selesaikan permainan sekarang dan tentukan pemenang dari skor saat ini"
+                  >
+                    <span>🏁</span>
+                    <span>Selesai</span>
+                  </button>
+
+                  {/* Tombol Kunci / Putar Landscape di HP */}
+                  <button
+                    onClick={() => {
+                      playClick();
+                      requestLandscapeMode();
+                    }}
+                    className="sm:hidden flex items-center gap-1 rounded-xl border-2 border-white bg-[#10b981] hover:bg-[#059669] px-2 py-1 text-[11px] font-bold text-white shadow active:translate-y-0.5 transition-all cursor-pointer shrink-0"
+                    title="Putar dan kunci ke mode Landscape (Mendatar)"
+                  >
+                    <span>🔄</span>
+                    <span>Landscape</span>
+                  </button>
+                </div>
+
+                {/* Tombol Switch Tata Letak HP Portrait (Khusus 1 vs 1 di Layar HP < 640px) */}
+                {gameMode === "1vs1" && (
+                  <button
+                    onClick={() => {
+                      playClick();
+                      setMobilePortraitMode((m) => (m === "side" ? "tabletop" : "side"));
+                    }}
+                    className="sm:hidden flex items-center gap-1 rounded-xl border-2 border-white bg-[#7251a8] hover:bg-[#5b3d8f] px-2.5 py-1 text-[11px] font-bold text-white shadow active:translate-y-0.5 transition-all cursor-pointer"
+                    title="Ubah posisi kalkulator untuk HP Portrait: Bersebelahan atau Hadap-Hadapan 180°"
+                  >
+                    <span>🔄</span>
+                    <span>{mobilePortraitMode === "side" ? "Mode Meja 180°" : "Mode Sebelah"}</span>
+                  </button>
+                )}
+
+                {/* Balon Ucapan Komik ("hebat!") */}
+                <div className="relative bg-white/95 border-2 sm:border-3 border-[#2a2830] px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md shrink-0">
+                  <span className="game-font text-sm sm:text-2xl font-bold text-[#2a2830] tracking-wide uppercase">
                     {cheerReaction}
                   </span>
-                  {/* Ekor balon kata */}
-                  <div className="absolute -bottom-2 right-4 size-3 bg-white border-b-3 border-r-3 border-[#2a2830] rotate-45" />
+                  <div className="hidden sm:block absolute -bottom-2 right-4 size-3 bg-white border-b-3 border-r-3 border-[#2a2830] rotate-45" />
                 </div>
               </div>
 
               {/* Lintasan Tarik Tambang Stickman */}
-              <div className="relative w-full h-32 sm:h-36 flex items-center justify-center overflow-hidden my-1">
+              <div className="relative w-full h-24 sm:h-36 flex items-center justify-center overflow-hidden my-0.5 sm:my-1">
                 
-                {/* Garis Tengah Lapangan Merah (Figma 89:414) */}
+                {/* Garis Tengah Lapangan Merah */}
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-1 bg-[#a14343] z-10" />
 
                 {/* Kontainer Karakter & Tali Bergerak Sesuai Skor */}
                 <div
-                  style={{ transform: `translateX(${ropeShift}px)` }}
-                  className="relative z-20 transition-transform duration-500 ease-out flex items-center justify-center w-full max-w-2xl px-8"
+                  style={{ transform: `translateX(${ropeShiftPct}%)` }}
+                  className="relative z-20 transition-transform duration-500 ease-out flex items-center justify-center w-full max-w-2xl px-4 sm:px-8"
                 >
                   {/* Stickman Kiri (Pemain 1) */}
                   <div className="flex flex-col items-center shrink-0 -mr-2">
-                    <svg width="70" height="90" viewBox="0 0 70 90" className="drop-shadow-sm select-none">
-                      {/* Kepala dengan senyuman */}
+                    <svg viewBox="0 0 70 90" className="w-[52px] h-[68px] sm:w-[70px] sm:h-[90px] drop-shadow-sm select-none">
                       <circle cx="35" cy="20" r="16" fill="#fcd34d" stroke="#0284c7" strokeWidth="3" />
                       <path d="M 28 17 Q 31 14 34 17" stroke="#1e293b" strokeWidth="2.5" fill="none" strokeLinecap="round" />
                       <path d="M 38 17 Q 41 14 44 17" stroke="#1e293b" strokeWidth="2.5" fill="none" strokeLinecap="round" />
                       <path d="M 30 24 Q 36 29 42 24" stroke="#1e293b" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-                      {/* Badan miring condong ke kiri menarik tali */}
                       <line x1="35" y1="36" x2="26" y2="62" stroke="#0284c7" strokeWidth="4" strokeLinecap="round" />
-                      {/* Kaki menjejak kuat ke kiri */}
                       <line x1="26" y1="62" x2="10" y2="86" stroke="#0284c7" strokeWidth="4" strokeLinecap="round" />
                       <line x1="26" y1="62" x2="38" y2="86" stroke="#0284c7" strokeWidth="4" strokeLinecap="round" />
-                      {/* Tangan menggenggam tali ke arah kanan */}
                       <line x1="32" y1="44" x2="55" y2="50" stroke="#0284c7" strokeWidth="4" strokeLinecap="round" />
                     </svg>
                   </div>
 
-                  {/* Tali Tambang & Pita Merah Tengah (Figma 89:378 & 87:585) */}
-                  <div className="relative flex-1 h-5 flex items-center justify-center mx-1">
-                    {/* Tali Tambang Utama Cokelat Emas */}
-                    <div className="absolute inset-x-0 h-3.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#b45309] rounded-full border-2 border-[#78350f] shadow-inner" />
-                    
-                    {/* Pita / Penanda Kain Merah di Tengah Tali (Figma 89:387) */}
+                  {/* Tali Tambang & Pita Merah Tengah */}
+                  <div className="relative flex-1 h-4 sm:h-5 flex items-center justify-center mx-1">
+                    <div className="absolute inset-x-0 h-2.5 sm:h-3.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#b45309] rounded-full border-2 border-[#78350f] shadow-inner" />
                     <div className="relative z-20 flex flex-col items-center">
-                      <div className="size-5 rounded-full bg-[#fd363a] border-2 border-white shadow-md flex items-center justify-center text-white text-[10px] font-bold">
+                      <div className="size-4 sm:size-5 rounded-full bg-[#fd363a] border-2 border-white shadow-md flex items-center justify-center text-white text-[8px] sm:text-[10px] font-bold">
                         🔻
                       </div>
-                      <div className="w-1.5 h-3 bg-[#fd363a] rounded-b -mt-0.5" />
+                      <div className="w-1 sm:w-1.5 h-2.5 sm:h-3 bg-[#fd363a] rounded-b -mt-0.5" />
                     </div>
                   </div>
 
                   {/* Stickman Kanan (Pemain 2 / AI) */}
                   <div className="flex flex-col items-center shrink-0 -ml-2">
-                    <svg width="70" height="90" viewBox="0 0 70 90" className="drop-shadow-sm select-none">
-                      {/* Kepala dengan wajah tekad/marah */}
+                    <svg viewBox="0 0 70 90" className="w-[52px] h-[68px] sm:w-[70px] sm:h-[90px] drop-shadow-sm select-none">
                       <circle cx="35" cy="20" r="16" fill="#fdba74" stroke="#dc2626" strokeWidth="3" />
                       <path d="M 27 15 L 33 19" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
                       <path d="M 43 15 L 37 19" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
                       <path d="M 30 26 Q 35 22 40 26" stroke="#1e293b" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-                      {/* Badan miring condong ke kanan menarik tali */}
                       <line x1="35" y1="36" x2="44" y2="62" stroke="#dc2626" strokeWidth="4" strokeLinecap="round" />
-                      {/* Kaki menjejak kuat ke kanan */}
                       <line x1="44" y1="62" x2="60" y2="86" stroke="#dc2626" strokeWidth="4" strokeLinecap="round" />
                       <line x1="44" y1="62" x2="32" y2="86" stroke="#dc2626" strokeWidth="4" strokeLinecap="round" />
-                      {/* Tangan menggenggam tali ke arah kiri */}
                       <line x1="38" y1="44" x2="15" y2="50" stroke="#dc2626" strokeWidth="4" strokeLinecap="round" />
                     </svg>
                   </div>
@@ -1133,162 +1368,75 @@ export default function GameKompetitifPage() {
 
               {/* Notifikasi Ronde Terakhir (Bila Ada) */}
               {lastRoundNotice && (
-                <div className="text-xs font-bold text-[#144837] bg-white/90 px-4 py-1 rounded-full shadow mt-1">
+                <div className="text-[11px] sm:text-xs font-bold text-[#144837] bg-white/90 px-3 sm:px-4 py-0.5 sm:py-1 rounded-full shadow mt-0.5 text-center">
                   {lastRoundNotice}
                 </div>
               )}
             </div>
 
-            {/* BAR POIN, PEDANG VS, DAN TIMER 5 MENIT KOTAK MERAH (FIGMA 98:1162) */}
-            <div className="flex w-full items-center justify-between px-3 sm:px-6 mb-4">
+            {/* BAR POIN, PEDANG VS, DAN TIMER 5 MENIT KOTAK MERAH */}
+            <div className="flex w-full items-center justify-between gap-2 px-1 sm:px-6 mb-2.5 sm:mb-4">
               {/* Poin Pemain 1 */}
-              <div className="flex items-center gap-2">
-                <span className="game-font text-2xl sm:text-4xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                  {scoreP1} point
+              <div className="flex items-center gap-1.5 whitespace-nowrap">
+                <span className="game-font text-lg sm:text-4xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                  {scoreP1} <span className="text-xs sm:text-2xl font-semibold">poin</span>
                 </span>
               </div>
 
               {/* Indikator Pedang VS & Kotak Timer 5 Menit di Tengah */}
-              <div className="flex flex-col items-center">
-                {/* Garis Biru - Pedang ⚔️ - Garis Merah */}
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-12 sm:w-20 h-1.5 bg-[#36abe5] rounded-full shadow" />
-                  <span className="text-2xl filter drop-shadow">⚔️</span>
-                  <div className="w-12 sm:w-20 h-1.5 bg-[#d83333] rounded-full shadow" />
+              <div className="flex flex-col items-center shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                  <div className="w-6 sm:w-20 h-1 sm:h-1.5 bg-[#36abe5] rounded-full shadow" />
+                  <span className="text-base sm:text-2xl filter drop-shadow">⚔️</span>
+                  <div className="w-6 sm:w-20 h-1 sm:h-1.5 bg-[#d83333] rounded-full shadow" />
                 </div>
 
-                {/* Kotak Timer Merah 5 Menit Sesuai Figma 98:1162 */}
-                <div className={`rounded-xl border-[5px] border-white px-6 py-1 shadow-lg transition-all ${
+                <div className={`rounded-xl border-[3px] sm:border-[5px] border-white px-3.5 sm:px-6 py-0.5 sm:py-1 shadow-lg transition-all ${
                   timeLeft <= 30 ? "bg-red-600 animate-pulse" : "bg-[#fd363a]"
                 }`}>
-                  <span className="game-font text-2xl sm:text-4xl text-white font-bold tracking-widest">
+                  <span className="game-font text-lg sm:text-4xl text-white font-bold tracking-widest">
                     {formattedTime}
                   </span>
                 </div>
               </div>
 
               {/* Poin Pemain 2 / AI */}
-              <div className="flex items-center gap-2 flex-row-reverse">
-                <span className="game-font text-2xl sm:text-4xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                  {scoreP2} point
+              <div className="flex items-center gap-1.5 flex-row-reverse whitespace-nowrap">
+                <span className="game-font text-lg sm:text-4xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                  {scoreP2} <span className="text-xs sm:text-2xl font-semibold">poin</span>
                 </span>
               </div>
             </div>
 
-            {/* 3 KOLOM BATTLE: KALKULATOR P1 | KARTU SOAL | KALKULATOR P2 (FIGMA 87:365) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 w-full items-stretch">
-              
-              {/* ── 1. KALKULATOR PEMAIN 1 (KIRI, FIGMA 87:398) ── */}
-              <div className="lg:col-span-4 rounded-[32px] border-[6px] border-white bg-[rgba(228,211,255,0.85)] p-4 shadow-xl flex flex-col items-center justify-between">
-                <div className="w-full text-center mb-2">
-                  <h4 className="game-font text-2xl sm:text-3xl text-[#2a2830] font-bold">
-                    Pemain 1
-                  </h4>
-                </div>
+            {/* ═══════════════════════════════════════════════════════════════════════
+                AREA BATTLE: PORTRAIT HP FLEKSIBEL (< 640px) & 3 KOLOM LANDSCAPE/DESKTOP (>= 640px)
+               ═══════════════════════════════════════════════════════════════════════ */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-4 w-full items-stretch">
 
-                {/* Layar Input Kalkulator P1 (Figma 87:450) */}
-                <div className="w-full h-14 bg-white border-[4px] border-[#7251a8] rounded-xl flex items-center justify-end px-4 text-2xl sm:text-3xl font-mono font-bold text-[#1e1b4b] shadow-inner tracking-wider mb-3 select-none overflow-x-auto">
-                  {p1Input ? (
-                    p1Input
-                  ) : (
-                    <span className="text-gray-300 text-sm font-sans font-normal">
-                      Ketik angka...
-                    </span>
-                  )}
-                </div>
-
-                {/* Tombol-Tombol Keypad Kalkulator P1 (Figma 87:487) */}
-                <div className="grid grid-cols-4 gap-2 w-full">
-                  {["1", "2", "3"].map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => handleKeypadPress(n, "P1")}
-                      className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    >
-                      {n}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => handleKeypadPress("C", "P1")}
-                    className="rounded-xl border-2 border-white bg-[#f86f72] hover:bg-[#ef4444] text-white font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    title="Hapus Semua"
-                  >
-                    C
-                  </button>
-
-                  {["4", "5", "6"].map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => handleKeypadPress(n, "P1")}
-                      className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    >
-                      {n}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => handleKeypadPress("-", "P1")}
-                    className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    title="Minus"
-                  >
-                    -
-                  </button>
-
-                  {["7", "8", "9"].map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => handleKeypadPress(n, "P1")}
-                      className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    >
-                      {n}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => handleKeypadPress(".", "P1")}
-                    className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                  >
-                    .
-                  </button>
-
-                  <button
-                    onClick={() => handleKeypadPress("0", "P1")}
-                    className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                  >
-                    0
-                  </button>
-                  <button
-                    onClick={() => handleKeypadPress("⌫", "P1")}
-                    className="rounded-xl border-2 border-white bg-[#f86f72] hover:bg-[#ef4444] text-white font-bold text-lg py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    title="Hapus 1 Karakter"
-                  >
-                    ⌫
-                  </button>
-                  <button
-                    onClick={() => handleKeypadPress("ENTER", "P1")}
-                    className="col-span-2 rounded-xl border-2 border-white bg-[#55d274] hover:bg-[#22c55e] text-white font-bold text-base sm:text-lg py-3 shadow-md active:translate-y-1 transition-all cursor-pointer flex items-center justify-center gap-1"
-                  >
-                    Jawab ✓
-                  </button>
-                </div>
-              </div>
-
-              {/* ── 2. KARTU SOAL DI TENGAH (FIGMA 98:1164) ── */}
-              <div className="lg:col-span-4 rounded-[32px] border-[6px] border-white bg-[#fffbd3] p-5 shadow-xl flex flex-col items-center justify-between text-center min-h-[320px]">
-                <div className="w-full flex justify-center">
-                  <span className="text-xs font-bold text-purple-900 bg-purple-100 border border-purple-200 px-3.5 py-1 rounded-full uppercase tracking-wider">
+              {/* KARTU SOAL (Selalu di atas kalkulator pada HP Portrait agar langsung terbaca tanpa scroll!) */}
+              <div
+                className={`${
+                  gameMode === "1vs1" && mobilePortraitMode === "tabletop"
+                    ? "order-2 sm:order-2"
+                    : "order-1 sm:order-2"
+                } sm:col-span-4 rounded-[22px] sm:rounded-[32px] border-[4px] sm:border-[6px] border-white bg-[#fffbd3] p-3.5 sm:p-4 lg:p-5 shadow-xl flex flex-col items-center justify-between text-center min-h-[140px] sm:min-h-[300px] lg:min-h-[320px]`}
+              >
+                <div className="w-full flex justify-center mb-1">
+                  <span className="text-[10px] sm:text-xs font-bold text-purple-900 bg-purple-100 border border-purple-200 px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-wider">
                     {currentQ.categoryTag || selectedMateri} • {difficulty.toUpperCase()}
                   </span>
                 </div>
 
-                <div className="my-auto py-2">
-                  <p className="game-font text-lg sm:text-2xl font-semibold text-[#2a2830] leading-snug whitespace-pre-line mb-3">
+                <div className="my-auto py-1 sm:py-2 w-full">
+                  <p className="game-font text-base sm:text-lg lg:text-2xl font-semibold text-[#2a2830] leading-snug whitespace-pre-line mb-2 sm:mb-3">
                     {currentQ.question}
                   </p>
 
                   {/* Display Persamaan Jika Ada (SPLDV / Aljabar) */}
                   {currentQ.equationDisplay && (
-                    <div className="bg-white/80 border-2 border-amber-300 rounded-2xl p-3 my-2 shadow-inner inline-block text-left">
+                    <div className="bg-white/85 border-2 border-amber-300 rounded-xl sm:rounded-2xl p-2 sm:p-3 my-1.5 sm:my-2 shadow-inner inline-block text-left max-w-full overflow-x-auto">
                       {currentQ.equationDisplay.map((eq, i) => (
-                        <div key={i} className="font-mono text-base sm:text-lg font-bold text-[#1e1b4b]">
+                        <div key={i} className="font-mono text-sm sm:text-base lg:text-lg font-bold text-[#1e1b4b]">
                           {eq}
                         </div>
                       ))}
@@ -1296,114 +1444,71 @@ export default function GameKompetitifPage() {
                   )}
                 </div>
 
-                <div className="w-full border-t border-amber-200 pt-3">
-                  <p className="text-[11px] text-gray-600 font-semibold">
-                    💡 Ketik angka jawaban di kalkulatormu lalu tekan tombol <strong className="text-green-700">Jawab ✓</strong> (atau tekan Enter di keyboard).
+                <div className="w-full border-t border-amber-200 pt-2 sm:pt-3">
+                  <p className="text-[10px] sm:text-[11px] text-gray-600 font-semibold">
+                    💡 Ketik jawaban lalu tekan <strong className="text-green-700">Jawab ✓</strong> (atau Enter).
                   </p>
                 </div>
               </div>
 
-              {/* ── 3. KALKULATOR PEMAIN 2 / AI (KANAN, FIGMA 87:528) ── */}
-              <div className="lg:col-span-4 rounded-[32px] border-[6px] border-white bg-[rgba(228,211,255,0.85)] p-4 shadow-xl flex flex-col items-center justify-between">
-                <div className="w-full text-center mb-2">
-                  <h4 className="game-font text-2xl sm:text-3xl text-[#2a2830] font-bold">
-                    {gameMode === "vsAI" ? "AI Bot 🤖" : "Pemain 2"}
-                  </h4>
+              {/* BAR STATUS AI COMPACT KHUSUS HP PORTRAIT (Mode vsAI agar layar tidak boros oleh keypad mati) */}
+              {gameMode === "vsAI" && (
+                <div className="order-2 sm:hidden w-full rounded-2xl border-[3px] border-white bg-[rgba(228,211,255,0.92)] px-3.5 py-2 shadow-md flex items-center justify-between gap-2">
+                  <span className="game-font text-sm font-bold text-[#2a2830]">🤖 AI Bot</span>
+                  <span className="font-mono text-sm font-bold text-[#5b3d8f] bg-white/90 px-3 py-0.5 rounded-lg border border-purple-200">
+                    {p2Input ? `Menjawab: ${p2Input}` : "Sedang menghitung..."}
+                  </span>
                 </div>
+              )}
 
-                {/* Layar Input Kalkulator P2 */}
-                <div className="w-full h-14 bg-white border-[4px] border-[#7251a8] rounded-xl flex items-center justify-end px-4 text-2xl sm:text-3xl font-mono font-bold text-[#1e1b4b] shadow-inner tracking-wider mb-3 select-none overflow-x-auto">
-                  {p2Input ? (
-                    p2Input
-                  ) : (
-                    <span className="text-gray-300 text-sm font-sans font-normal">
-                      {gameMode === "vsAI" ? "AI sedang menghitung..." : "Ketik angka..."}
-                    </span>
-                  )}
+              {/* MODE 1 vs 1 TABLETOP HP (P2 di Atas Diputar 180°, P1 di Bawah) */}
+              {gameMode === "1vs1" && mobilePortraitMode === "tabletop" ? (
+                <>
+                  <CalculatorPanel
+                    title="Pemain 1"
+                    inputValue={p1Input}
+                    placeholder="Ketik angka..."
+                    target="P1"
+                    extraClassName="order-3 sm:order-1 sm:col-span-4"
+                    onKeyPress={handleKeypadPress}
+                  />
+                  <CalculatorPanel
+                    title="Pemain 2"
+                    inputValue={p2Input}
+                    placeholder="Ketik angka..."
+                    target="P2"
+                    extraClassName="order-1 sm:order-3 sm:col-span-4 rotate-180 sm:rotate-0"
+                    onKeyPress={handleKeypadPress}
+                  />
+                </>
+              ) : (
+                /* MODE DEFAULT PORTRAIT: Di HP 1vs1 kedua keypad berdampingan (grid-cols-2), di vsAI P1 full-width, di Desktop/Landscape sm:contents kembali jadi 3 kolom */
+                <div
+                  className={`order-3 grid gap-2 sm:contents ${
+                    gameMode === "1vs1" ? "grid-cols-2" : "grid-cols-1"
+                  }`}
+                >
+                  <CalculatorPanel
+                    title="Pemain 1"
+                    inputValue={p1Input}
+                    placeholder="Ketik..."
+                    target="P1"
+                    compactSide={gameMode === "1vs1"}
+                    extraClassName="sm:order-1 sm:col-span-4"
+                    onKeyPress={handleKeypadPress}
+                  />
+                  <CalculatorPanel
+                    title={gameMode === "vsAI" ? "AI Bot 🤖" : "Pemain 2"}
+                    inputValue={p2Input}
+                    placeholder={gameMode === "vsAI" ? "AI menghitung..." : "Ketik..."}
+                    target="P2"
+                    disabled={gameMode === "vsAI"}
+                    compactSide={gameMode === "1vs1"}
+                    extraClassName={`sm:order-3 sm:col-span-4 ${gameMode === "vsAI" ? "hidden sm:flex" : "flex"}`}
+                    onKeyPress={handleKeypadPress}
+                  />
                 </div>
-
-                {/* Tombol-Tombol Keypad Kalkulator P2 */}
-                <div className="grid grid-cols-4 gap-2 w-full">
-                  {["1", "2", "3"].map((n) => (
-                    <button
-                      key={n}
-                      disabled={gameMode === "vsAI"}
-                      onClick={() => handleKeypadPress(n, "P2")}
-                      className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 disabled:opacity-80 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    >
-                      {n}
-                    </button>
-                  ))}
-                  <button
-                    disabled={gameMode === "vsAI"}
-                    onClick={() => handleKeypadPress("C", "P2")}
-                    className="rounded-xl border-2 border-white bg-[#f86f72] hover:bg-[#ef4444] disabled:opacity-80 text-white font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    title="Hapus Semua"
-                  >
-                    C
-                  </button>
-
-                  {["4", "5", "6"].map((n) => (
-                    <button
-                      key={n}
-                      disabled={gameMode === "vsAI"}
-                      onClick={() => handleKeypadPress(n, "P2")}
-                      className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 disabled:opacity-80 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    >
-                      {n}
-                    </button>
-                  ))}
-                  <button
-                    disabled={gameMode === "vsAI"}
-                    onClick={() => handleKeypadPress("-", "P2")}
-                    className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 disabled:opacity-80 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    title="Minus"
-                  >
-                    -
-                  </button>
-
-                  {["7", "8", "9"].map((n) => (
-                    <button
-                      key={n}
-                      disabled={gameMode === "vsAI"}
-                      onClick={() => handleKeypadPress(n, "P2")}
-                      className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 disabled:opacity-80 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    >
-                      {n}
-                    </button>
-                  ))}
-                  <button
-                    disabled={gameMode === "vsAI"}
-                    onClick={() => handleKeypadPress(".", "P2")}
-                    className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 disabled:opacity-80 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                  >
-                    .
-                  </button>
-
-                  <button
-                    disabled={gameMode === "vsAI"}
-                    onClick={() => handleKeypadPress("0", "P2")}
-                    className="rounded-xl border-2 border-white bg-white hover:bg-gray-100 disabled:opacity-80 text-[#2a2830] font-bold text-xl py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                  >
-                    0
-                  </button>
-                  <button
-                    disabled={gameMode === "vsAI"}
-                    onClick={() => handleKeypadPress("⌫", "P2")}
-                    className="rounded-xl border-2 border-white bg-[#f86f72] hover:bg-[#ef4444] disabled:opacity-80 text-white font-bold text-lg py-3 shadow-md active:translate-y-1 transition-all cursor-pointer"
-                    title="Hapus 1 Karakter"
-                  >
-                    ⌫
-                  </button>
-                  <button
-                    disabled={gameMode === "vsAI"}
-                    onClick={() => handleKeypadPress("ENTER", "P2")}
-                    className="col-span-2 rounded-xl border-2 border-white bg-[#55d274] hover:bg-[#22c55e] disabled:opacity-80 text-white font-bold text-base sm:text-lg py-3 shadow-md active:translate-y-1 transition-all cursor-pointer flex items-center justify-center gap-1"
-                  >
-                    Jawab ✓
-                  </button>
-                </div>
-              </div>
+              )}
 
             </div>
 
@@ -1415,21 +1520,21 @@ export default function GameKompetitifPage() {
            ═══════════════════════════════════════════════════════════════════════ */}
         {gameState === "gameover" && winner && (
           <>
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(127,114,150,0.75)] p-4 backdrop-blur-xs animate-in fade-in duration-200">
-              <div className="relative w-full max-w-lg rounded-[36px] border-[7px] border-white bg-[#fffbd3] p-8 shadow-2xl flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(127,114,150,0.75)] p-3 sm:p-4 backdrop-blur-xs animate-in fade-in duration-200">
+              <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[36px] border-[5px] sm:border-[7px] border-white bg-[#fffbd3] p-5 sm:p-8 shadow-2xl flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
                 
                 {/* Teks Kemenangan Sesuai Figma 90:747 dengan Highlight Nama Juara */}
-                <h3 className="game-font text-3xl sm:text-4xl text-black font-bold mb-3 leading-tight">
+                <h3 className="game-font text-2xl sm:text-4xl text-black font-bold mb-2 sm:mb-3 leading-tight">
                   {winner === "Seri / Imbang" ? (
                     <>
                       Permainan Selesai!
-                      <span className="block mt-1 text-2xl text-amber-600">Skor Seri / Imbang!</span>
+                      <span className="block mt-1 text-xl sm:text-2xl text-amber-600">Skor Seri / Imbang!</span>
                     </>
                   ) : (
                     <>
                       Selamat{" "}
                       <span
-                        className={`inline-flex items-center gap-1.5 px-4 py-1 my-1 rounded-2xl border-[4px] border-white text-white font-extrabold shadow-lg transition-transform hover:scale-105 ${
+                        className={`inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 my-1 rounded-2xl border-[3px] sm:border-[4px] border-white text-white font-extrabold shadow-lg transition-transform hover:scale-105 ${
                           winner === "Pemain 1"
                             ? "bg-[#0284c7] shadow-[0px_4px_14px_rgba(2,132,199,0.5)]"
                             : winner === "Pemain 2"
@@ -1441,7 +1546,7 @@ export default function GameKompetitifPage() {
                         <span>{winner}</span>
                       </span>
                       !
-                      <span className="block mt-2 text-2xl sm:text-3xl text-[#15803d]">
+                      <span className="block mt-1.5 sm:mt-2 text-xl sm:text-3xl text-[#15803d]">
                         Kamu Menang!
                       </span>
                     </>
@@ -1449,14 +1554,14 @@ export default function GameKompetitifPage() {
                 </h3>
 
                 {/* Trophy & Emojis Kemenangan */}
-                <div className="my-4 text-7xl flex items-center gap-3 animate-bounce">
+                <div className="my-3 sm:my-4 text-5xl sm:text-7xl flex items-center gap-3 animate-bounce">
                   <span>🏆</span>
                   <span>🎉</span>
-                  <span className="text-5xl animate-pulse">✨</span>
+                  <span className="text-4xl sm:text-5xl animate-pulse">✨</span>
                 </div>
 
                 {/* Skor Akhir dengan Highlight Pemenang */}
-                <div className="flex items-center justify-center gap-2 text-sm font-semibold mb-6 bg-white/70 px-4 py-1.5 rounded-full border border-amber-200 shadow-xs">
+                <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold mb-5 sm:mb-6 bg-white/70 px-3 sm:px-4 py-1.5 rounded-full border border-amber-200 shadow-xs">
                   <span className="text-gray-600">Skor akhir:</span>
                   <span
                     className={`px-2 py-0.5 rounded-md font-bold ${
@@ -1480,10 +1585,10 @@ export default function GameKompetitifPage() {
                 </div>
 
                 {/* 2 Tombol Sesuai Figma 90:744 & 90:745 */}
-                <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full justify-center">
                   <button
                     onClick={handleStartGame}
-                    className="rounded-[28px] border-[6px] border-white bg-[#94f291] py-3.5 px-6 game-font text-xl font-bold text-black shadow-[0px_5px_0px_0px_#aaafaf] hover:scale-105 active:translate-y-1 transition-all cursor-pointer flex-1"
+                    className="rounded-[24px] sm:rounded-[28px] border-[5px] sm:border-[6px] border-white bg-[#94f291] py-3 sm:py-3.5 px-6 game-font text-lg sm:text-xl font-bold text-black shadow-[0px_5px_0px_0px_#aaafaf] hover:scale-105 active:translate-y-1 transition-all cursor-pointer flex-1"
                   >
                     Main lagi
                   </button>
@@ -1493,7 +1598,7 @@ export default function GameKompetitifPage() {
                       playClick();
                       setGameState("lobby");
                     }}
-                    className="rounded-[28px] border-[6px] border-white bg-[#7bc6f4] py-3.5 px-6 game-font text-xl font-bold text-black shadow-[0px_5px_0px_0px_#aaafaf] hover:scale-105 active:translate-y-1 transition-all cursor-pointer flex-1"
+                    className="rounded-[24px] sm:rounded-[28px] border-[5px] sm:border-[6px] border-white bg-[#7bc6f4] py-3 sm:py-3.5 px-6 game-font text-lg sm:text-xl font-bold text-black shadow-[0px_5px_0px_0px_#aaafaf] hover:scale-105 active:translate-y-1 transition-all cursor-pointer flex-1"
                   >
                     Kembali ke lobby
                   </button>

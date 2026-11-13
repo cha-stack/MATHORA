@@ -15,8 +15,9 @@ export default function LoginGuru() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     playClick();
     setErrorMessage("");
@@ -26,21 +27,27 @@ export default function LoginGuru() {
       return;
     }
 
-    // Auto-register akun demo guru pertama jika belum ada, atau validasi login
-    let result = loginUser(username, password, "guru");
-    if (!result.success) {
-      // Jika belum terdaftar, buat akun guru baru otomatis
-      registerUser(username, password, "guru");
-      result = loginUser(username, password, "guru");
-    }
+    setIsLoading(true);
+    try {
+      // Validasi login guru
+      let result = await loginUser(username, password, "guru");
+      if (!result.success) {
+        // Jika belum terdaftar, buat akun guru baru otomatis
+        await registerUser(username, `${username.toLowerCase()}@mathora.sch.id`, password, "guru", "/images/avatar-guru.svg");
+        result = await loginUser(username, password, "guru");
+      }
 
-    if (!result.success) {
-      setErrorMessage(result.message);
-      return;
-    }
+      if (!result.success) {
+        setErrorMessage(result.message);
+        setIsLoading(false);
+        return;
+      }
 
-    alert(`Selamat datang Guru, ${username}!`);
-    router.push("/dashboard/guru");
+      router.push("/dashboard/guru");
+    } catch {
+      setErrorMessage("Terjadi kendala saat login. Silakan coba lagi.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -195,10 +202,11 @@ export default function LoginGuru() {
         <div className="mt-5 flex w-full justify-center">
           <button
             onClick={() => handleSubmit()}
-            className="group relative flex h-12 sm:h-14 w-full max-w-[180px] items-center justify-center rounded-[16px] sm:rounded-[18px] border-[4px] sm:border-[5px] border-white bg-[#1cd8a4] shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
+            disabled={isLoading}
+            className="group relative flex h-12 sm:h-14 w-full max-w-[180px] items-center justify-center rounded-[16px] sm:rounded-[18px] border-[4px] sm:border-[5px] border-white bg-[#1cd8a4] disabled:opacity-80 shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
           >
             <span className="game-font text-xl sm:text-2xl font-bold text-white drop-shadow-[0px_2px_0px_#aaafaf]">
-              Login
+              {isLoading ? "Masuk..." : "Login"}
             </span>
           </button>
         </div>

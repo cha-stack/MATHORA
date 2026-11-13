@@ -16,8 +16,9 @@ export default function RegistSiswa() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     playClick();
     setErrorMessage("");
@@ -33,14 +34,21 @@ export default function RegistSiswa() {
       return;
     }
 
-    const res = registerUser(username, email, password, "siswa", "/images/avatar-1.svg");
-    if (!res.success) {
-      setErrorMessage(res.message);
-    } else {
-      setSuccessMessage("Pendaftaran berhasil! Mengalihkan ke login...");
-      setTimeout(() => {
-        router.push("/login/siswa");
-      }, 1500);
+    setIsLoading(true);
+    try {
+      const res = await registerUser(username, email, password, "siswa", "/images/avatar-1.svg");
+      if (!res.success) {
+        setErrorMessage(res.message);
+        setIsLoading(false);
+      } else {
+        setSuccessMessage("Pendaftaran berhasil! Mengalihkan ke login...");
+        setTimeout(() => {
+          router.push("/login/siswa");
+        }, 1500);
+      }
+    } catch {
+      setErrorMessage("Terjadi kesalahan saat mendaftar. Silakan coba lagi.");
+      setIsLoading(false);
     }
   };
 
@@ -124,9 +132,10 @@ export default function RegistSiswa() {
 
           <button
             type="submit"
-            className="mt-2 w-full rounded-2xl border-4 border-white bg-[#1cd8a4] py-3 game-font text-base font-bold text-[#144837] shadow-[0px_4px_0px_0px_#028560] hover:scale-102 active:translate-y-1 cursor-pointer"
+            disabled={isLoading}
+            className="mt-2 w-full rounded-2xl border-4 border-white bg-[#1cd8a4] disabled:opacity-80 py-3 game-font text-base font-bold text-[#144837] shadow-[0px_4px_0px_0px_#028560] hover:scale-102 active:translate-y-1 cursor-pointer"
           >
-            Daftar Sekarang
+            {isLoading ? "Mendaftarkan Akun..." : "Daftar Sekarang"}
           </button>
         </form>
 

@@ -1,3 +1,14 @@
+import {
+  isSupabaseConfigured,
+  sbRegisterUser,
+  sbLoginUser,
+  sbResetPassword,
+  sbUpdateProfile,
+  sbSaveSectionProgress,
+  sbGetStudentProgress,
+  DbSectionProgress,
+} from "@/lib/supabase";
+
 export interface UserAccount {
   username: string;
   email: string;
@@ -11,7 +22,7 @@ const STORAGE_KEY = "mathora_users";
 const CURRENT_USER_KEY = "mathora_current_user";
 const PROGRESS_KEY = "mathora_progress";
 
-// Ambil semua user yang tersimpan
+// Ambil semua user yang tersimpan di cache lokal
 export function getUsers(): UserAccount[] {
   if (typeof window === "undefined") return [];
   try {
@@ -22,63 +33,153 @@ export function getUsers(): UserAccount[] {
   }
 }
 
-// Registrasi user baru dengan email
-export function registerUser(
+/**
+ * Sinkronkan data progres dari Supabase ke cache lokal (localStorage)
+ */
+export async function syncProgressFromSupabase(username: string): Promise<void> {
+  if (!isSupabaseConfigured || typeof window === "undefined" || !username) return;
+
+  try {
+    const rows = await sbGetStudentProgress(username);
+    if (!rows || rows.length === 0) return;
+
+    const currentProg = getMateriProgress(username);
+    const secMap: Record<number, SingleSectionProgress> = { ...(currentProg.sections || {}) };
+
+    rows.forEach((row: DbSectionProgress) => {
+      secMap[row.section_num] = {
+        unlocked: row.unlocked,
+        pretest: row.pretest,
+        pretest_score: row.pretest_score,
+        pretest_correct: row.pretest_correct,
+        pretest_total: row.pretest_total,
+        materi: row.materi,
+        posttest: row.posttest,
+        posttest_score: row.posttest_score,
+        posttest_correct: row.posttest_correct,
+        posttest_total: row.posttest_total,
+      };
+    });
+
+    const updated: SectionProgress = {
+      ...currentProg,
+      sections: secMap,
+    };
+
+    if (secMap[1]) {
+      updated.section1_pretest = secMap[1].pretest;
+      updated.section1_pretest_score = secMap[1].pretest_score;
+      updated.section1_pretest_correct = secMap[1].pretest_correct;
+      updated.section1_materi = secMap[1].materi;
+      updated.section1_posttest = secMap[1].posttest;
+      updated.section1_posttest_score = secMap[1].posttest_score;
+      updated.section1_posttest_correct = secMap[1].posttest_correct;
+    }
+    if (secMap[2]) {
+      updated.section2_unlocked = secMap[2].unlocked;
+      updated.section2_pretest = secMap[2].pretest;
+      updated.section2_pretest_score = secMap[2].pretest_score;
+      updated.section2_pretest_correct = secMap[2].pretest_correct;
+      updated.section2_materi = secMap[2].materi;
+      updated.section2_posttest = secMap[2].posttest;
+      updated.section2_posttest_score = secMap[2].posttest_score;
+      updated.section2_posttest_correct = secMap[2].posttest_correct;
+    }
+
+    localStorage.setItem(`${PROGRESS_KEY}_${username}`, JSON.stringify(updated));
+  } catch (err) {
+    console.warn("syncProgressFromSupabase warning:", err);
+  }
+}
+
+// Registrasi user baru (didukung Supabase + cache lokal)
+export async function registerUser(
   username: string,
   email: string,
   password: string,
   role: "siswa" | "guru" = "siswa",
   avatar: string = "/images/avatar-1.svg"
-): { success: boolean; message: string } {
-  if (typeof window === "undefined") return { success: false, message: "Window not ready" };
-  const users = getUsers();
-
+): Promise<{ success: boolean; message: string }> {
   const trimmedUser = username.trim();
   const trimmedEmail = email.trim().toLowerCase();
 
-  const userExists = users.find(
-    (u) => u.username.toLowerCase() === trimmedUser.toLowerCase()
-  );
-  if (userExists) {
-    return {
-      success: false,
-      message: `Username "${username}" sudah terdaftar! Gunakan username lain.`,
-    };
+  // 1. Simpan ke Supabase jika sudah dikonfigurasi
+  if (isSupabaseConfigured) {
+    const sbRes = await sbRegisterUser({
+      username: trimmedUser,
+      email: trimmedEmail,
+      password,
+      role,
+      avatar,
+    });
+    if (!sbRes.success) {
+      return sbRes;
+    }
   }
 
-  const emailExists = users.find(
-    (u) => u.email?.toLowerCase() === trimmedEmail
-  );
-  if (emailExists) {
-    return {
-      success: false,
-      message: `Email "${email}" sudah digunakan! Silakan langsung login atau gunakan fitur Lupa Password.`,
+  // 2. Selalu simpan juga ke cache lokal untuk akses offline instan
+  if (typeof window !== "undefined") {
+    const users = getUsers();
+    const existingIndex = users.findIndex(
+      (u) => u.username.toLowerCase() === trimmedUser.toLowerCase()
+    );
+
+    const newUser: UserAccount = {
+      username: trimmedUser,
+      email: trimmedEmail,
+      password,
+      role,
+      avatar,
+      createdAt: new Date().toISOString(),
     };
+
+    if (existingIndex >= 0) {
+      users[existingIndex] = newUser;
+    } else {
+      users.push(newUser);
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
   }
 
-  const newUser: UserAccount = {
-    username: trimmedUser,
-    email: trimmedEmail,
-    password,
-    role,
-    avatar,
-    createdAt: new Date().toISOString(),
-  };
-
-  users.push(newUser);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
   return { success: true, message: "Pendaftaran akun berhasil!" };
 }
 
-// Validasi login user (bisa pakai username atau email)
-export function loginUser(
+// Validasi login user (didukung Supabase + cache lokal)
+export async function loginUser(
   identifier: string,
   password: string,
   role: "siswa" | "guru" = "siswa"
-): { success: boolean; message: string; user?: UserAccount } {
+): Promise<{ success: boolean; message: string; user?: UserAccount }> {
+  const trimmedId = identifier.trim().toLowerCase();
+
+  // 1. Prioritas periksa ke Supabase jika terkonfigurasi
+  if (isSupabaseConfigured) {
+    const sbRes = await sbLoginUser(identifier, password, role);
+    if (sbRes.success && sbRes.user) {
+      const activeUser: UserAccount = {
+        username: sbRes.user.username,
+        email: sbRes.user.email,
+        password: sbRes.user.password,
+        role: sbRes.user.role,
+        avatar: sbRes.user.avatar,
+        createdAt: sbRes.user.created_at || new Date().toISOString(),
+      };
+
+      if (typeof window !== "undefined") {
+        // Simpan sesi login aktif di browser
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(activeUser));
+        // Sinkronkan progres terbaru dari cloud database
+        await syncProgressFromSupabase(activeUser.username);
+      }
+      return { success: true, message: "Login berhasil!", user: activeUser };
+    } else {
+      return { success: false, message: sbRes.message };
+    }
+  }
+
+  // 2. Fallback ke localStorage jika Supabase belum dipasang
   if (typeof window === "undefined") return { success: false, message: "Window not ready" };
   const users = getUsers();
-  const trimmedId = identifier.trim().toLowerCase();
 
   const user = users.find(
     (u) =>
@@ -97,45 +198,48 @@ export function loginUser(
     return { success: false, message: "Password salah! Silakan periksa kembali." };
   }
 
-  // Simpan sesi login aktif
   localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
   return { success: true, message: "Login berhasil!", user };
 }
 
-// Reset Password via validasi Email
-export function resetPasswordByEmail(
+// Reset Password via validasi Email (didukung Supabase + cache lokal)
+export async function resetPasswordByEmail(
   email: string,
   newPassword: string
-): { success: boolean; message: string } {
-  if (typeof window === "undefined") return { success: false, message: "Window not ready" };
-  const users = getUsers();
+): Promise<{ success: boolean; message: string }> {
   const trimmedEmail = email.trim().toLowerCase();
 
-  const userIndex = users.findIndex(
-    (u) => u.email?.toLowerCase() === trimmedEmail
-  );
-
-  if (userIndex === -1) {
-    return {
-      success: false,
-      message: `Email "${email}" tidak ditemukan dalam sistem!`,
-    };
+  // 1. Update di Supabase jika terhubung
+  if (isSupabaseConfigured) {
+    const sbRes = await sbResetPassword(trimmedEmail, newPassword);
+    if (!sbRes.success) {
+      return sbRes;
+    }
   }
 
-  users[userIndex].password = newPassword;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+  // 2. Update di cache lokal
+  if (typeof window !== "undefined") {
+    const users = getUsers();
+    const userIndex = users.findIndex(
+      (u) => u.email?.toLowerCase() === trimmedEmail
+    );
 
-  // Update current user if matches
-  const currentUser = getCurrentUser();
-  if (currentUser && currentUser.email?.toLowerCase() === trimmedEmail) {
-    currentUser.password = newPassword;
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+    if (userIndex >= 0) {
+      users[userIndex].password = newPassword;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+    }
+
+    const currentUser = getCurrentUser();
+    if (currentUser && currentUser.email?.toLowerCase() === trimmedEmail) {
+      currentUser.password = newPassword;
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+    }
   }
 
   return { success: true, message: "Password berhasil diperbarui! Silakan login kembali." };
 }
 
-// Ambil user yang sedang aktif
+// Ambil user yang sedang aktif di sesi browser saat ini
 export function getCurrentUser(): UserAccount | null {
   if (typeof window === "undefined") return null;
   try {
@@ -146,25 +250,34 @@ export function getCurrentUser(): UserAccount | null {
   }
 }
 
-// Update data profil
-export function updateUserProfile(
+// Update data profil (username & avatar)
+export async function updateUserProfile(
   newUsername: string,
   newAvatar?: string
-): { success: boolean; message: string; user?: UserAccount } {
-  if (typeof window === "undefined") return { success: false, message: "Window not ready" };
+): Promise<{ success: boolean; message: string; user?: UserAccount }> {
+  if (typeof window === "undefined") return { success: false, message: "Tidak ada user yang sedang login." };
   const currentUser = getCurrentUser();
   if (!currentUser) return { success: false, message: "Tidak ada user yang sedang login." };
 
-  const users = getUsers();
   const trimmed = newUsername.trim();
 
+  // 1. Update ke Supabase jika terhubung
+  if (isSupabaseConfigured) {
+    const sbRes = await sbUpdateProfile(currentUser.username, trimmed, newAvatar);
+    if (!sbRes.success) {
+      return { success: false, message: sbRes.message };
+    }
+  }
+
+  // 2. Update cache lokal
+  const users = getUsers();
   if (trimmed.toLowerCase() !== currentUser.username.toLowerCase()) {
     const exists = users.some(
       (u) =>
         u.username.toLowerCase() === trimmed.toLowerCase() &&
         u.username.toLowerCase() !== currentUser.username.toLowerCase()
     );
-    if (exists) {
+    if (exists && !isSupabaseConfigured) {
       return { success: false, message: `Username "${trimmed}" sudah digunakan akun lain!` };
     }
   }
@@ -190,7 +303,8 @@ export function logoutUser(): void {
   localStorage.removeItem(CURRENT_USER_KEY);
 }
 
-// --- SISTEM TINGKATAN & PROGRESSION LOCK MATERI ---
+// ─── SISTEM TINGKATAN & PROGRESSION LOCK MATERI ──────────────────────────────
+
 export interface SingleSectionProgress {
   unlocked: boolean;
   pretest: boolean;
@@ -315,6 +429,11 @@ export function getSectionState(sectionNum: number, username?: string): SingleSe
   };
 }
 
+/**
+ * Simpan progres per-section:
+ * 1. Simpan langsung ke localStorage (instan tanpa jeda bagi siswa)
+ * 2. Otomatis sinkronkan ke database Supabase di latar belakang (background sync)
+ */
 export function saveSectionState(
   sectionNum: number,
   updates: Partial<SingleSectionProgress>,
@@ -355,5 +474,27 @@ export function saveSectionState(
     topUpdates.section2_posttest_correct = nextSec.posttest_correct;
   }
 
-  return saveMateriProgress(topUpdates, username);
+  const saved = saveMateriProgress(topUpdates, username);
+
+  // Background Sync ke Supabase (Fire-and-forget tanpa membuat UI siswa menunggu)
+  if (isSupabaseConfigured && typeof window !== "undefined") {
+    const activeUsername = username || getCurrentUser()?.username;
+    if (activeUsername) {
+      sbSaveSectionProgress(activeUsername, sectionNum, nextSec).catch((err) => {
+        console.warn("Background sync section progress gagal:", err);
+      });
+      // Jika unlock section berikutnya, simpan juga status unlocknya
+      if (nextSec.posttest && sectionNum < 5) {
+        const nextNum = sectionNum + 1;
+        const nextState = nextSections[nextNum];
+        if (nextState) {
+          sbSaveSectionProgress(activeUsername, nextNum, nextState).catch((err) => {
+            console.warn("Background sync next section unlock gagal:", err);
+          });
+        }
+      }
+    }
+  }
+
+  return saved;
 }

@@ -267,16 +267,16 @@ function SpldvMateriContent() {
 
   return (
     <div className="flex w-full flex-col items-center">
-      <div className="relative w-full max-w-5xl rounded-[32px] sm:rounded-[42px] border-[7px] border-white bg-[#e4d3ff]/90 p-5 sm:p-8 shadow-2xl backdrop-blur-xs flex flex-col items-center min-h-[600px] justify-between">
+      <div className="relative w-full max-w-5xl rounded-[28px] sm:rounded-[42px] border-[5px] sm:border-[7px] border-white bg-[#e4d3ff]/90 p-3.5 sm:p-8 shadow-2xl backdrop-blur-xs flex flex-col items-center min-h-[600px] justify-between">
         {/* Top Progress & Title */}
         <div className="w-full flex flex-col items-center">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="rounded-full bg-[#7251a8] px-3.5 py-0.5 text-xs font-bold text-white shadow">
+          <div className="flex items-center gap-2 mb-2 text-center">
+            <span className="rounded-full bg-[#7251a8] px-3.5 py-0.5 text-[11px] sm:text-xs font-bold text-white shadow text-center">
               Section {sectionNum} dari 5 • {SECTION_TITLES[sectionNum]}
             </span>
           </div>
 
-          <div className="flex w-full max-w-xl gap-2.5 mb-3">
+          <div className="flex w-full max-w-xl gap-2 sm:gap-2.5 mb-3">
             {Array.from({ length: totalSlides }).map((_, i) => {
               const s = i + 1;
               return (
@@ -286,7 +286,7 @@ function SpldvMateriContent() {
                     playClick();
                     setSlide(s);
                   }}
-                  className={`h-3.5 flex-1 rounded-full transition-all cursor-pointer ${
+                  className={`h-3 sm:h-3.5 flex-1 rounded-full transition-all cursor-pointer ${
                     s <= slide ? "bg-[#7251a8] shadow" : "bg-white/80 hover:bg-white"
                   }`}
                   title={`Slide ${s}`}
@@ -295,7 +295,7 @@ function SpldvMateriContent() {
             })}
           </div>
 
-          <h2 className="game-font text-2xl sm:text-3xl md:text-4xl text-[#2a2830] font-semibold text-center">
+          <h2 className="game-font text-xl sm:text-3xl md:text-4xl text-[#2a2830] font-semibold text-center leading-snug">
             {SLIDE_TITLES[sectionNum][slide - 1]}
           </h2>
         </div>
@@ -314,33 +314,33 @@ function SpldvMateriContent() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 w-full">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full">
                   <button
                     onClick={() => { playClick(); setActiveTab("SP"); }}
-                    className={`flex flex-col items-center justify-center rounded-[24px] border-[5px] border-white p-3.5 transition-all cursor-pointer ${
+                    className={`flex flex-col items-center justify-center rounded-[18px] sm:rounded-[24px] border-3 sm:border-[5px] border-white p-2 sm:p-3.5 transition-all cursor-pointer ${
                       activeTab === "SP" ? "bg-[#1cd8a4] shadow-md scale-103" : "bg-white/90 shadow hover:bg-white"
                     }`}
                   >
-                    <span className="game-font text-2xl sm:text-4xl font-semibold text-[#2a2830]">[ SP ]</span>
-                    <span className="text-xs font-bold text-[#2a2830]">Sistem Persamaan</span>
+                    <span className="game-font text-xl sm:text-4xl font-semibold text-[#2a2830]">[ SP ]</span>
+                    <span className="text-[10px] sm:text-xs font-bold text-[#2a2830] text-center">Sistem Persamaan</span>
                   </button>
                   <button
                     onClick={() => { playClick(); setActiveTab("L"); }}
-                    className={`flex flex-col items-center justify-center rounded-[24px] border-[5px] border-white p-3.5 transition-all cursor-pointer ${
+                    className={`flex flex-col items-center justify-center rounded-[18px] sm:rounded-[24px] border-3 sm:border-[5px] border-white p-2 sm:p-3.5 transition-all cursor-pointer ${
                       activeTab === "L" ? "bg-[#f8f298] shadow-md scale-103" : "bg-white/90 shadow hover:bg-white"
                     }`}
                   >
-                    <span className="game-font text-2xl sm:text-4xl font-semibold text-[#2a2830]">[ L ]</span>
-                    <span className="text-xs font-bold text-[#2a2830]">Linear</span>
+                    <span className="game-font text-xl sm:text-4xl font-semibold text-[#2a2830]">[ L ]</span>
+                    <span className="text-[10px] sm:text-xs font-bold text-[#2a2830] text-center">Linear</span>
                   </button>
                   <button
                     onClick={() => { playClick(); setActiveTab("DV"); }}
-                    className={`flex flex-col items-center justify-center rounded-[24px] border-[5px] border-white p-3.5 transition-all cursor-pointer ${
+                    className={`flex flex-col items-center justify-center rounded-[18px] sm:rounded-[24px] border-3 sm:border-[5px] border-white p-2 sm:p-3.5 transition-all cursor-pointer ${
                       activeTab === "DV" ? "bg-[#d3e9ff] shadow-md scale-103" : "bg-white/90 shadow hover:bg-white"
                     }`}
                   >
-                    <span className="game-font text-2xl sm:text-4xl font-semibold text-[#2a2830]">[ DV ]</span>
-                    <span className="text-xs font-bold text-[#2a2830]">Dua Variabel</span>
+                    <span className="game-font text-xl sm:text-4xl font-semibold text-[#2a2830]">[ DV ]</span>
+                    <span className="text-[10px] sm:text-xs font-bold text-[#2a2830] text-center">Dua Variabel</span>
                   </button>
                 </div>
 
@@ -384,28 +384,28 @@ function SpldvMateriContent() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 w-full">
-                  <div className="flex items-center justify-between rounded-2xl border-4 border-white bg-blue-50 p-4 shadow">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
+                  <div className="flex items-center justify-between rounded-2xl border-3 sm:border-4 border-white bg-blue-50 p-3.5 sm:p-4 shadow">
                     <div>
                       <span className="game-font text-base sm:text-lg font-semibold text-[#2a2830]">Pensil (x)</span>
                       <p className="text-xs font-semibold text-blue-700">@ Rp 2.000</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => { playClick(); setApelCount(Math.max(0, apelCount - 1)); }} className="size-8 rounded-full bg-blue-500 font-bold text-white shadow cursor-pointer">-</button>
-                      <span className="game-font text-xl font-bold w-6 text-center">{apelCount}</span>
-                      <button onClick={() => { playClick(); setApelCount(apelCount + 1); }} className="size-8 rounded-full bg-blue-500 font-bold text-white shadow cursor-pointer">+</button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button onClick={() => { playClick(); setApelCount(Math.max(0, apelCount - 1)); }} className="size-8 rounded-full bg-blue-500 font-bold text-white shadow cursor-pointer active:scale-95 shrink-0">-</button>
+                      <span className="game-font text-xl font-bold w-7 text-center text-[#2a2830]">{apelCount}</span>
+                      <button onClick={() => { playClick(); setApelCount(apelCount + 1); }} className="size-8 rounded-full bg-blue-500 font-bold text-white shadow cursor-pointer active:scale-95 shrink-0">+</button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-2xl border-4 border-white bg-amber-50 p-4 shadow">
+                  <div className="flex items-center justify-between rounded-2xl border-3 sm:border-4 border-white bg-amber-50 p-3.5 sm:p-4 shadow">
                     <div>
                       <span className="game-font text-base sm:text-lg font-semibold text-[#2a2830]">Buku (y)</span>
                       <p className="text-xs font-semibold text-amber-700">@ Rp 5.000</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => { playClick(); setJerukCount(Math.max(0, jerukCount - 1)); }} className="size-8 rounded-full bg-amber-500 font-bold text-white shadow cursor-pointer">-</button>
-                      <span className="game-font text-xl font-bold w-6 text-center">{jerukCount}</span>
-                      <button onClick={() => { playClick(); setJerukCount(jerukCount + 1); }} className="size-8 rounded-full bg-amber-500 font-bold text-white shadow cursor-pointer">+</button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button onClick={() => { playClick(); setJerukCount(Math.max(0, jerukCount - 1)); }} className="size-8 rounded-full bg-amber-500 font-bold text-white shadow cursor-pointer active:scale-95 shrink-0">-</button>
+                      <span className="game-font text-xl font-bold w-7 text-center text-[#2a2830]">{jerukCount}</span>
+                      <button onClick={() => { playClick(); setJerukCount(jerukCount + 1); }} className="size-8 rounded-full bg-amber-500 font-bold text-white shadow cursor-pointer active:scale-95 shrink-0">+</button>
                     </div>
                   </div>
                 </div>
@@ -564,30 +564,30 @@ function SpldvMateriContent() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 w-full">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full">
                   <button
                     onClick={() => { playClick(); setActiveUnsurTab("VAR"); }}
-                    className={`rounded-2xl border-4 border-white p-3.5 text-center transition-all cursor-pointer ${
+                    className={`rounded-xl sm:rounded-2xl border-2 sm:border-4 border-white p-2 sm:p-3.5 text-center transition-all cursor-pointer ${
                       activeUnsurTab === "VAR" ? "bg-[#d3e9ff] shadow-md scale-103" : "bg-white/90 shadow hover:bg-white"
                     }`}
                   >
-                    <span className="game-font text-lg sm:text-xl font-semibold text-blue-700 block">Variabel (x, y)</span>
+                    <span className="game-font text-xs sm:text-xl font-semibold text-blue-700 block">Variabel (x, y)</span>
                   </button>
                   <button
                     onClick={() => { playClick(); setActiveUnsurTab("KOEF"); }}
-                    className={`rounded-2xl border-4 border-white p-3.5 text-center transition-all cursor-pointer ${
+                    className={`rounded-xl sm:rounded-2xl border-2 sm:border-4 border-white p-2 sm:p-3.5 text-center transition-all cursor-pointer ${
                       activeUnsurTab === "KOEF" ? "bg-[#ffd3d3] shadow-md scale-103" : "bg-white/90 shadow hover:bg-white"
                     }`}
                   >
-                    <span className="game-font text-lg sm:text-xl font-semibold text-rose-700 block">Koefisien (a, b)</span>
+                    <span className="game-font text-xs sm:text-xl font-semibold text-rose-700 block">Koefisien (a, b)</span>
                   </button>
                   <button
                     onClick={() => { playClick(); setActiveUnsurTab("KONST"); }}
-                    className={`rounded-2xl border-4 border-white p-3.5 text-center transition-all cursor-pointer ${
+                    className={`rounded-xl sm:rounded-2xl border-2 sm:border-4 border-white p-2 sm:p-3.5 text-center transition-all cursor-pointer ${
                       activeUnsurTab === "KONST" ? "bg-[#fef08a] shadow-md scale-103" : "bg-white/90 shadow hover:bg-white"
                     }`}
                   >
-                    <span className="game-font text-lg sm:text-xl font-semibold text-amber-700 block">Konstanta (c)</span>
+                    <span className="game-font text-xs sm:text-xl font-semibold text-amber-700 block">Konstanta (c)</span>
                   </button>
                 </div>
 
@@ -701,7 +701,7 @@ function SpldvMateriContent() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3.5 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5 w-full">
                   <div className="rounded-2xl border-3 border-white bg-white p-3.5 shadow">
                     <span className="text-xs font-bold text-gray-500 block mb-1">Uji Nilai x:</span>
                     <div className="flex items-center gap-3">
@@ -1347,27 +1347,27 @@ function SpldvMateriContent() {
         )}
 
         {/* Bottom Slide Nav */}
-        <div className="flex w-full items-center justify-between pt-4 border-t border-white/50">
+        <div className="flex w-full items-center justify-between gap-1 sm:gap-2 pt-3 sm:pt-4 border-t border-white/50">
           <button
             onClick={() => { playClick(); if (slide > 1) setSlide(slide - 1); }}
             disabled={slide === 1}
-            className={`rounded-2xl border-4 border-white px-5 py-2 game-font text-xs sm:text-sm font-bold transition-all ${
-              slide === 1 ? "bg-zinc-400 text-zinc-200 opacity-50 cursor-not-allowed" : "bg-zinc-600 text-white shadow hover:scale-102 cursor-pointer"
+            className={`rounded-xl sm:rounded-2xl border-2 sm:border-4 border-white px-3 sm:px-5 py-1.5 sm:py-2 game-font text-xs sm:text-sm font-bold transition-all shrink-0 ${
+              slide === 1 ? "bg-zinc-400 text-zinc-200 opacity-50 cursor-not-allowed" : "bg-zinc-600 text-white shadow hover:scale-102 cursor-pointer active:scale-95"
             }`}
           >
-            &larr; Sebelumnya
+            &larr; <span className="hidden sm:inline">Sebelumnya</span><span className="sm:hidden">Sebelum</span>
           </button>
 
-          <span className="game-font text-xs sm:text-sm font-bold text-[#2a2830]">
+          <span className="game-font text-xs sm:text-sm font-bold text-[#2a2830] whitespace-nowrap px-1 text-center shrink-0">
             Slide {slide} dari {totalSlides}
           </span>
 
           {slide < totalSlides ? (
             <button
               onClick={() => { playClick(); setSlide(slide + 1); }}
-              className="rounded-2xl border-4 border-white bg-[#e05f1e] px-5 py-2 game-font text-xs sm:text-sm font-bold text-white shadow hover:scale-102 cursor-pointer"
+              className="rounded-xl sm:rounded-2xl border-2 sm:border-4 border-white bg-[#e05f1e] px-3 sm:px-5 py-1.5 sm:py-2 game-font text-xs sm:text-sm font-bold text-white shadow hover:scale-102 cursor-pointer active:scale-95 shrink-0"
             >
-              Selanjutnya &rarr;
+              <span className="hidden sm:inline">Selanjutnya</span><span className="sm:hidden">Lanjut</span> &rarr;
             </button>
           ) : isGuru && sectionNum < 5 ? (
             <button
@@ -1375,17 +1375,17 @@ function SpldvMateriContent() {
                 playClick();
                 router.push(`/spldv/materi?section=${sectionNum + 1}`);
               }}
-              className="rounded-2xl border-4 border-white bg-[#5e65e9] px-5 py-2 game-font text-xs sm:text-sm font-bold text-white shadow hover:scale-102 cursor-pointer"
+              className="rounded-xl sm:rounded-2xl border-2 sm:border-4 border-white bg-[#5e65e9] px-3 sm:px-5 py-1.5 sm:py-2 game-font text-xs sm:text-sm font-bold text-white shadow hover:scale-102 cursor-pointer active:scale-95 shrink-0"
             >
-              Materi Bagian {sectionNum + 1} &rarr;
+              <span className="hidden sm:inline">Materi Bagian {sectionNum + 1}</span><span className="sm:hidden">Bagian {sectionNum + 1}</span> &rarr;
             </button>
           ) : (
             <Link
               href="/spldv"
               onClick={playClick}
-              className="rounded-2xl border-4 border-white bg-[#1cd8a4] px-5 py-2 game-font text-xs sm:text-sm font-bold text-[#144837] shadow hover:scale-102 cursor-pointer"
+              className="rounded-xl sm:rounded-2xl border-2 sm:border-4 border-white bg-[#1cd8a4] px-3 sm:px-5 py-1.5 sm:py-2 game-font text-xs sm:text-sm font-bold text-[#144837] shadow hover:scale-102 cursor-pointer active:scale-95 shrink-0"
             >
-              Kembali ke Menu
+              <span className="hidden sm:inline">Kembali ke Menu</span><span className="sm:hidden">Menu</span>
             </Link>
           )}
         </div>
