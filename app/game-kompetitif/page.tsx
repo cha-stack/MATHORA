@@ -20,18 +20,12 @@ interface MateriOption {
 
 const MATERI_LIST: MateriOption[] = [
   { id: "CAMPURAN",           name: "Semua Materi (Acak)", icon: "🎲", bgColor: "bg-[#8b5cf6]" },
+  { id: "OPERASI_DASAR",      name: "Operasi Dasar",     icon: "±×÷", bgColor: "bg-[#4fd74f]" },
   { id: "SPLDV",              name: "SPLDV",             icon: "xy",  bgColor: "bg-[#34b2cb]" },
   { id: "BANGUN_RUANG",       name: "Bangun Ruang",      icon: "🧊",  bgColor: "bg-[#34b2cb]" },
   { id: "BANGUN_DATAR",       name: "Bangun Datar",      icon: "📐",  bgColor: "bg-[#34b2cb]" },
   { id: "BENTUK_ALJABAR",     name: "Bentuk Aljabar",    icon: "2a",  bgColor: "bg-[#34b2cb]" },
   { id: "PERSAMAAN_KUADRAT",  name: "Persamaan Kuadrat", icon: "x²",  bgColor: "bg-[#34b2cb]" },
-  { id: "PENJUMLAHAN",        name: "Penjumlahan",       icon: "+",   bgColor: "bg-[#4fd74f]" },
-  { id: "PENGURANGAN",        name: "Pengurangan",       icon: "-",   bgColor: "bg-[#34b2cb]" },
-  { id: "PERKALIAN",          name: "Perkalian",         icon: "×",   bgColor: "bg-[#34b2cb]" },
-  { id: "PEMBAGIAN",          name: "Pembagian",         icon: "÷",   bgColor: "bg-[#34b2cb]" },
-  { id: "PANGKAT",            name: "Pangkat & Akar",    icon: "xⁿ",  bgColor: "bg-[#34b2cb]" },
-  { id: "PERSENTASE",         name: "Persentase",        icon: "%",   bgColor: "bg-[#34b2cb]" },
-  { id: "PECAHAN",            name: "Pecahan",           icon: "½",   bgColor: "bg-[#34b2cb]" },
 ];
 
 let _qSeq = 1000;
@@ -67,9 +61,12 @@ function makeQuestion(materi: string, diff: "easy" | "medium" | "hard"): MathQue
 
   // Jika opsi "CAMPURAN", pilih secara acak dari semua topik
   const allTopics = [
-    "SPLDV", "BANGUN_RUANG", "BANGUN_DATAR", "BENTUK_ALJABAR",
-    "PERSAMAAN_KUADRAT", "PENJUMLAHAN", "PENGURANGAN", "PERKALIAN",
-    "PEMBAGIAN", "PANGKAT", "PERSENTASE", "PECAHAN",
+    "OPERASI_DASAR",
+    "SPLDV",
+    "BANGUN_RUANG",
+    "BANGUN_DATAR",
+    "BENTUK_ALJABAR",
+    "PERSAMAAN_KUADRAT",
   ];
   const effectiveMateri = materi === "CAMPURAN" ? pick(allTopics) : materi;
 
@@ -471,199 +468,165 @@ function makeQuestion(materi: string, diff: "easy" | "medium" | "hard"): MathQue
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 6. OPERASI ARITMATIKA & KABATAKU (CAMPURAN, SOAL CERITA, HITUNG CEPAT)
+  // 6. OPERASI DASAR (HITUNGAN MURNI: +, -, ×, ÷, KABATAKU, KURUNG, KUADRAT/AKAR)
+  // TIDAK MENGGUNAKAN SOAL CERITA (LANGSUNG PERSAMAAN HITUNG CEPAT)
   // ═══════════════════════════════════════════════════════════════════════════
-  if (
-    effectiveMateri === "PENJUMLAHAN" ||
-    effectiveMateri === "PENGURANGAN" ||
-    effectiveMateri === "PERKALIAN" ||
-    effectiveMateri === "PEMBAGIAN"
-  ) {
-    const isKabata = Math.random() > 0.4;
+  const variantOp = randInt(0, 6);
 
-    if (isKabata) {
-      // Operasi campuran prioritas (KABATAKU)
-      const a = randInt(5, 25);
-      const b = randInt(2, 8);
-      const c = randInt(2, 6);
-      const type = pick(["plus_mul", "mul_sub", "parenthesis"]);
-
-      if (type === "plus_mul") {
-        const ans = a + b * c;
-        return {
-          id: `ari_kbt_${_qSeq}`,
-          categoryTag: "Operasi Campuran",
-          question: `Berapakah hasil dari operasi berikut:\n(Ingat dahulukan perkalian!)`,
-          equationDisplay: [`${a} + ${b} × ${c} = ?`],
-          answer: ans,
-          explanation: `Dahulukan perkalian: ${b} × ${c} = ${b * c}. Kemudian ${a} + ${b * c} = ${ans}.`,
-        };
-      } else if (type === "mul_sub") {
-        const ans = a * b - c;
-        return {
-          id: `ari_kbt2_${_qSeq}`,
-          categoryTag: "Operasi Campuran",
-          question: `Berapakah hasil dari:`,
-          equationDisplay: [`${a} × ${b} - ${c} = ?`],
-          answer: ans,
-          explanation: `${a} × ${b} = ${a * b}. Lalu ${a * b} - ${c} = ${ans}.`,
-        };
-      } else {
-        const ans = (a + b) * c;
-        return {
-          id: `ari_kbt3_${_qSeq}`,
-          categoryTag: "Operasi Campuran",
-          question: `Berapakah hasil dari:`,
-          equationDisplay: [`(${a} + ${b}) × ${c} = ?`],
-          answer: ans,
-          explanation: `Kerjakan dalam kurung: ${a} + ${b} = ${a + b}. Lalu ${a + b} × ${c} = ${ans}.`,
-        };
-      }
-    } else {
-      // Soal Cerita Logika Aritmatika
-      const boxes = randInt(3, 7);
-      const perBox = randInt(8, 15);
-      const rotten = randInt(4, 12);
-      const ans = boxes * perBox - rotten;
+  if (variantOp === 0) {
+    // Penjumlahan Langsung
+    const a = diff === "easy" ? randInt(12, 65) : diff === "hard" ? randInt(55, 290) : randInt(25, 140);
+    const b = diff === "easy" ? randInt(9, 45) : diff === "hard" ? randInt(35, 180) : randInt(18, 85);
+    const ans = a + b;
+    return {
+      id: `op_tambah_${_qSeq}`,
+      categoryTag: "Operasi Dasar",
+      question: "Hitunglah hasil penjumlahan berikut:",
+      equationDisplay: [`${a} + ${b} = ?`],
+      answer: ans,
+      explanation: `${a} + ${b} = ${ans}.`,
+    };
+  } else if (variantOp === 1) {
+    // Pengurangan Langsung (hasil positif)
+    const b = diff === "easy" ? randInt(8, 40) : diff === "hard" ? randInt(30, 150) : randInt(15, 75);
+    const ans = diff === "easy" ? randInt(10, 50) : diff === "hard" ? randInt(40, 200) : randInt(20, 90);
+    const a = b + ans;
+    return {
+      id: `op_kurang_${_qSeq}`,
+      categoryTag: "Operasi Dasar",
+      question: "Hitunglah hasil pengurangan berikut:",
+      equationDisplay: [`${a} - ${b} = ?`],
+      answer: ans,
+      explanation: `${a} - ${b} = ${ans}.`,
+    };
+  } else if (variantOp === 2) {
+    // Perkalian Langsung
+    const a = diff === "easy" ? randInt(6, 12) : diff === "hard" ? randInt(12, 25) : randInt(7, 16);
+    const b = diff === "easy" ? randInt(4, 9) : diff === "hard" ? randInt(8, 15) : randInt(6, 12);
+    const ans = a * b;
+    return {
+      id: `op_kali_${_qSeq}`,
+      categoryTag: "Operasi Dasar",
+      question: "Hitunglah hasil perkalian berikut:",
+      equationDisplay: [`${a} × ${b} = ?`],
+      answer: ans,
+      explanation: `${a} × ${b} = ${ans}.`,
+    };
+  } else if (variantOp === 3) {
+    // Pembagian Langsung (pembagian bulat pasti)
+    const b = diff === "easy" ? randInt(3, 9) : diff === "hard" ? randInt(8, 16) : randInt(4, 12);
+    const ans = diff === "easy" ? randInt(4, 12) : diff === "hard" ? randInt(12, 35) : randInt(7, 20);
+    const a = b * ans;
+    return {
+      id: `op_bagi_${_qSeq}`,
+      categoryTag: "Operasi Dasar",
+      question: "Hitunglah hasil pembagian berikut:",
+      equationDisplay: [`${a} ÷ ${b} = ?`],
+      answer: ans,
+      explanation: `${a} ÷ ${b} = ${ans}.`,
+    };
+  } else if (variantOp === 4) {
+    // KABATAKU (Prioritas Kali/Bagi lebih dahulu daripada Tambah/Kurang)
+    const subType = pick(["tambah_kali", "kurang_kali", "tambah_bagi"]);
+    if (subType === "tambah_kali") {
+      const a = randInt(10, 40);
+      const b = randInt(3, 9);
+      const c = randInt(3, 8);
+      const ans = a + b * c;
       return {
-        id: `ari_cerita_${_qSeq}`,
-        categoryTag: "Soal Cerita Berhitung",
-        question: `Pak Rudi memanen ${boxes} keranjang mangga, setiap keranjang berisi ${perBox} buah.\nJika ${rotten} mangga rusak/busuk,\nberapakah sisa mangga yang masih segar ?`,
+        id: `op_kbt1_${_qSeq}`,
+        categoryTag: "Operasi Campuran",
+        question: "Dahulukan perkalian! Berapakah hasilnya:",
+        equationDisplay: [`${a} + ${b} × ${c} = ?`],
         answer: ans,
-        explanation: `Total mangga = ${boxes} × ${perBox} = ${boxes * perBox}. Sisa segar = ${boxes * perBox} - ${rotten} = ${ans} buah.`,
+        explanation: `Dahulukan perkalian: ${b} × ${c} = ${b * c}. Lalu ${a} + ${b * c} = ${ans}.`,
+      };
+    } else if (subType === "kurang_kali") {
+      const b = randInt(3, 7);
+      const c = randInt(3, 6);
+      const mult = b * c;
+      const a = mult + randInt(10, 35);
+      const ans = a - mult;
+      return {
+        id: `op_kbt2_${_qSeq}`,
+        categoryTag: "Operasi Campuran",
+        question: "Dahulukan perkalian! Berapakah hasilnya:",
+        equationDisplay: [`${a} - ${b} × ${c} = ?`],
+        answer: ans,
+        explanation: `Dahulukan perkalian: ${b} × ${c} = ${mult}. Lalu ${a} - ${mult} = ${ans}.`,
+      };
+    } else {
+      const c = randInt(3, 8);
+      const q = randInt(3, 9);
+      const b = c * q;
+      const a = randInt(10, 45);
+      const ans = a + q;
+      return {
+        id: `op_kbt3_${_qSeq}`,
+        categoryTag: "Operasi Campuran",
+        question: "Dahulukan pembagian! Berapakah hasilnya:",
+        equationDisplay: [`${a} + ${b} ÷ ${c} = ?`],
+        answer: ans,
+        explanation: `Dahulukan pembagian: ${b} ÷ ${c} = ${q}. Lalu ${a} + ${q} = ${ans}.`,
       };
     }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 7. PANGKAT & AKAR (KUADRAT, KUBIK, AKAR KUADRAT, OPERASI PANGKAT)
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (effectiveMateri === "PANGKAT") {
-    const variant = randInt(0, 3);
-
-    if (variant === 0) {
-      // Akar Pangkat Dua
-      const root = pick([11, 12, 13, 14, 15, 16, 20, 25]);
-      const sq = root * root;
+  } else if (variantOp === 5) {
+    // Tanda Kurung (Operasi dalam kurung dikerjakan terlebih dahulu)
+    const subType = pick(["kurung_kali", "kurung_bagi"]);
+    if (subType === "kurung_kali") {
+      const a = randInt(4, 15);
+      const b = randInt(3, 12);
+      const c = randInt(3, 7);
+      const ans = (a + b) * c;
       return {
-        id: `pow_akar_${_qSeq}`,
-        categoryTag: "Akar Kuadrat",
-        question: `Berapakah nilai dari √${sq} ?`,
-        answer: root,
-        explanation: `√${sq} = ${root} (karena ${root}² = ${sq}).`,
+        id: `op_kurung1_${_qSeq}`,
+        categoryTag: "Operasi Kurung",
+        question: "Kerjakan yang di dalam kurung dahulu:",
+        equationDisplay: [`(${a} + ${b}) × ${c} = ?`],
+        answer: ans,
+        explanation: `Hitung dalam kurung: (${a} + ${b}) = ${a + b}. Lalu ${a + b} × ${c} = ${ans}.`,
       };
-    } else if (variant === 1) {
-      // Pangkat Dua Belasan
-      const a = randInt(11, diff === "easy" ? 16 : 22);
+    } else {
+      const c = randInt(3, 7);
+      const ans = randInt(4, 12);
+      const sum = c * ans;
+      const a = randInt(Math.floor(sum / 2), sum - 2);
+      const b = sum - a;
+      return {
+        id: `op_kurung2_${_qSeq}`,
+        categoryTag: "Operasi Kurung",
+        question: "Kerjakan yang di dalam kurung dahulu:",
+        equationDisplay: [`(${a} + ${b}) ÷ ${c} = ?`],
+        answer: ans,
+        explanation: `Hitung dalam kurung: (${a} + ${b}) = ${sum}. Lalu ${sum} ÷ ${c} = ${ans}.`,
+      };
+    }
+  } else {
+    // Pangkat Kuadrat & Akar Kuadrat Sederhana
+    const isSquare = Math.random() > 0.5;
+    if (isSquare) {
+      const a = pick([11, 12, 13, 14, 15, 16, 20, 25]);
       const ans = a * a;
       return {
-        id: `pow_kuadrat_${_qSeq}`,
-        categoryTag: "Pangkat Dua",
-        question: `Berapakah nilai dari ${a}² ?`,
+        id: `op_kuadrat_${_qSeq}`,
+        categoryTag: "Pangkat Kuadrat",
+        question: "Hitunglah nilai kuadrat berikut:",
+        equationDisplay: [`${a}² = ?`],
         answer: ans,
         explanation: `${a}² = ${a} × ${a} = ${ans}.`,
       };
-    } else if (variant === 2) {
-      // Pangkat Tiga
-      const a = pick([2, 3, 4, 5, 6]);
-      const ans = a * a * a;
-      return {
-        id: `pow_kubik_${_qSeq}`,
-        categoryTag: "Pangkat Tiga",
-        question: `Berapakah nilai dari ${a}³ ?`,
-        answer: ans,
-        explanation: `${a}³ = ${a} × ${a} × ${a} = ${ans}.`,
-      };
     } else {
-      // Penjumlahan Kuadrat
-      const a = pick([3, 6, 5]);
-      const b = pick([4, 8, 12]);
-      const ans = a * a + b * b;
+      const root = pick([11, 12, 13, 14, 15, 16, 20, 25]);
+      const sq = root * root;
       return {
-        id: `pow_sum_${_qSeq}`,
-        categoryTag: "Operasi Pangkat",
-        question: `Berapakah nilai dari:`,
-        equationDisplay: [`${a}² + ${b}² = ?`],
-        answer: ans,
-        explanation: `${a}² = ${a * a}, ${b}² = ${b * b}. Maka ${a * a} + ${b * b} = ${ans}.`,
+        id: `op_akar_${_qSeq}`,
+        categoryTag: "Akar Kuadrat",
+        question: "Tentukan hasil penarikan akar berikut:",
+        equationDisplay: [`√${sq} = ?`],
+        answer: root,
+        explanation: `√${sq} = ${root} (karena ${root}² = ${sq}).`,
       };
     }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 8. PERSENTASE (PERSEN DASAR, DISKON HARGA, KEUNTUNGAN)
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (effectiveMateri === "PERSENTASE") {
-    const isDiskon = Math.random() > 0.5;
-
-    if (isDiskon) {
-      const hargaRibu = pick([50, 80, 100, 120, 200]);
-      const pct = pick([10, 20, 25, 50]);
-      const diskonRibu = (pct / 100) * hargaRibu;
-      return {
-        id: `pct_diskon_${_qSeq}`,
-        categoryTag: "Diskon Persentase",
-        question: `Sebuah barang seharga Rp ${hargaRibu}.000 mendapat diskon ${pct}%.\nBerapakah potongan harga yang didapat (dalam ribu rupiah) ?`,
-        answer: diskonRibu,
-        explanation: `Diskon = (${pct}/100) × Rp ${hargaRibu}.000 = Rp ${diskonRibu}.000. Maka jawabannya ${diskonRibu}.`,
-      };
-    } else {
-      const p = pick([10, 20, 25, 50, 75]);
-      const n = randInt(2, 10) * (p === 75 ? 40 : 20);
-      const ans = (p / 100) * n;
-      return {
-        id: `pct_dasar_${_qSeq}`,
-        categoryTag: "Persentase",
-        question: `Berapakah ${p}% dari ${n} ?`,
-        answer: ans,
-        explanation: `(${p}/100) × ${n} = ${ans}.`,
-      };
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 9. PECAHAN (SENILAI, PERKALIAN, SOAL CERITA BAGIAN)
-  // ═══════════════════════════════════════════════════════════════════════════
-  const variantPecahan = randInt(0, 2);
-  if (variantPecahan === 0) {
-    const c = randInt(2, 6);
-    const mul = randInt(2, 5);
-    const b = 5;
-    const d = b * mul;
-    const ans = c * mul;
-    return {
-      id: `pec_senilai_${_qSeq}`,
-      categoryTag: "Pecahan Senilai",
-      question: `Tentukan nilai x jika pecahan berikut senilai:`,
-      equationDisplay: [`${c} / ${b}  =  x / ${d}`],
-      answer: ans,
-      explanation: `x = (${c} × ${d}) / ${b} = ${ans}.`,
-    };
-  } else if (variantPecahan === 1) {
-    const b = pick([2, 4, 5]);
-    const a = randInt(1, b - 1);
-    const total = b * randInt(6, 15);
-    const ans = (a * total) / b;
-    return {
-      id: `pec_bagian_${_qSeq}`,
-      categoryTag: "Soal Cerita Pecahan",
-      question: `Di suatu kelas terdapat ${total} siswa.\nJika ${a}/${b} dari seluruh siswa gemar matematika,\nberapakah banyak siswa yang gemar matematika ?`,
-      answer: ans,
-      explanation: `Banyak siswa = (${a}/${b}) × ${total} = ${ans} siswa.`,
-    };
-  } else {
-    const b = pick([2, 3, 4, 5]);
-    const a = randInt(1, 3);
-    const c = b * randInt(3, 8);
-    const ans = (a * c) / b;
-    return {
-      id: `pec_kali_${_qSeq}`,
-      categoryTag: "Operasi Pecahan",
-      question: `Berapakah hasil dari:`,
-      equationDisplay: [`(${a} / ${b}) × ${c} = ?`],
-      answer: ans,
-      explanation: `(${a} × ${c}) / ${b} = ${ans}.`,
-    };
   }
 }
 

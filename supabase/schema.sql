@@ -67,8 +67,20 @@ CREATE INDEX IF NOT EXISTS idx_game_scores_created ON public.game_scores (create
 
 
 -- ==============================================================================
--- 4. PENGATURAN ROW LEVEL SECURITY (RLS) & KEBIJAKAN AKSES (POLICIES)
+-- 4. PENGATURAN HAK AKSES (GRANT) & ROW LEVEL SECURITY (RLS)
 -- ==============================================================================
+-- Berikan izin akses skema public ke role anon dan authenticated
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+
+-- Berikan izin penuh operasi CRUD pada tabel-tabel Mathora
+GRANT ALL ON TABLE public.users TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.section_progress TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.game_scores TO anon, authenticated, service_role;
+
+-- Berikan izin sequence jika ada
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+
+-- Aktifkan RLS dengan Policy All-Access untuk Anon & Authenticated
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.section_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.game_scores ENABLE ROW LEVEL SECURITY;
@@ -77,18 +89,21 @@ ALTER TABLE public.game_scores ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Anon All Access users" ON public.users;
 CREATE POLICY "Anon All Access users" ON public.users
   FOR ALL
+  TO anon, authenticated
   USING (true)
   WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Anon All Access section_progress" ON public.section_progress;
 CREATE POLICY "Anon All Access section_progress" ON public.section_progress
   FOR ALL
+  TO anon, authenticated
   USING (true)
   WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Anon All Access game_scores" ON public.game_scores;
 CREATE POLICY "Anon All Access game_scores" ON public.game_scores
   FOR ALL
+  TO anon, authenticated
   USING (true)
   WITH CHECK (true);
 

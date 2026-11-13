@@ -127,7 +127,7 @@ export default function LoginSiswa() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 sm:gap-5">
+          <form id="login-siswa-form" onSubmit={handleSubmit} className="w-full flex flex-col gap-4 sm:gap-5">
             {/* Username Input */}
             <div className="relative w-full">
               <input
@@ -207,9 +207,11 @@ export default function LoginSiswa() {
 
           {/* Login Button */}
           <button
-            onClick={() => handleSubmit()}
+            type="submit"
+            form="login-siswa-form"
+            onClick={handleSubmit}
             disabled={isLoading}
-            className="group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white bg-[#1cd8a4] disabled:opacity-80 shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
+            className="group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white bg-[#1cd8a4] disabled:opacity-80 shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer touch-manipulation"
           >
             <span className="game-font text-2xl sm:text-3xl font-bold text-white drop-shadow-[0px_2px_0px_#aaafaf]">
               {isLoading ? "Masuk..." : "Login"}

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { loginUser, registerUser } from "@/lib/auth";
+import { loginUser } from "@/lib/auth";
 import { useSound } from "@/components/SoundContext";
 
 export default function LoginGuru() {
@@ -29,14 +29,7 @@ export default function LoginGuru() {
 
     setIsLoading(true);
     try {
-      // Validasi login guru
-      let result = await loginUser(username, password, "guru");
-      if (!result.success) {
-        // Jika belum terdaftar, buat akun guru baru otomatis
-        await registerUser(username, `${username.toLowerCase()}@mathora.sch.id`, password, "guru", "/images/avatar-guru.svg");
-        result = await loginUser(username, password, "guru");
-      }
-
+      const result = await loginUser(username, password, "guru");
       if (!result.success) {
         setErrorMessage(result.message);
         setIsLoading(false);
@@ -133,7 +126,7 @@ export default function LoginGuru() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 sm:gap-5">
+          <form id="login-guru-form" onSubmit={handleSubmit} className="w-full flex flex-col gap-4 sm:gap-5">
             {/* Username */}
             <div className="relative w-full">
               <input
@@ -199,16 +192,37 @@ export default function LoginGuru() {
         </div>
 
         {/* Action Button Below Card (Login Button) */}
-        <div className="mt-5 flex w-full justify-center">
+        <div className="mt-5 flex flex-col items-center gap-3 w-full max-w-sm">
           <button
-            onClick={() => handleSubmit()}
+            type="submit"
+            form="login-guru-form"
+            onClick={handleSubmit}
             disabled={isLoading}
-            className="group relative flex h-12 sm:h-14 w-full max-w-[180px] items-center justify-center rounded-[16px] sm:rounded-[18px] border-[4px] sm:border-[5px] border-white bg-[#1cd8a4] disabled:opacity-80 shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
+            className="group relative flex h-12 sm:h-14 w-full max-w-[180px] items-center justify-center rounded-[16px] sm:rounded-[18px] border-[4px] sm:border-[5px] border-white bg-[#1cd8a4] disabled:opacity-80 shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer touch-manipulation"
           >
             <span className="game-font text-xl sm:text-2xl font-bold text-white drop-shadow-[0px_2px_0px_#aaafaf]">
               {isLoading ? "Masuk..." : "Login"}
             </span>
           </button>
+
+          {/* Links: Registrasi Guru & Lupa Password */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 w-full px-2 text-xs font-bold text-white drop-shadow">
+            <Link
+              href="/login/guru/regist"
+              onClick={playClick}
+              className="text-[#fef08a] hover:underline flex items-center gap-1"
+            >
+              <span>➕</span>
+              <span>Belum punya akun Guru? Daftar</span>
+            </Link>
+            <Link
+              href="/login/lupa-password"
+              onClick={playClick}
+              className="text-white/90 hover:underline"
+            >
+              Lupa Password?
+            </Link>
+          </div>
         </div>
       </div>
 
