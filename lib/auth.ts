@@ -8,6 +8,12 @@ import {
   sbGetStudentProgress,
   DbSectionProgress,
 } from "@/lib/supabase";
+import {
+  checkRateLimit,
+  recordFailedAttempt,
+  resetRateLimit,
+} from "@/lib/rateLimit";
+import { hashPassword, verifyPassword } from "@/lib/crypto";
 
 export interface UserAccount {
   username: string;
@@ -92,18 +98,36 @@ export async function syncProgressFromSupabase(username: string): Promise<void> 
   }
 }
 
-// Registrasi user baru (didukung Supabase + cache lokal)
+// Registrasi user baru (didukung Supabase + cache lokal + Proteksi Rate Limiting)
 export async function registerUser(
   username: string,
   email: string,
   password: string,
   role: "siswa" | "guru" = "siswa",
   avatar: string = "/images/avatar-1.svg"
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; retryAfter?: number }> {
   const trimmedUser = username.trim();
   const trimmedEmail = email.trim().toLowerCase();
 
-  // 1. Simpan ke Supabase jika sudah dikonfigurasi
+  // Validasi panjang password minimal 6 karakter (bebas angka atau huruf)
+  if (!password || password.trim().length < 6) {
+    return {
+      success: false,
+      message: "Password minimal harus 6 karakter (bebas angka atau huruf)!",
+    };
+  }
+
+  // 1. Proteksi Rate Limiting Registrasi (Maksimal 6 akun per 10 menit per perangkat)
+  const registRateCheck = checkRateLimit("regist_device_global", 6, 600_000, 300_000);
+  if (!registRateCheck.allowed) {
+    return {
+      success: false,
+      message: `Terlalu banyak pendaftaran akun (Too many requests)! Harap tunggu ${registRateCheck.remainingSeconds} detik sebelum mencoba lagi.`,
+      retryAfter: registRateCheck.remainingSeconds,
+    };
+  }
+
+  // 2. Simpan ke Supabase jika sudah dikonfigurasi
   if (isSupabaseConfigured) {
     const sbRes = await sbRegisterUser({
       username: trimmedUser,
@@ -113,11 +137,12 @@ export async function registerUser(
       avatar,
     });
     if (!sbRes.success) {
+      recordFailedAttempt("regist_device_global", 6, 600_000, 300_000);
       return sbRes;
     }
   }
 
-  // 2. Selalu simpan juga ke cache lokal untuk akses offline instan
+  // 3. Selalu simpan juga ke cache lokal untuk akses offline instan
   if (typeof window !== "undefined") {
     const users = getUsers();
     const existingIndex = users.findIndex(
@@ -144,18 +169,44 @@ export async function registerUser(
   return { success: true, message: "Pendaftaran akun berhasil!" };
 }
 
-// Validasi login user (didukung Supabase + cache lokal)
+// Validasi login user (didukung Supabase + cache lokal + Proteksi Rate Limiting Anti-Brute Force)
 export async function loginUser(
   identifier: string,
   password: string,
   role: "siswa" | "guru" = "siswa"
-): Promise<{ success: boolean; message: string; user?: UserAccount }> {
+): Promise<{ success: boolean; message: string; user?: UserAccount; retryAfter?: number }> {
   const trimmedId = identifier.trim().toLowerCase();
+  const userRateKey = `login_${role}_${trimmedId}`;
+  const deviceRateKey = `login_device_global`;
 
-  // 1. Prioritas periksa ke Supabase jika terkonfigurasi
+  // 1. Cek Proteksi Rate Limiting (Maksimal 5 kali percobaan berturut-turut dalam 60 detik)
+  const userRateCheck = checkRateLimit(userRateKey, 5, 60_000, 60_000);
+  if (!userRateCheck.allowed) {
+    return {
+      success: false,
+      message: `Terlalu banyak percobaan (Too many requests)! Percobaan dibatasi maksimal 5 kali. Silakan tunggu ${userRateCheck.remainingSeconds} detik sebelum mencoba kembali.`,
+      retryAfter: userRateCheck.remainingSeconds,
+    };
+  }
+
+  // Cek batas perangkat global (Mencegah spam coba-coba username acak)
+  const deviceRateCheck = checkRateLimit(deviceRateKey, 10, 60_000, 60_000);
+  if (!deviceRateCheck.allowed) {
+    return {
+      success: false,
+      message: `Terlalu banyak permintaan login dari perangkat ini (Too many requests). Harap tunggu ${deviceRateCheck.remainingSeconds} detik.`,
+      retryAfter: deviceRateCheck.remainingSeconds,
+    };
+  }
+
+  // 2. Prioritas periksa ke Supabase jika terkonfigurasi
   if (isSupabaseConfigured) {
     const sbRes = await sbLoginUser(identifier, password, role);
     if (sbRes.success && sbRes.user) {
+      // Login sukses: Reset antrean & counter rate limit
+      resetRateLimit(userRateKey);
+      resetRateLimit(deviceRateKey);
+
       const activeUser: UserAccount = {
         username: sbRes.user.username,
         email: sbRes.user.email,
@@ -173,11 +224,28 @@ export async function loginUser(
       }
       return { success: true, message: "Login berhasil!", user: activeUser };
     } else {
-      return { success: false, message: sbRes.message };
+      // Login gagal: Catat percobaan gagal
+      const userFail = recordFailedAttempt(userRateKey, 5, 60_000, 60_000);
+      recordFailedAttempt(deviceRateKey, 10, 60_000, 60_000);
+
+      if (userFail.locked) {
+        return {
+          success: false,
+          message: `Terlalu banyak percobaan gagal (Too many requests)! Batas 5 kali tercapai. Akses login ditahan selama ${userFail.remainingSeconds} detik.`,
+          retryAfter: userFail.remainingSeconds,
+        };
+      }
+
+      const sisa = 5 - userFail.currentAttempts;
+      const sisaInfo = sisa > 0 ? ` (Sisa percobaan: ${sisa}x)` : "";
+      return {
+        success: false,
+        message: `${sbRes.message}${sisaInfo}`,
+      };
     }
   }
 
-  // 2. Fallback ke localStorage jika Supabase belum dipasang
+  // 3. Fallback ke localStorage jika Supabase belum dipasang
   if (typeof window === "undefined") return { success: false, message: "Window not ready" };
   const users = getUsers();
 
@@ -188,16 +256,43 @@ export async function loginUser(
   );
 
   if (!user) {
+    const userFail = recordFailedAttempt(userRateKey, 5, 60_000, 60_000);
+    recordFailedAttempt(deviceRateKey, 10, 60_000, 60_000);
+    if (userFail.locked) {
+      return {
+        success: false,
+        message: `Terlalu banyak percobaan salah (Too many requests)! Akses login ditahan selama ${userFail.remainingSeconds} detik.`,
+        retryAfter: userFail.remainingSeconds,
+      };
+    }
+    const sisa = 5 - userFail.currentAttempts;
     return {
       success: false,
-      message: "Akun belum terdaftar! Silakan registrasi terlebih dahulu.",
+      message: `Akun belum terdaftar! Silakan registrasi terlebih dahulu. (Sisa: ${sisa}x)`,
     };
   }
 
-  if (user.password !== password) {
-    return { success: false, message: "Password salah! Silakan periksa kembali." };
+  const isMatch = await verifyPassword(password, user.password);
+  if (!isMatch) {
+    const userFail = recordFailedAttempt(userRateKey, 5, 60_000, 60_000);
+    recordFailedAttempt(deviceRateKey, 10, 60_000, 60_000);
+    if (userFail.locked) {
+      return {
+        success: false,
+        message: `Terlalu banyak percobaan salah (Too many requests)! Akses login ditahan selama ${userFail.remainingSeconds} detik.`,
+        retryAfter: userFail.remainingSeconds,
+      };
+    }
+    const sisa = 5 - userFail.currentAttempts;
+    return {
+      success: false,
+      message: `Password salah! Silakan periksa kembali. (Sisa: ${sisa}x)`,
+    };
   }
 
+  // Login sukses: Reset counter
+  resetRateLimit(userRateKey);
+  resetRateLimit(deviceRateKey);
   localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
   return { success: true, message: "Login berhasil!", user };
 }
@@ -208,6 +303,14 @@ export async function resetPasswordByEmail(
   newPassword: string
 ): Promise<{ success: boolean; message: string }> {
   const trimmedEmail = email.trim().toLowerCase();
+
+  // Validasi panjang password baru minimal 6 karakter
+  if (!newPassword || newPassword.trim().length < 6) {
+    return {
+      success: false,
+      message: "Password baru minimal harus 6 karakter (bebas angka atau huruf)!",
+    };
+  }
 
   // 1. Update di Supabase jika terhubung
   if (isSupabaseConfigured) {

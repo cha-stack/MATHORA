@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { loginUser } from "@/lib/auth";
 import { useSound } from "@/components/SoundContext";
 
@@ -16,11 +16,33 @@ export default function LoginSiswa() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  // Timer hitung mundur rate limit (Too many requests cooldown)
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const interval = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setErrorMessage("");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [cooldown]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     playClick();
     setErrorMessage("");
+
+    if (cooldown > 0) {
+      setErrorMessage(`Terlalu banyak permintaan (Too many requests). Harap tunggu ${cooldown} detik.`);
+      return;
+    }
 
     if (!username.trim() || !password) {
       setErrorMessage("Harap masukkan username dan password!");
@@ -32,6 +54,9 @@ export default function LoginSiswa() {
       const result = await loginUser(username, password, "siswa");
       if (!result.success) {
         setErrorMessage(result.message);
+        if (result.retryAfter && result.retryAfter > 0) {
+          setCooldown(result.retryAfter);
+        }
         setIsLoading(false);
         return;
       }
@@ -205,16 +230,20 @@ export default function LoginSiswa() {
             </span>
           </Link>
 
-          {/* Login Button */}
+          {/* Login Button with Rate Limiting Shield */}
           <button
             type="submit"
             form="login-siswa-form"
             onClick={handleSubmit}
-            disabled={isLoading}
-            className="group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white bg-[#1cd8a4] disabled:opacity-80 shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer touch-manipulation"
+            disabled={isLoading || cooldown > 0}
+            className={`group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 touch-manipulation ${
+              cooldown > 0
+                ? "bg-gray-400 cursor-not-allowed opacity-80"
+                : "bg-[#1cd8a4] hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
+            }`}
           >
             <span className="game-font text-2xl sm:text-3xl font-bold text-white drop-shadow-[0px_2px_0px_#aaafaf]">
-              {isLoading ? "Masuk..." : "Login"}
+              {isLoading ? "Masuk..." : cooldown > 0 ? `Tunggu (${cooldown}s)` : "Login"}
             </span>
           </button>
         </div>

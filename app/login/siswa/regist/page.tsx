@@ -29,6 +29,11 @@ export default function RegistSiswa() {
       return;
     }
 
+    if (password.length < 6) {
+      setErrorMessage("Password minimal harus 6 karakter (bebas angka atau huruf)!");
+      return;
+    }
+
     if (password !== confirmPassword) {
       setErrorMessage("Password dan konfirmasi password tidak cocok!");
       return;
@@ -106,13 +111,13 @@ export default function RegistSiswa() {
 
           <div>
             <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1">
-              Password:
+              Password (Min. 6 Karakter Bebas):
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Masukkan password..."
+              placeholder="Minimal 6 karakter (bebas angka / huruf)..."
               className="w-full rounded-2xl border-2 border-[#cbb3f5] bg-[#f7f2ff] px-4 py-2 text-sm font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
             />
           </div>

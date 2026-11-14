@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { hashPassword, verifyPassword } from "@/lib/crypto";
 
 // Ambil credentials dari Environment Variables (Mendukung nama baru & nama standar)
 const supabaseUrl = (
@@ -135,11 +136,12 @@ export async function sbRegisterUser(
       }
     }
 
-    // 3. Masukkan user baru
+    // 3. Masukkan user baru (Password otomatis di-hash dengan SHA-256 + Salt)
+    const hashedPassword = await hashPassword(user.password);
     const { error: insertErr } = await supabase.from("users").insert({
       username: trimmedUser,
       email: trimmedEmail,
-      password: user.password,
+      password: hashedPassword,
       role: user.role,
       avatar: user.avatar || "/images/avatar-1.svg",
       created_at: new Date().toISOString(),
@@ -175,7 +177,7 @@ export async function sbRegisterUser(
 }
 
 /**
- * Validasi login user dari tabel 'users' Supabase
+ * Validasi login user dari tabel 'users' Supabase (Mendukung Hash & Plaintext Lama)
  */
 export async function sbLoginUser(
   identifier: string,
@@ -206,8 +208,20 @@ export async function sbLoginUser(
       };
     }
 
-    if (data.password !== password) {
+    // Verifikasi password (cocokkan hash atau plaintext lama)
+    const isPasswordValid = await verifyPassword(password, data.password);
+    if (!isPasswordValid) {
       return { success: false, message: "Password salah! Silakan periksa kembali." };
+    }
+
+    // Otomatis upgrade ke hash jika di Supabase masih berupa plaintext lama
+    if (data.password === password) {
+      try {
+        const upgradedHash = await hashPassword(password);
+        await supabase.from("users").update({ password: upgradedHash }).eq("id", data.id);
+      } catch {
+        // Abaikan jika update upgrade gagal, user tetap bisa login
+      }
     }
 
     return {
@@ -230,7 +244,7 @@ export async function sbLoginUser(
 }
 
 /**
- * Reset password via validasi email
+ * Reset password via validasi email (Password baru otomatis di-hash)
  */
 export async function sbResetPassword(
   email: string,
@@ -250,10 +264,11 @@ export async function sbResetPassword(
       return { success: false, message: `Email "${email}" tidak ditemukan!` };
     }
 
+    const hashedPassword = await hashPassword(newPassword);
     const { error: updateErr } = await supabase
       .from("users")
       .update({
-        password: newPassword,
+        password: hashedPassword,
         updated_at: new Date().toISOString(),
       })
       .eq("id", user.id);

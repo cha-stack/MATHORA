@@ -28,6 +28,11 @@ export default function LupaPasswordPage() {
       return;
     }
 
+    if (newPassword.length < 6) {
+      setErrorMessage("Password baru minimal harus 6 karakter (bebas angka atau huruf)!");
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setErrorMessage("Konfirmasi password baru tidak cocok!");
       return;
