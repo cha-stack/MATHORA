@@ -101,62 +101,73 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Title Section (Header) */}
-      <div className="relative z-10 mt-6 sm:mt-10 flex flex-col items-center text-center">
-        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[#f8f298] px-4 py-1 text-xs sm:text-sm font-bold text-[#422376] shadow-md border-2 border-white">
+      {/* Top Spacer for Balance */}
+      <div className="w-full h-2 sm:h-6 shrink-0" />
+
+      {/* Central Hero: Title + Subtitle + Play Button (Tersusun Padu & Tidak Renggang) */}
+      <div className="relative z-10 my-auto flex flex-col items-center justify-center text-center px-4 max-w-3xl">
+        {/* Badge PKM */}
+        <div className="mb-2 sm:mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#f8f298] px-4 sm:px-5 py-1 sm:py-1.5 text-xs sm:text-sm font-bold text-[#422376] shadow-md border-2 border-white">
           <span>🎓</span>
           <span>PKM SMP ISLAM PARUNG</span>
         </div>
-        <h1 className="game-title-mathora text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-wider uppercase leading-none">
+
+        {/* Big Game Title */}
+        <h1 className="game-title-mathora text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-wider uppercase leading-none drop-shadow-md">
           MATHORA
         </h1>
-        <div className="game-title-sub mt-1 sm:mt-2 text-xl sm:text-3xl md:text-4xl font-bold tracking-wide uppercase leading-tight">
+
+        {/* Subtitle */}
+        <div className="game-title-sub mt-1.5 sm:mt-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-wide uppercase leading-tight">
           <p className="m-0">BELAJAR</p>
-          <p className="m-0 -mt-1">MATEMATIKA</p>
+          <p className="m-0 -mt-1 sm:-mt-2">MATEMATIKA</p>
+        </div>
+
+        {/* Play Button - Berjarak Dekat & Proporsional */}
+        <div className="mt-6 sm:mt-8 md:mt-10 flex flex-col items-center">
+          <Link
+            href="/login"
+            onClick={handlePlayClick}
+            aria-label="Mulai Game - Menuju Pilihan Login"
+            className="group relative flex items-center justify-center transition-all duration-200 hover:scale-108 active:scale-95 focus:outline-none cursor-pointer"
+          >
+            {/* Play Button Outer Soft Glow */}
+            <div className="absolute -inset-2.5 rounded-full bg-[#1cd8a4]/30 blur-md group-hover:bg-[#1cd8a4]/50 transition-all" />
+
+            {/* Main Round Container with Border and 3D shadow */}
+            <div className="relative flex size-20 sm:size-24 md:size-28 lg:size-32 items-center justify-center rounded-full border-[6px] sm:border-[7px] border-white bg-gradient-to-b from-[#1cd8a4] to-[#04b886] shadow-[0px_7px_0px_0px_#028560,0px_12px_18px_rgba(0,0,0,0.35)] group-hover:brightness-105 group-active:shadow-[0px_3px_0px_0px_#028560] group-active:translate-y-[4px]">
+              {/* Play Triangle Icon */}
+              <div className="ml-2 sm:ml-2.5 md:ml-3 flex items-center justify-center">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="size-10 sm:size-12 md:size-14 lg:size-16 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
+                >
+                  <path d="M8 5.14v13.72a1 1 0 001.55.83l11.08-6.86a1 1 0 000-1.66L9.55 4.31A1 1 0 008 5.14z" />
+                </svg>
+              </div>
+            </div>
+          </Link>
         </div>
       </div>
 
-      {/* Center Play Button */}
-      <div className="relative z-10 my-auto py-6">
-        <Link
-          href="/login"
-          onClick={handlePlayClick}
-          aria-label="Play Game - Menuju Pilihan Login"
-          className="group relative flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none cursor-pointer"
-        >
-          {/* Main Round Container with Border and 3D shadow */}
-          <div className="relative flex size-16 sm:size-20 md:size-24 items-center justify-center rounded-full border-[6px] border-white bg-gradient-to-b from-[#1cd8a4] to-[#04b886] shadow-[0px_7px_0px_0px_#028560,0px_12px_14px_rgba(0,0,0,0.3)] group-active:shadow-[0px_3px_0px_0px_#028560] group-active:translate-y-[4px]">
-            {/* Play Triangle Icon */}
-            <div className="ml-2 flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="size-8 sm:size-10 md:size-12 text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.25)]"
-              >
-                <path d="M8 5.14v13.72a1 1 0 001.55.83l11.08-6.86a1 1 0 000-1.66L9.55 4.31A1 1 0 008 5.14z" />
-              </svg>
-            </div>
-          </div>
-        </Link>
-      </div>
-
       {/* Bottom Footer Controls */}
-      <div className="relative z-10 flex w-full items-end justify-between px-2 sm:px-4 mb-2">
+      <div className="relative z-10 flex w-full max-w-7xl items-end justify-between px-2 sm:px-6 pb-2 sm:pb-4 shrink-0">
         {/* Exit Button */}
         <button
           onClick={handleExit}
           className="group relative flex items-center justify-center rounded-[16px] sm:rounded-[20px] border-[4px] sm:border-[5px] border-white bg-[#e05f1e] px-5 py-2 sm:px-8 sm:py-2.5 shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
         >
           <span className="game-font text-xl sm:text-2xl md:text-3xl font-bold text-white drop-shadow-[0px_2px_0px_#aaafaf]">
-            Exit
+            Keluar
           </span>
         </button>
 
         {/* Right Corner Button (Audio / Settings) */}
         <button
           onClick={handleToggleSound}
-          title={isMuted ? "Enable Sound" : "Mute Sound"}
-          aria-label="Sound Settings"
+          title={isMuted ? "Aktifkan Musik" : "Bisukan Musik"}
+          aria-label="Pengaturan Suara"
           className="group relative flex size-12 sm:size-14 md:size-16 items-center justify-center rounded-[16px] sm:rounded-[20px] border-[4px] sm:border-[5px] border-white bg-[#5e65e9] shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-110 hover:scale-105 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
         >
           {!isMuted ? (

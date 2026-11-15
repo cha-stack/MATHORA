@@ -91,38 +91,42 @@ export default function PilihanLogin() {
         </div>
       </div>
 
-      {/* Header Title Section */}
-      <div className="relative z-10 mt-4 sm:mt-8 md:mt-10 flex flex-col items-center text-center">
-        <h1 className="game-title-mathora text-5xl sm:text-7xl md:text-8xl lg:text-[104px] font-bold tracking-wider uppercase leading-none">
+      {/* Top Spacer for Balance */}
+      <div className="w-full h-2 sm:h-6 shrink-0" />
+
+      {/* Central Content: Title + Role Selection (Padu & Tidak Renggang) */}
+      <div className="relative z-10 my-auto flex w-full max-w-4xl flex-col items-center justify-center text-center px-4">
+        {/* Header Title Section */}
+        <h1 className="game-title-mathora text-5xl sm:text-7xl md:text-8xl lg:text-[104px] font-bold tracking-wider uppercase leading-none drop-shadow-md">
           MATHORA
         </h1>
-        <div className="game-title-sub mt-1 sm:mt-3 text-2xl sm:text-4xl md:text-5xl font-bold tracking-wide uppercase leading-tight">
+        <div className="game-title-sub mt-1.5 sm:mt-2 text-2xl sm:text-4xl md:text-5xl font-bold tracking-wide uppercase leading-tight">
           <p className="m-0">BELAJAR</p>
           <p className="m-0 -mt-1 sm:-mt-2">MATEMATIKA</p>
         </div>
-      </div>
 
-      {/* Center Role Buttons (Login Guru & Login Siswa) */}
-      <div className="relative z-10 my-auto flex w-full max-w-4xl flex-col items-center justify-center gap-4 sm:flex-row sm:gap-8 md:gap-10 px-4 py-4 sm:py-6">
-        {/* Tombol Login Guru */}
-        <Link
-          href="/login/guru"
-          className="group relative flex h-16 sm:h-20 md:h-[82px] w-full max-w-[320px] sm:w-64 md:w-80 items-center justify-center rounded-[18px] sm:rounded-[20px] border-[4px] sm:border-[5px] border-white bg-[#3499d0] shadow-[0px_6px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[4px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
-        >
-          <span className="game-font text-2xl sm:text-3xl md:text-[34px] font-bold text-white drop-shadow-[0px_2px_0px_rgba(0,0,0,0.25)]">
-            Guru
-          </span>
-        </Link>
+        {/* Center Role Buttons (Login Guru & Login Siswa) */}
+        <div className="mt-8 sm:mt-10 md:mt-12 flex w-full max-w-3xl flex-col items-center justify-center gap-4 sm:flex-row sm:gap-8 md:gap-10">
+          {/* Tombol Login Guru */}
+          <Link
+            href="/login/guru"
+            className="group relative flex h-16 sm:h-20 md:h-[82px] w-full max-w-[320px] sm:w-64 md:w-80 items-center justify-center rounded-[18px] sm:rounded-[20px] border-[4px] sm:border-[5px] border-white bg-[#3499d0] shadow-[0px_6px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[4px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
+          >
+            <span className="game-font text-2xl sm:text-3xl md:text-[34px] font-bold text-white drop-shadow-[0px_2px_0px_rgba(0,0,0,0.25)]">
+              Guru
+            </span>
+          </Link>
 
-        {/* Tombol Login Siswa */}
-        <Link
-          href="/login/siswa"
-          className="group relative flex h-16 sm:h-20 md:h-[82px] w-full max-w-[320px] sm:w-64 md:w-80 items-center justify-center rounded-[18px] sm:rounded-[20px] border-[4px] sm:border-[5px] border-white bg-[#d4ae2f] shadow-[0px_6px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[4px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
-        >
-          <span className="game-font text-2xl sm:text-3xl md:text-[34px] font-bold text-white drop-shadow-[0px_2px_0px_rgba(0,0,0,0.25)]">
-            Siswa
-          </span>
-        </Link>
+          {/* Tombol Login Siswa */}
+          <Link
+            href="/login/siswa"
+            className="group relative flex h-16 sm:h-20 md:h-[82px] w-full max-w-[320px] sm:w-64 md:w-80 items-center justify-center rounded-[18px] sm:rounded-[20px] border-[4px] sm:border-[5px] border-white bg-[#d4ae2f] shadow-[0px_6px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[4px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
+          >
+            <span className="game-font text-2xl sm:text-3xl md:text-[34px] font-bold text-white drop-shadow-[0px_2px_0px_rgba(0,0,0,0.25)]">
+              Siswa
+            </span>
+          </Link>
+        </div>
       </div>
 
       {/* Bottom Left Controls (Back Button) */}
