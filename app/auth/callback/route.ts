@@ -28,23 +28,25 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const errorParam = searchParams.get("error");
+  const targetRole = (searchParams.get("role") === "guru" ? "guru" : "siswa") as "siswa" | "guru";
+  const loginUrl = `/login/${targetRole}`;
 
   // Jika ada error dari OAuth provider, redirect ke login dengan pesan
   if (errorParam) {
     return NextResponse.redirect(
-      new URL(`/login/siswa?error=${encodeURIComponent(errorParam)}`, origin)
+      new URL(`${loginUrl}?error=${encodeURIComponent(errorParam)}`, origin)
     );
   }
 
   if (!code) {
     return NextResponse.redirect(
-      new URL("/login/siswa?error=no_code", origin)
+      new URL(`${loginUrl}?error=no_code`, origin)
     );
   }
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return NextResponse.redirect(
-      new URL("/login/siswa?error=supabase_not_configured", origin)
+      new URL(`${loginUrl}?error=supabase_not_configured`, origin)
     );
   }
 
@@ -61,7 +63,7 @@ export async function GET(request: NextRequest) {
     if (sessionError || !sessionData.session) {
       console.error("OAuth exchangeCodeForSession error:", sessionError);
       return NextResponse.redirect(
-        new URL("/login/siswa?error=oauth_failed", origin)
+        new URL(`${loginUrl}?error=oauth_failed`, origin)
       );
     }
 
@@ -75,7 +77,7 @@ export async function GET(request: NextRequest) {
 
     if (!email) {
       return NextResponse.redirect(
-        new URL("/login/siswa?error=no_email", origin)
+        new URL(`${loginUrl}?error=no_email`, origin)
       );
     }
 
@@ -91,18 +93,15 @@ export async function GET(request: NextRequest) {
     let avatar: string;
 
     if (fetchError || !existingUser) {
-      // 4a. Belum ada akun → auto-register sebagai siswa
-      // Buat username dari nama Google atau bagian depan email
+      // 4a. Belum ada akun → auto-register sesuai targetRole (siswa/guru)
       const rawName = googleName || email.split("@")[0];
-      // Sanitize: hanya alfanumerik + underscore, max 20 karakter
       const sanitized = rawName
         .replace(/[^a-zA-Z0-9_]/g, "")
         .slice(0, 20);
-      // Tambah suffix acak jika kosong
+      const prefix = targetRole === "guru" ? "guru_" : "siswa_";
       const baseUsername =
-        sanitized.length >= 3 ? sanitized : `siswa_${Date.now().toString().slice(-5)}`;
+        sanitized.length >= 3 ? sanitized : `${prefix}${Date.now().toString().slice(-5)}`;
 
-      // Cek apakah username tersebut sudah ada; jika iya, tambah suffix
       const { data: usernameCheck } = await supabase
         .from("users")
         .select("username")
@@ -113,10 +112,10 @@ export async function GET(request: NextRequest) {
         ? `${baseUsername}_${Date.now().toString().slice(-4)}`
         : baseUsername;
 
-      role = "siswa";
+      role = targetRole;
       avatar = "/images/avatar-1.svg";
 
-      // Insert user baru ke tabel users (tanpa password — akun Google)
+      // Insert user baru ke tabel users
       const { error: insertError } = await supabase.from("users").insert({
         username,
         email: email.toLowerCase(),
@@ -128,21 +127,21 @@ export async function GET(request: NextRequest) {
       if (insertError) {
         console.error("OAuth insert user error:", insertError);
         return NextResponse.redirect(
-          new URL("/login/siswa?error=register_failed", origin)
+          new URL(`${loginUrl}?error=register_failed`, origin)
         );
       }
     } else {
-      // 4b. Email sudah ada → pakai data yang sudah ada
+      // 4b. Email sudah ada → validasi role agar tidak tertukar
+      if (existingUser.role !== targetRole) {
+        const dest = existingUser.role === "guru" ? "/login/guru" : "/login/siswa";
+        return NextResponse.redirect(
+          new URL(`${dest}?error=role_mismatch_${existingUser.role}`, origin)
+        );
+      }
+
       username = existingUser.username;
       role = existingUser.role;
       avatar = existingUser.avatar || "/images/avatar-1.svg";
-
-      // Jika sebelumnya akun guru, tolak masuk via siswa OAuth
-      if (role === "guru") {
-        return NextResponse.redirect(
-          new URL("/login/guru?error=use_guru_login", origin)
-        );
-      }
     }
 
     // 5. Buat session cookie mathora_auth_session (sama seperti loginUser())
@@ -150,8 +149,9 @@ export async function GET(request: NextRequest) {
       JSON.stringify({ username, role })
     );
 
+    const redirectDest = role === "guru" ? "/dashboard/guru" : "/dashboard/siswa";
     const response = NextResponse.redirect(
-      new URL("/dashboard/siswa", origin)
+      new URL(redirectDest, origin)
     );
 
     // Set cookie dengan masa berlaku 7 hari
@@ -159,17 +159,16 @@ export async function GET(request: NextRequest) {
       path: "/",
       maxAge: 7 * 24 * 3600,
       sameSite: "lax",
-      httpOnly: false, // Harus bisa dibaca client untuk sinkronisasi localStorage
+      httpOnly: false,
     });
 
     // Set cookie sementara berisi data user lengkap untuk sinkronisasi localStorage
-    // (dibaca oleh halaman dashboard saat pertama kali load)
     const userDataPayload = encodeURIComponent(
       JSON.stringify({ username, email: email.toLowerCase(), role, avatar, createdAt: new Date().toISOString() })
     );
     response.cookies.set("mathora_oauth_userdata", userDataPayload, {
       path: "/",
-      maxAge: 60, // 60 detik — hanya untuk handoff ke localStorage
+      maxAge: 60,
       sameSite: "lax",
       httpOnly: false,
     });
@@ -178,7 +177,7 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error("OAuth callback unexpected error:", err);
     return NextResponse.redirect(
-      new URL("/login/siswa?error=server_error", origin)
+      new URL(`${loginUrl}?error=server_error`, origin)
     );
   }
 }

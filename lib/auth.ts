@@ -461,9 +461,11 @@ export function logoutUser(): void {
 /**
  * Login dengan Google via Supabase OAuth
  * Mengarahkan browser ke halaman consent Google.
- * Setelah selesai, Supabase akan redirect ke /auth/callback.
+ * Setelah selesai, Supabase akan redirect ke /auth/callback?role=siswa|guru.
  */
-export async function loginWithGoogle(): Promise<{ success: boolean; message: string }> {
+export async function loginWithGoogle(
+  role: "siswa" | "guru" = "siswa"
+): Promise<{ success: boolean; message: string }> {
   if (typeof window === "undefined") {
     return { success: false, message: "Tidak bisa dijalankan di server." };
   }
@@ -494,7 +496,7 @@ export async function loginWithGoogle(): Promise<{ success: boolean; message: st
       auth: { persistSession: false },
     });
 
-    const redirectTo = `${window.location.origin}/auth/callback`;
+    const redirectTo = `${window.location.origin}/auth/callback?role=${role}`;
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
