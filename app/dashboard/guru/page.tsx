@@ -21,7 +21,7 @@ export default function DashboardGuru() {
   }, []);
 
   return (
-    <GameShell backUrl="/login" showBack={true}>
+    <GameShell showBack={false}>
       <div className="flex w-full flex-col items-center">
         {/* Welcome Header */}
         <div className="w-full text-left px-2 sm:px-6 mb-8 sm:mb-10">

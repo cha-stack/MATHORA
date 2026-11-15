@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import { useSound } from "@/components/SoundContext";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, logoutUser } from "@/lib/auth";
 
 interface GameShellProps {
   children: React.ReactNode;
@@ -21,6 +21,7 @@ export default function GameShell({
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ username: string; role: string; avatar?: string } | null>(() => {
     if (typeof window !== "undefined") {
       return getCurrentUser();
@@ -55,6 +56,7 @@ export default function GameShell({
     playClick();
     const u = getCurrentUser();
     const currentIsGuru = u?.role === "guru";
+
     if (
       resolvedBackUrl === "/dashboard" ||
       resolvedBackUrl === "/dashboard/siswa" ||
@@ -62,6 +64,14 @@ export default function GameShell({
     ) {
       e.preventDefault();
       router.push(currentIsGuru ? "/dashboard/guru" : "/dashboard/siswa");
+      return;
+    }
+
+    // Jika tombol mengarah ke login (keluar akun), tampilkan popup konfirmasi terlebih dahulu
+    if (resolvedBackUrl === "/login") {
+      e.preventDefault();
+      setShowLogoutModal(true);
+      return;
     }
   };
 
@@ -353,15 +363,59 @@ export default function GameShell({
             </div>
 
             <div className="pt-3 border-t border-purple-200">
-              <Link
-                href="/login"
-                onClick={() => setSidebarOpen(false)}
-                className="flex items-center justify-center rounded-2xl bg-[#fd363a] px-4 py-2 text-white font-bold shadow hover:brightness-110"
+              <button
+                type="button"
+                onClick={() => {
+                  playClick();
+                  setSidebarOpen(false);
+                  setShowLogoutModal(true);
+                }}
+                className="w-full flex items-center justify-center rounded-2xl bg-[#fd363a] px-4 py-2.5 text-white font-bold shadow hover:brightness-110 active:translate-y-0.5 cursor-pointer"
               >
                 <span className="game-font text-base text-white">Keluar Akun</span>
-              </Link>
+              </button>
             </div>
           </aside>
+        </div>
+      )}
+
+      {/* Modal Dialog Konfirmasi Keluar Akun */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative w-full max-w-sm rounded-[32px] border-[6px] border-white bg-white p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center">
+            <div className="size-16 rounded-full bg-red-100 flex items-center justify-center text-3xl mb-3 shadow-inner">
+              🚪
+            </div>
+            <h3 className="game-font text-2xl sm:text-3xl font-bold text-[#2a2830] mb-2">
+              Keluar Akun?
+            </h3>
+            <p className="text-gray-600 text-sm sm:text-base font-semibold mb-6">
+              Apakah Anda yakin ingin keluar dari akun MATHORA?
+            </p>
+            <div className="flex gap-3 w-full">
+              <button
+                type="button"
+                onClick={() => {
+                  playClick();
+                  setShowLogoutModal(false);
+                }}
+                className="flex-1 py-3 rounded-2xl border-[3px] border-gray-300 bg-gray-100 font-bold text-gray-700 hover:bg-gray-200 transition-all cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  playClick();
+                  logoutUser();
+                  router.push("/login");
+                }}
+                className="flex-1 py-3 rounded-2xl border-[3px] border-white bg-[#fd363a] font-bold text-white shadow hover:brightness-110 active:translate-y-0.5 transition-all cursor-pointer"
+              >
+                Ya, Keluar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
