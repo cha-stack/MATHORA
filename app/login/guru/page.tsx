@@ -255,11 +255,10 @@ export default function LoginGuru() {
             form="login-guru-form"
             onClick={handleSubmit}
             disabled={isLoading || cooldown > 0}
-            className={`group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 touch-manipulation ${
-              cooldown > 0
-                ? "bg-gray-400 cursor-not-allowed opacity-80"
-                : "bg-[#1cd8a4] hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
-            }`}
+            className={`group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 touch-manipulation ${cooldown > 0
+              ? "bg-gray-400 cursor-not-allowed opacity-80"
+              : "bg-[#1cd8a4] hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
+              }`}
           >
             <span className="game-font text-2xl sm:text-3xl font-bold text-white drop-shadow-[0px_2px_0px_#aaafaf]">
               {isLoading ? "Masuk..." : cooldown > 0 ? `Tunggu (${cooldown}s)` : "Login"}

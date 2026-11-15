@@ -9,9 +9,7 @@ import { useSound } from "@/components/SoundContext";
 // Daftar kode rahasia yang diizinkan untuk registrasi akun Guru
 const VALID_SECRET_CODES = [
   (process.env.NEXT_PUBLIC_GURU_SECRET_CODE || "").trim().toLowerCase(),
-  "mathora2026",
-  "mathora-parung-2026",
-  "smp-parung-2026",
+  "grsip26",
 ].filter(Boolean);
 
 export default function RegistGuru() {
@@ -123,7 +121,7 @@ export default function RegistGuru() {
                 setSecretCode(e.target.value);
                 if (errorMessage) setErrorMessage("");
               }}
-              placeholder="Contoh: MATHORA2026"
+              placeholder="Masukkan kode rahasia pendidik..."
               className="w-full rounded-xl border-2 border-amber-300 bg-white px-3.5 py-2 text-sm font-bold text-[#2a2830] outline-none focus:border-[#7251a8]"
             />
             <span className="text-[10px] text-amber-800 font-medium block mt-1">
