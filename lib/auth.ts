@@ -6,6 +6,8 @@ import {
   sbUpdateProfile,
   sbSaveSectionProgress,
   sbGetStudentProgress,
+  sbCheckUserHasPassword,
+  sbUpdateUserPassword,
   DbSectionProgress,
 } from "@/lib/supabase";
 import {
@@ -449,6 +451,68 @@ export async function updateUserProfile(
   localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
   setAuthCookie(updatedUser);
   return { success: true, message: "Profil berhasil diperbarui!", user: updatedUser };
+}
+
+/**
+ * Cek apakah user saat ini sudah memiliki password di database
+ */
+export async function checkUserHasPassword(username?: string): Promise<boolean> {
+  const targetUser = username || getCurrentUser()?.username;
+  if (!targetUser) return false;
+
+  if (isSupabaseConfigured) {
+    return await sbCheckUserHasPassword(targetUser);
+  }
+
+  // Fallback cache lokal
+  const users = getUsers();
+  const u = users.find((x) => x.username.toLowerCase() === targetUser.toLowerCase());
+  return Boolean(u?.password && u.password.trim() !== "");
+}
+
+/**
+ * Buat baru atau ubah password akun yang sedang login
+ */
+export async function changeAccountPassword(
+  newPassword: string,
+  oldPassword?: string
+): Promise<{ success: boolean; message: string }> {
+  const currentUser = getCurrentUser();
+  if (!currentUser) {
+    return { success: false, message: "Sesi login tidak ditemukan. Harap login kembali." };
+  }
+
+  // Validasi regex password baru: varchar minimal 6 karakter tanpa spasi
+  const validation = validatePassword(newPassword);
+  if (!validation.isValid) {
+    return { success: false, message: validation.message || "Password minimal harus 6 karakter tanpa spasi!" };
+  }
+
+  // 1. Update di Supabase
+  if (isSupabaseConfigured) {
+    const sbRes = await sbUpdateUserPassword(currentUser.username, newPassword, oldPassword);
+    if (!sbRes.success) {
+      return sbRes;
+    }
+  }
+
+  // 2. Update di cache lokal
+  if (typeof window !== "undefined") {
+    const users = getUsers();
+    const idx = users.findIndex(
+      (u) => u.username.toLowerCase() === currentUser.username.toLowerCase()
+    );
+    const hashed = await hashPassword(newPassword);
+    if (idx >= 0) {
+      users[idx].password = hashed;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+    }
+  }
+
+  return {
+    success: true,
+    message: "Password berhasil disimpan! Sekarang Anda bisa login menggunakan username & password.",
+  };
 }
 
 // Logout

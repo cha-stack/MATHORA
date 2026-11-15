@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import GameShell from "@/components/GameShell";
 import { useSound, AVAILABLE_TRACKS, BgmTrack } from "@/components/SoundContext";
-import { getCurrentUser, updateUserProfile, UserAccount } from "@/lib/auth";
+import {
+  getCurrentUser,
+  updateUserProfile,
+  checkUserHasPassword,
+  changeAccountPassword,
+  UserAccount,
+} from "@/lib/auth";
 
 const AVATAR_OPTIONS = [
   { id: "avatar-1", path: "/images/avatar-1.svg", label: "Kucing Ceria (Edukasi)" },
@@ -38,14 +44,71 @@ export default function SettingsPage() {
   const [saveError, setSaveError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  // State Keamanan Password
+  const [hasPassword, setHasPassword] = useState<boolean | null>(null);
+  const [oldPasswordInput, setOldPasswordInput] = useState("");
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [passwordMsg, setPasswordMsg] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+
   useEffect(() => {
     const active = getCurrentUser();
     if (active) {
       setUser(active);
       setUsernameInput(active.username);
       setSelectedAvatar(active.avatar || "/images/avatar-1.svg");
+
+      // Cek apakah akun ini sudah punya password di database
+      checkUserHasPassword(active.username).then((hasPwd) => {
+        setHasPassword(hasPwd);
+      });
     }
   }, []);
+
+  const handleSavePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    playClick();
+    setPasswordMsg("");
+    setPasswordError("");
+
+    if (hasPassword && !oldPasswordInput) {
+      setPasswordError("Harap masukkan password saat ini!");
+      return;
+    }
+
+    if (!newPasswordInput) {
+      setPasswordError("Password baru tidak boleh kosong!");
+      return;
+    }
+
+    if (newPasswordInput !== confirmPasswordInput) {
+      setPasswordError("Konfirmasi password baru tidak cocok!");
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      const res = await changeAccountPassword(newPasswordInput, oldPasswordInput);
+      setIsSavingPassword(false);
+      if (!res.success) {
+        setPasswordError(res.message);
+      } else {
+        setPasswordMsg(res.message);
+        setHasPassword(true);
+        setOldPasswordInput("");
+        setNewPasswordInput("");
+        setConfirmPasswordInput("");
+        setTimeout(() => setPasswordMsg(""), 5000);
+      }
+    } catch {
+      setIsSavingPassword(false);
+      setPasswordError("Terjadi kendala saat menyimpan password.");
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,7 +225,131 @@ export default function SettingsPage() {
               </button>
             </form>
 
-            {/* SECTION 2: 3 PILIHAN MUSIK BACKSOUND (NO COPYRIGHT) */}
+            {/* SECTION 2: KEAMANAN & PASSWORD AKUN */}
+            <form onSubmit={handleSavePassword} className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
+              <div className="flex items-center justify-between">
+                <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
+                  Keamanan Akun & Password
+                </span>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-purple-100 text-[#7251a8] border border-purple-200">
+                  {hasPassword === false ? "Akun Google" : "Password Aktif"}
+                </span>
+              </div>
+
+              {/* Info banner khusus akun Google yang belum punya password */}
+              {hasPassword === false && (
+                <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-3 text-xs sm:text-sm font-semibold text-amber-900 flex items-start gap-2 shadow-xs">
+                  <span className="text-lg">💡</span>
+                  <div>
+                    <p className="font-bold">Akun Terhubung dengan Google</p>
+                    <p className="mt-0.5 text-amber-800">
+                      Anda belum memiliki password lokal. Buat password di bawah ini agar Anda juga bisa login menggunakan <strong>Username & Password</strong> di komputer lain (misalnya lab sekolah yang tidak ada akun Google Anda).
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {passwordMsg && (
+                <div className="rounded-xl bg-emerald-100 border-2 border-emerald-400 p-2.5 text-center text-xs sm:text-sm font-bold text-emerald-800">
+                  {passwordMsg}
+                </div>
+              )}
+              {passwordError && (
+                <div className="rounded-xl bg-rose-100 border-2 border-rose-400 p-2.5 text-center text-xs sm:text-sm font-bold text-rose-800">
+                  {passwordError}
+                </div>
+              )}
+
+              {/* Input Password Lama (Hanya jika user sudah punya password) */}
+              {hasPassword === true && (
+                <div>
+                  <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
+                    Password Saat Ini (Password Lama)
+                  </label>
+                  <div className="relative flex items-center">
+                    <input
+                      type={showOldPassword ? "text" : "password"}
+                      value={oldPasswordInput}
+                      onChange={(e) => {
+                        setOldPasswordInput(e.target.value);
+                        if (passwordError) setPasswordError("");
+                      }}
+                      placeholder="Masukkan password saat ini..."
+                      className="w-full rounded-2xl border-3 border-[#cbb3f5] bg-[#f7f2ff] pl-4 pr-12 py-2 text-base font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowOldPassword(!showOldPassword)}
+                      className="absolute right-3 p-1 text-gray-500 hover:text-black cursor-pointer"
+                    >
+                      {showOldPassword ? "🙈" : "👁️"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Input Password Baru */}
+              <div>
+                <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
+                  {hasPassword === false ? "Buat Password Baru" : "Password Baru"}
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPasswordInput}
+                    onChange={(e) => {
+                      setNewPasswordInput(e.target.value);
+                      if (passwordError) setPasswordError("");
+                    }}
+                    placeholder="Minimal 6 karakter tanpa spasi..."
+                    className="w-full rounded-2xl border-3 border-[#cbb3f5] bg-[#f7f2ff] pl-4 pr-12 py-2 text-base font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 p-1 text-gray-500 hover:text-black cursor-pointer"
+                  >
+                    {showNewPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
+                <span className="text-[11px] font-semibold text-gray-500 mt-1 block">
+                  *Bebas huruf, angka, atau simbol (minimal 6 karakter tanpa spasi)
+                </span>
+              </div>
+
+              {/* Konfirmasi Password Baru */}
+              <div>
+                <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
+                  Konfirmasi Password Baru
+                </label>
+                <input
+                  type="password"
+                  value={confirmPasswordInput}
+                  onChange={(e) => {
+                    setConfirmPasswordInput(e.target.value);
+                    if (passwordError) setPasswordError("");
+                  }}
+                  placeholder="Ulangi password baru..."
+                  className="w-full rounded-2xl border-3 border-[#cbb3f5] bg-[#f7f2ff] px-4 py-2 text-base font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSavingPassword}
+                className="mt-1 flex items-center justify-center rounded-2xl border-4 border-white bg-[#3499d0] disabled:opacity-80 py-2.5 shadow-[0px_4px_0px_0px_#186996] transition-all hover:scale-102 active:translate-y-1 active:shadow-none cursor-pointer"
+              >
+                <span className="game-font text-base sm:text-lg font-bold text-white">
+                  {isSavingPassword
+                    ? "Menyimpan..."
+                    : hasPassword === false
+                    ? "Simpan & Buat Password"
+                    : "Perbarui Password"}
+                </span>
+              </button>
+            </form>
+
+            {/* SECTION 3: 3 PILIHAN MUSIK BACKSOUND (NO COPYRIGHT) */}
             <div className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
               <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
                 Pilihan Backsound (3 Opsi Bebas Copyright)
