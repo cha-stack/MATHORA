@@ -35,6 +35,22 @@ body {
   filter: drop-shadow(0px 5px 0px rgba(0, 0, 0, 0.22));
 }
 
+/* Styling logo MATHORA khusus navbar header (stroke & shadow tipis proporsional, ramah mobile) */
+.game-title-nav {
+  font-family: var(--font-titan-one), cursive, sans-serif;
+  color: #ffffff;
+  -webkit-text-stroke: 1.5px #f4ad21;
+  paint-order: stroke fill;
+  filter: drop-shadow(0px 2px 0px rgba(0, 0, 0, 0.16));
+}
+
+@media (min-width: 640px) {
+  .game-title-nav {
+    -webkit-text-stroke: 2.5px #f4ad21;
+    filter: drop-shadow(0px 3px 0px rgba(0, 0, 0, 0.2));
+  }
+}
+
 /* Font UI & Soal yang ramah di mata (tidak terlalu tebal/bold sehingga tidak bikin pusing) */
 .game-font {
   font-family: "Fredoka", "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;

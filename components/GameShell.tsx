@@ -211,10 +211,10 @@ export default function GameShell({
 
           {/* Logo & PKM Subtitle */}
           <Link href={homeUrl} className="flex flex-col ml-0.5 sm:ml-1">
-            <span className="game-title-mathora text-xl sm:text-3xl md:text-4xl font-bold tracking-wider uppercase leading-none">
+            <span className="game-title-nav text-xl sm:text-3xl md:text-4xl font-bold tracking-wider uppercase leading-none">
               MATHORA
             </span>
-            <span className="text-[8px] sm:text-[11px] font-bold text-[#422376] tracking-wide mt-0.5 truncate max-w-[110px] sm:max-w-none">
+            <span className="text-[9px] sm:text-xs font-bold text-[#3d1e70] tracking-wide mt-1 whitespace-nowrap">
               🎓 PKM SMP ISLAM PARUNG
             </span>
           </Link>
@@ -318,11 +318,10 @@ export default function GameShell({
               <Link
                 href={homeUrl}
                 onClick={() => setSidebarOpen(false)}
-                className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${
-                  isHomeActive
-                    ? "bg-[#f8f298] shadow-sm"
-                    : "hover:bg-white/50"
-                }`}
+                className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${isHomeActive
+                  ? "bg-[#f8f298] shadow-sm"
+                  : "hover:bg-white/50"
+                  }`}
               >
                 <div className={`flex size-10 items-center justify-center ${isHomeActive ? "text-[#2a2830]" : "text-[#422376]"}`}>
                   <svg viewBox="0 0 24 24" fill="currentColor" className="size-8">
@@ -336,11 +335,10 @@ export default function GameShell({
               <Link
                 href="/materi"
                 onClick={() => setSidebarOpen(false)}
-                className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${
-                  isMateriActive
-                    ? "bg-[#f8f298] shadow-sm"
-                    : "hover:bg-white/50"
-                }`}
+                className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${isMateriActive
+                  ? "bg-[#f8f298] shadow-sm"
+                  : "hover:bg-white/50"
+                  }`}
               >
                 <div className={`flex size-10 items-center justify-center ${isMateriActive ? "text-[#2a2830]" : "text-[#422376]"}`}>
                   <svg viewBox="0 0 24 24" fill="currentColor" className="size-8">
@@ -354,11 +352,10 @@ export default function GameShell({
               <Link
                 href="/game-kompetitif"
                 onClick={() => setSidebarOpen(false)}
-                className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${
-                  isKompetitifActive
-                    ? "bg-[#f8f298] shadow-sm"
-                    : "hover:bg-white/50"
-                }`}
+                className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${isKompetitifActive
+                  ? "bg-[#f8f298] shadow-sm"
+                  : "hover:bg-white/50"
+                  }`}
               >
                 <div className="flex size-10 items-center justify-center text-[#e05f1e]">
                   <span className="text-2xl">🚩</span>
@@ -371,11 +368,10 @@ export default function GameShell({
                 <Link
                   href="/bank-soal"
                   onClick={() => setSidebarOpen(false)}
-                  className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${
-                    isBankSoalActive
-                      ? "bg-[#f8f298] shadow-sm"
-                      : "hover:bg-white/50"
-                  }`}
+                  className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${isBankSoalActive
+                    ? "bg-[#f8f298] shadow-sm"
+                    : "hover:bg-white/50"
+                    }`}
                 >
                   <div className="flex size-10 items-center justify-center text-[#2a2830]">
                     <span className="text-2xl">📋</span>
@@ -388,11 +384,10 @@ export default function GameShell({
               <Link
                 href="/settings"
                 onClick={() => setSidebarOpen(false)}
-                className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${
-                  isSettingsActive
-                    ? "bg-[#f8f298] shadow-sm"
-                    : "hover:bg-white/50"
-                }`}
+                className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${isSettingsActive
+                  ? "bg-[#f8f298] shadow-sm"
+                  : "hover:bg-white/50"
+                  }`}
               >
                 <div className={`flex size-10 items-center justify-center ${isSettingsActive ? "text-[#2a2830]" : "text-[#422376]"}`}>
                   <svg viewBox="0 0 24 24" fill="currentColor" className="size-8">
