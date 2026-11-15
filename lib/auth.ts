@@ -50,7 +50,9 @@ export function setAuthCookie(user: { username: string; role: string }) {
   if (typeof document === "undefined") return;
   try {
     const val = encodeURIComponent(JSON.stringify({ username: user.username, role: user.role }));
-    document.cookie = `mathora_auth_session=${val}; path=/; max-age=${7 * 24 * 3600}; SameSite=Lax`;
+    const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+    const secureFlag = isHttps ? "; Secure" : "";
+    document.cookie = `mathora_auth_session=${val}; path=/; max-age=${7 * 24 * 3600}; SameSite=Lax${secureFlag}`;
   } catch {
     // Ignore
   }
