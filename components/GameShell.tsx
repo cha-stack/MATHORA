@@ -163,49 +163,10 @@ export default function GameShell({
         </div>
       </div>
 
-      {/* Top Navbar Header with PKM Mark */}
-      <header className="relative z-20 flex w-full max-w-7xl items-center justify-between rounded-[22px] sm:rounded-[32px] border-[4px] sm:border-[7px] border-white bg-[#d3e9ff] px-3.5 sm:px-8 py-2 sm:py-4 shadow-[0px_5px_0px_0px_#aaafaf]">
-        <div className="flex items-center gap-3">
-          <Link href={homeUrl} className="flex flex-col">
-            <span className="game-title-mathora text-2xl sm:text-4xl font-bold tracking-wider uppercase leading-none">
-              MATHORA
-            </span>
-            <span className="text-[10px] sm:text-xs font-bold text-[#422376] tracking-wide mt-0.5">
-              🎓 PKM SMP ISLAM PARUNG
-            </span>
-          </Link>
-          {isGuru && (
-            <span className="hidden sm:inline-block rounded-full bg-[#5e65e9] px-3 py-1 text-xs font-bold text-white shadow">
-              GURU
-            </span>
-          )}
-        </div>
-
-        <Link href="/settings" className="flex items-center gap-3 group cursor-pointer" title="Pengaturan Akun">
-          <div className="hidden sm:flex flex-col text-right">
-            <span className="game-font text-base text-[#2a2830] font-bold">
-              {currentUser?.username || "Pemain"}
-            </span>
-          </div>
-          <div className="relative size-12 sm:size-14 overflow-hidden rounded-full border-4 border-white shadow-md bg-purple-200 group-hover:scale-105 transition-transform">
-            <Image
-              src={userAvatar}
-              alt="Avatar Profile"
-              fill
-              className="object-cover"
-            />
-          </div>
-        </Link>
-      </header>
-
-      {/* Main Content Area */}
-      <div className="relative z-10 my-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center py-2.5 sm:py-4">
-        {children}
-      </div>
-
-      {/* Bottom Floating Controls */}
-      <div className="relative z-20 flex w-full max-w-7xl items-end justify-between px-2 sm:px-4">
-        <div className="flex items-center gap-3 sm:gap-4">
+      {/* Top Navbar Header with Navigation & Sound Controls */}
+      <header className="relative z-20 flex w-full max-w-7xl items-center justify-between rounded-[22px] sm:rounded-[32px] border-[4px] sm:border-[7px] border-white bg-[#d3e9ff] px-2.5 sm:px-6 py-2 sm:py-3 shadow-[0px_5px_0px_0px_#aaafaf]">
+        {/* Sisi Kiri: Menu Hamburger + Tombol Kembali + Logo */}
+        <div className="flex items-center gap-2 sm:gap-3.5">
           {/* Menu / Hamburger Button */}
           <button
             onClick={() => {
@@ -213,7 +174,7 @@ export default function GameShell({
               setSidebarOpen(true);
             }}
             aria-label="Buka Menu Sidebar"
-            className="group flex size-14 sm:size-16 md:size-[68px] items-center justify-center rounded-[18px] sm:rounded-[20px] border-[5px] sm:border-[6px] border-white bg-[#34cc9e] shadow-[0px_5px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-1 active:shadow-none cursor-pointer"
+            className="group flex size-10 sm:size-12 md:size-13 items-center justify-center rounded-[14px] sm:rounded-[18px] border-[3px] sm:border-[4px] border-white bg-[#34cc9e] shadow-[0px_3px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-0.5 cursor-pointer shrink-0"
           >
             <svg
               viewBox="0 0 24 24"
@@ -221,7 +182,7 @@ export default function GameShell({
               stroke="currentColor"
               strokeWidth="3.2"
               strokeLinecap="round"
-              className="size-7 sm:size-8 text-white drop-shadow-sm"
+              className="size-5 sm:size-6 text-white drop-shadow-sm"
             >
               <line x1="4" y1="6" x2="20" y2="6" />
               <line x1="4" y1="12" x2="20" y2="12" />
@@ -229,65 +190,107 @@ export default function GameShell({
             </svg>
           </button>
 
-          {/* Back Button */}
+          {/* Back Button (jika showBack & resolvedBackUrl aktif) */}
           {showBack && resolvedBackUrl && (
             <Link
               href={resolvedBackUrl}
               onClick={handleBackClick}
               aria-label="Kembali"
-              className="group flex size-14 sm:size-16 md:size-[68px] items-center justify-center rounded-full border-[5px] sm:border-[6px] border-white bg-[#e05f1e] shadow-[0px_5px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-1 active:shadow-none cursor-pointer"
+              className="group flex size-10 sm:size-12 md:size-13 items-center justify-center rounded-full border-[3px] sm:border-[4px] border-white bg-[#e05f1e] shadow-[0px_3px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-0.5 cursor-pointer shrink-0"
             >
               <svg
                 viewBox="0 0 24 24"
                 fill="currentColor"
-                className="size-7 sm:size-8 text-white"
+                className="size-5 sm:size-6 text-white"
               >
                 <rect x="4" y="5" width="3" height="14" rx="1" />
                 <path d="M20 5.5v13a1 1 0 01-1.55.83L9.5 12.83a1 1 0 010-1.66L18.45 4.67A1 1 0 0120 5.5z" />
               </svg>
             </Link>
           )}
+
+          {/* Logo & PKM Subtitle */}
+          <Link href={homeUrl} className="flex flex-col ml-0.5 sm:ml-1">
+            <span className="game-title-mathora text-xl sm:text-3xl md:text-4xl font-bold tracking-wider uppercase leading-none">
+              MATHORA
+            </span>
+            <span className="text-[8px] sm:text-[11px] font-bold text-[#422376] tracking-wide mt-0.5 truncate max-w-[110px] sm:max-w-none">
+              🎓 PKM SMP ISLAM PARUNG
+            </span>
+          </Link>
+
+          {isGuru && (
+            <span className="hidden md:inline-block rounded-full bg-[#5e65e9] px-2.5 py-0.5 text-xs font-bold text-white shadow">
+              GURU
+            </span>
+          )}
         </div>
 
-        {/* Right Corner Sound Pill */}
-        <button
-          onClick={() => {
-            playClick();
-            toggleMute();
-          }}
-          title={isMuted ? "Aktifkan Musik" : "Bisukan Musik"}
-          className="flex size-14 sm:size-16 md:size-[68px] items-center justify-center rounded-[18px] sm:rounded-[20px] border-[5px] sm:border-[6px] border-white bg-[#5e65e9] shadow-[0px_5px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-1 cursor-pointer"
-        >
-          {!isMuted ? (
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-7 sm:size-8 text-white"
-            >
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white" />
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-            </svg>
-          ) : (
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-7 sm:size-8 text-white opacity-70"
-            >
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white" />
-              <line x1="23" y1="9" x2="17" y2="15" />
-              <line x1="17" y1="9" x2="23" y2="15" />
-            </svg>
-          )}
-        </button>
+        {/* Sisi Kanan: Tombol Suara / Musik + Profil User */}
+        <div className="flex items-center gap-2 sm:gap-3.5">
+          {/* Tombol Suara / Musik (Pindah ke atas) */}
+          <button
+            onClick={() => {
+              playClick();
+              toggleMute();
+            }}
+            title={isMuted ? "Aktifkan Musik" : "Bisukan Musik"}
+            aria-label={isMuted ? "Aktifkan Musik" : "Bisukan Musik"}
+            className="flex size-10 sm:size-12 md:size-13 items-center justify-center rounded-[14px] sm:rounded-[18px] border-[3px] sm:border-[4px] border-white bg-[#5e65e9] shadow-[0px_3px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-0.5 cursor-pointer shrink-0"
+          >
+            {!isMuted ? (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-5 sm:size-6 text-white"
+              >
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+              </svg>
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-5 sm:size-6 text-white opacity-70"
+              >
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
+            )}
+          </button>
+
+          {/* User Profile Avatar Link */}
+          <Link href="/settings" className="flex items-center gap-2 group cursor-pointer" title="Pengaturan Akun">
+            <div className="hidden lg:flex flex-col text-right">
+              <span className="game-font text-sm md:text-base text-[#2a2830] font-bold max-w-[100px] truncate">
+                {currentUser?.username || "Pemain"}
+              </span>
+            </div>
+            <div className="relative size-10 sm:size-12 md:size-13 overflow-hidden rounded-full border-[3px] sm:border-4 border-white shadow-md bg-purple-200 group-hover:scale-105 transition-transform shrink-0">
+              <Image
+                src={userAvatar}
+                alt="Avatar Profile"
+                fill
+                className="object-cover"
+              />
+            </div>
+          </Link>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <div className="relative z-10 my-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center py-2.5 sm:py-4">
+        {children}
       </div>
 
       {/* Sidebar Overlay Modal */}
