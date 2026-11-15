@@ -520,6 +520,25 @@ const TOPICS_BY_SECTION: Record<1 | 2 | 3 | 4 | 5, readonly ("spldv_identifikasi
 };
 
 /**
+ * Acak posisi opsi pilihan ganda agar kunci jawaban tidak selalu di opsi A (indeks 0)
+ */
+export function shuffleQuestionOptions(q: QuestionItem): QuestionItem {
+  if (!q.options || q.options.length <= 1) return q;
+  const correctText = q.options[q.correctIndex];
+  const shuffled = [...q.options];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const newIndex = shuffled.indexOf(correctText);
+  return {
+    ...q,
+    options: shuffled,
+    correctIndex: newIndex >= 0 ? newIndex : 0,
+  };
+}
+
+/**
  * buildPretestPool
  * Menggabungkan soal pre-test statis dengan soal generated agar pool variatif
  * setiap sesi (tidak bisa dihafal). Jumlah generated dapat diatur.
@@ -541,7 +560,7 @@ export function buildPretestPool(sectionNum: 1 | 2 | 3 | 4 | 5, genCount = 3, se
     generated.push({ ...q, section: sectionNum, id: `gen_pre_s${sectionNum}_${i}` });
   }
 
-  return [...staticBase, ...generated];
+  return [...staticBase, ...generated].map(shuffleQuestionOptions);
 }
 
 /**
@@ -562,7 +581,7 @@ export function buildPosttestPool(sectionNum: 1 | 2 | 3 | 4 | 5, genCount = 3, s
     generated.push({ ...q, section: sectionNum, id: `gen_post_s${sectionNum}_${i}` });
   }
 
-  return [...staticBase, ...generated];
+  return [...staticBase, ...generated].map(shuffleQuestionOptions);
 }
 
 /**

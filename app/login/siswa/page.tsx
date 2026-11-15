@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { loginUser } from "@/lib/auth";
+import { loginUser, loginWithGoogle, CURRENT_USER_KEY } from "@/lib/auth";
 import { useSound } from "@/components/SoundContext";
 
 export default function LoginSiswa() {
@@ -16,7 +16,29 @@ export default function LoginSiswa() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+
+  // Sinkronisasi data user dari cookie OAuth ke localStorage (setelah redirect dari /auth/callback)
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const oauthCookie = document.cookie
+      .split("; ")
+      .find((c) => c.startsWith("mathora_oauth_userdata="));
+    if (oauthCookie) {
+      try {
+        const val = decodeURIComponent(oauthCookie.split("=")[1]);
+        const userData = JSON.parse(val);
+        if (userData?.username) {
+          localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userData));
+        }
+      } catch {
+        // Abaikan jika parsing gagal
+      }
+      // Hapus cookie sementara OAuth setelah dibaca
+      document.cookie = "mathora_oauth_userdata=; path=/; max-age=0;";
+    }
+  }, []);
 
   // Timer hitung mundur rate limit (Too many requests cooldown)
   useEffect(() => {
@@ -33,6 +55,39 @@ export default function LoginSiswa() {
     }, 1000);
     return () => clearInterval(interval);
   }, [cooldown]);
+
+  // Tampilkan pesan error dari URL param (dikirim oleh /auth/callback)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+    if (err) {
+      const errorMap: Record<string, string> = {
+        oauth_failed: "Login Google gagal. Silakan coba lagi.",
+        no_email: "Akun Google tidak memiliki email. Gunakan akun lain.",
+        register_failed: "Gagal membuat akun siswa dari Google. Coba lagi.",
+        server_error: "Terjadi kesalahan server. Coba beberapa saat lagi.",
+        no_code: "Proses login Google terganggu. Silakan coba lagi.",
+        use_guru_login: "Email ini terdaftar sebagai Guru. Gunakan halaman Login Guru.",
+      };
+      setErrorMessage(errorMap[err] || `Error: ${err}`);
+      // Bersihkan URL param
+      window.history.replaceState({}, "", "/login/siswa");
+    }
+  }, []);
+
+  // Handler Google Sign-In
+  const handleGoogleLogin = async () => {
+    playClick();
+    setErrorMessage("");
+    setIsGoogleLoading(true);
+    const result = await loginWithGoogle();
+    if (!result.success) {
+      setErrorMessage(result.message);
+      setIsGoogleLoading(false);
+    }
+    // Jika berhasil, browser akan diarahkan ke Google — tidak perlu reset loading
+  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -151,6 +206,42 @@ export default function LoginSiswa() {
               {errorMessage}
             </div>
           )}
+
+          {/* Tombol Masuk dengan Google */}
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={isGoogleLoading || isLoading}
+            className="w-full flex items-center justify-center gap-3 rounded-[20px] sm:rounded-[22px] bg-white border-2 border-[#8e78ca] px-6 py-4 sm:py-5 text-[#333] font-bold text-lg sm:text-xl shadow-md hover:bg-[#f3f0ff] hover:border-[#6b52b8] transition-all duration-150 active:scale-[0.98] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isGoogleLoading ? (
+              <>
+                <svg className="animate-spin h-6 w-6 text-[#6b52b8]" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+                <span className="game-font">Menghubungkan ke Google...</span>
+              </>
+            ) : (
+              <>
+                {/* Google Logo SVG */}
+                <svg viewBox="0 0 48 48" className="h-6 w-6 flex-shrink-0">
+                  <path fill="#4285F4" d="M46.145 24.504c0-1.636-.146-3.2-.418-4.709H24v8.906h12.418c-.536 2.891-2.163 5.342-4.608 6.99v5.814h7.464c4.364-4.019 6.871-9.941 6.871-16.001z"/>
+                  <path fill="#34A853" d="M24 47c6.274 0 11.536-2.082 15.382-5.641l-7.464-5.814c-2.082 1.395-4.745 2.218-7.918 2.218-6.09 0-11.248-4.112-13.09-9.643H3.19v6.009C7.019 42.455 15.028 47 24 47z"/>
+                  <path fill="#FBBC05" d="M10.91 28.12A14.98 14.98 0 0110 24c0-1.436.246-2.826.682-4.12v-6.009H3.19A23.985 23.985 0 000 24c0 3.864.927 7.527 2.564 10.754l8.346-6.634z"/>
+                  <path fill="#EA4335" d="M24 9.238c3.436 0 6.519 1.18 8.945 3.5l6.709-6.71C35.527 2.082 30.265 0 24 0 15.028 0 7.019 4.545 3.19 11.871l7.72 6.009C12.751 13.35 17.909 9.238 24 9.238z"/>
+                </svg>
+                <span className="game-font">Masuk dengan Google</span>
+              </>
+            )}
+          </button>
+
+          {/* Divider "atau" */}
+          <div className="w-full flex items-center gap-3 my-1">
+            <div className="flex-1 h-px bg-[#8e78ca]/40" />
+            <span className="game-font text-sm text-[#555] font-bold select-none">atau</span>
+            <div className="flex-1 h-px bg-[#8e78ca]/40" />
+          </div>
 
           <form id="login-siswa-form" onSubmit={handleSubmit} className="w-full flex flex-col gap-4 sm:gap-5">
             {/* Username Input */}

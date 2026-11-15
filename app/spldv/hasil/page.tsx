@@ -15,25 +15,72 @@ function HasilEvaluasiContent() {
   const sectionNum = parsedSec >= 1 && parsedSec <= 5 ? parsedSec : 1;
   const isPosttest = typeParam === "post";
 
-  const [score, setScore] = useState<number>(100);
-  const [correctCount, setCorrectCount] = useState<number>(3);
-  const [totalCount, setTotalCount] = useState<number>(6);
+  const [score, setScore] = useState<number>(0);
+  const [correctCount, setCorrectCount] = useState<number>(0);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [hasCompleted, setHasCompleted] = useState<boolean>(true);
 
   useEffect(() => {
     const st = getSectionState(sectionNum);
     if (isPosttest) {
-      if (st.posttest_score !== undefined) setScore(st.posttest_score);
-      if (st.posttest_correct !== undefined) setCorrectCount(st.posttest_correct);
-      setTotalCount(st.posttest_total ?? 6);
+      if (!st.posttest) {
+        setHasCompleted(false);
+        setScore(0);
+        setCorrectCount(0);
+        setTotalCount(0);
+        return;
+      }
+      setHasCompleted(true);
+      setScore(st.posttest_score ?? 0);
+      setCorrectCount(st.posttest_correct ?? 0);
+      setTotalCount(st.posttest_total ?? 5);
     } else {
-      if (st.pretest_score !== undefined) setScore(st.pretest_score);
-      if (st.pretest_correct !== undefined) setCorrectCount(st.pretest_correct);
-      setTotalCount(st.pretest_total ?? 6);
+      if (!st.pretest) {
+        setHasCompleted(false);
+        setScore(0);
+        setCorrectCount(0);
+        setTotalCount(0);
+        return;
+      }
+      setHasCompleted(true);
+      setScore(st.pretest_score ?? 0);
+      setCorrectCount(st.pretest_correct ?? 0);
+      setTotalCount(st.pretest_total ?? 5);
     }
   }, [sectionNum, isPosttest]);
 
   const isLulus = score >= 60;
   const testTitle = isPosttest ? "Post-Test" : "Pre-Test";
+
+  if (!hasCompleted) {
+    return (
+      <div className="flex w-full flex-col items-center animate-in zoom-in-95 duration-200">
+        <div className="relative w-full max-w-xl rounded-[32px] sm:rounded-[42px] border-[7px] border-white bg-white/95 p-8 sm:p-10 shadow-2xl flex flex-col items-center text-center">
+          <span className="text-6xl mb-4">📝</span>
+          <h2 className="game-font text-2xl sm:text-4xl text-[#2a2830] mb-2 font-bold">
+            Belum Ada Data {testTitle}
+          </h2>
+          <p className="text-gray-600 text-sm sm:text-base font-medium mb-6">
+            Kamu belum mengerjakan {testTitle} untuk Section {sectionNum}. Kerjakan tes terlebih dahulu untuk melihat hasil nilaimu.
+          </p>
+          <div className="flex gap-4 w-full max-w-sm">
+            <Link
+              href="/spldv"
+              className="flex-1 py-3 rounded-2xl border-2 border-gray-300 bg-gray-100 font-bold text-gray-700 text-center hover:bg-gray-200"
+            >
+              Kembali
+            </Link>
+            <Link
+              href={isPosttest ? `/spldv/posttest?section=${sectionNum}` : `/spldv/pretest?section=${sectionNum}`}
+              className="flex-1 py-3 rounded-2xl border-4 border-white bg-[#1cd8a4] font-bold text-white text-center shadow hover:brightness-105"
+            >
+              Mulai {testTitle}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full flex-col items-center animate-in zoom-in-95 duration-200">

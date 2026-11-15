@@ -15,6 +15,19 @@ import {
 } from "@/lib/rateLimit";
 import { hashPassword, verifyPassword } from "@/lib/crypto";
 
+// Regex validasi password: minimal 6 karakter varchar (huruf, angka, atau simbol apa saja tanpa spasi)
+export const PASSWORD_REGEX = /^\S{6,}$/;
+
+export function validatePassword(pwd: string): { isValid: boolean; message?: string } {
+  if (!pwd || !PASSWORD_REGEX.test(pwd)) {
+    return {
+      isValid: false,
+      message: "Password minimal harus 6 karakter (bebas karakter/varchar tanpa spasi)!",
+    };
+  }
+  return { isValid: true };
+}
+
 export interface UserAccount {
   username: string;
   email: string;
@@ -25,7 +38,7 @@ export interface UserAccount {
 }
 
 const STORAGE_KEY = "mathora_users";
-const CURRENT_USER_KEY = "mathora_current_user";
+export const CURRENT_USER_KEY = "mathora_current_user";
 const PROGRESS_KEY = "mathora_progress";
 
 /**
@@ -131,11 +144,12 @@ export async function registerUser(
   const trimmedUser = username.trim();
   const trimmedEmail = email.trim().toLowerCase();
 
-  // Validasi panjang password minimal 6 karakter (bebas angka atau huruf)
-  if (!password || password.trim().length < 6) {
+  // Validasi password minimal 6 karakter menggunakan regex
+  const pwdValidation = validatePassword(password);
+  if (!pwdValidation.isValid) {
     return {
       success: false,
-      message: "Password minimal harus 6 karakter (bebas angka atau huruf)!",
+      message: pwdValidation.message || "Password minimal harus 6 karakter (bebas karakter/varchar tanpa spasi)!",
     };
   }
 
@@ -171,10 +185,11 @@ export async function registerUser(
       (u) => u.username.toLowerCase() === trimmedUser.toLowerCase()
     );
 
+    const hashedPassword = await hashPassword(password);
     const newUser: UserAccount = {
       username: trimmedUser,
       email: trimmedEmail,
-      password,
+      password: hashedPassword,
       role,
       avatar,
       createdAt: new Date().toISOString(),
@@ -232,7 +247,7 @@ export async function loginUser(
       const activeUser: UserAccount = {
         username: sbRes.user.username,
         email: sbRes.user.email,
-        password: sbRes.user.password,
+        password: "", // Jangan simpan password di active session browser
         role: sbRes.user.role,
         avatar: sbRes.user.avatar,
         createdAt: sbRes.user.created_at || new Date().toISOString(),
@@ -316,9 +331,10 @@ export async function loginUser(
   // Login sukses: Reset counter
   resetRateLimit(userRateKey);
   resetRateLimit(deviceRateKey);
-  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
-  setAuthCookie(user);
-  return { success: true, message: "Login berhasil!", user };
+  const safeSessionUser = { ...user, password: "" };
+  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(safeSessionUser));
+  setAuthCookie(safeSessionUser);
+  return { success: true, message: "Login berhasil!", user: safeSessionUser };
 }
 
 // Reset Password via validasi Email (didukung Supabase + cache lokal)
@@ -328,11 +344,12 @@ export async function resetPasswordByEmail(
 ): Promise<{ success: boolean; message: string }> {
   const trimmedEmail = email.trim().toLowerCase();
 
-  // Validasi panjang password baru minimal 6 karakter
-  if (!newPassword || newPassword.trim().length < 6) {
+  // Validasi password baru minimal 6 karakter menggunakan regex
+  const pwdValidation = validatePassword(newPassword);
+  if (!pwdValidation.isValid) {
     return {
       success: false,
-      message: "Password baru minimal harus 6 karakter (bebas angka atau huruf)!",
+      message: pwdValidation.message || "Password baru minimal harus 6 karakter (bebas karakter/varchar tanpa spasi)!",
     };
   }
 
@@ -439,6 +456,75 @@ export function logoutUser(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(CURRENT_USER_KEY);
   removeAuthCookie();
+}
+
+/**
+ * Login dengan Google via Supabase OAuth
+ * Mengarahkan browser ke halaman consent Google.
+ * Setelah selesai, Supabase akan redirect ke /auth/callback.
+ */
+export async function loginWithGoogle(): Promise<{ success: boolean; message: string }> {
+  if (typeof window === "undefined") {
+    return { success: false, message: "Tidak bisa dijalankan di server." };
+  }
+
+  const supabaseUrl = (
+    process.env.NEXT_PUBLIC_SB_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    ""
+  ).trim();
+
+  const supabaseAnonKey = (
+    process.env.NEXT_PUBLIC_SB_KEY ||
+    process.env.NEXT_PUBLIC_SB_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    ""
+  ).trim();
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return {
+      success: false,
+      message: "Fitur Google Sign-In belum dikonfigurasi. Hubungi administrator.",
+    };
+  }
+
+  try {
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false },
+    });
+
+    const redirectTo = `${window.location.origin}/auth/callback`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+        queryParams: {
+          // Minta akses offline agar email selalu tersedia
+          access_type: "offline",
+          prompt: "select_account",
+        },
+      },
+    });
+
+    if (error) {
+      console.error("Google OAuth error:", error);
+      return {
+        success: false,
+        message: "Gagal memulai login Google. Silakan coba lagi.",
+      };
+    }
+
+    // Jika berhasil, Supabase akan otomatis redirect browser ke Google
+    return { success: true, message: "Mengarahkan ke Google..." };
+  } catch (err) {
+    console.error("loginWithGoogle unexpected error:", err);
+    return {
+      success: false,
+      message: "Terjadi kesalahan saat menghubungi layanan Google.",
+    };
+  }
 }
 
 // ─── SISTEM TINGKATAN & PROGRESSION LOCK MATERI ──────────────────────────────

@@ -33,6 +33,7 @@ export default function Home() {
             alt="Math Doodle 1"
             width={300}
             height={200}
+            sizes="(max-width: 640px) 150px, 240px"
             className="w-full h-auto object-contain"
             priority
           />
@@ -45,6 +46,7 @@ export default function Home() {
             alt="Math Doodle 2"
             width={350}
             height={220}
+            sizes="(max-width: 640px) 180px, 320px"
             className="w-full h-auto object-contain"
             priority
           />
@@ -57,6 +59,7 @@ export default function Home() {
             alt="Math Doodle 3"
             width={280}
             height={180}
+            sizes="(max-width: 640px) 140px, 220px"
             className="w-full h-auto object-contain"
           />
         </div>
@@ -68,6 +71,7 @@ export default function Home() {
             alt="Math Doodle 5"
             width={360}
             height={240}
+            sizes="(max-width: 640px) 160px, 320px"
             className="w-full h-auto object-contain"
           />
         </div>
@@ -79,6 +83,7 @@ export default function Home() {
             alt="Math Doodle 6"
             width={360}
             height={240}
+            sizes="(max-width: 640px) 180px, 320px"
             className="w-full h-auto object-contain"
           />
         </div>
@@ -90,6 +95,7 @@ export default function Home() {
             alt="Math Doodle 7"
             width={320}
             height={220}
+            sizes="(max-width: 640px) 160px, 280px"
             className="w-full h-auto object-contain"
           />
         </div>

@@ -752,10 +752,34 @@ export default function GameKompetitifPage() {
   // ─── STATE UTAMA GAME ───────────────────────────────────────────────────────
   const [gameState, setGameState] = useState<"lobby" | "playing" | "gameover">("lobby");
 
+  const PREFS_KEY = "mathora_game_prefs";
   // Pengaturan dari Lobby
   const [selectedMateri, setSelectedMateri] = useState<string>("SPLDV");
   const [gameMode, setGameMode] = useState<"1vs1" | "vsAI">("1vs1");
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+
+  // Load preferensi game yang tersimpan sebelumnya
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(PREFS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.selectedMateri) setSelectedMateri(parsed.selectedMateri);
+        if (parsed.gameMode) setGameMode(parsed.gameMode);
+        if (parsed.difficulty) setDifficulty(parsed.difficulty);
+      }
+    } catch {}
+  }, []);
+
+  // Simpan preferensi game saat ada perubahan
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        PREFS_KEY,
+        JSON.stringify({ selectedMateri, gameMode, difficulty })
+      );
+    } catch {}
+  }, [selectedMateri, gameMode, difficulty]);
 
   // Skor & Ronde
   const [scoreP1, setScoreP1] = useState(0);
@@ -765,11 +789,34 @@ export default function GameKompetitifPage() {
   // Timer 5 Menit (300 Detik) Total Permainan
   const [timeLeft, setTimeLeft] = useState(300);
   const [winner, setWinner] = useState<"Pemain 1" | "Pemain 2" | "AI Bot" | "Seri / Imbang" | null>(null);
+  const [koReason, setKoReason] = useState<string | null>(null);
+  const [roundLocked, setRoundLocked] = useState<boolean>(false);
+  const [showExitConfirm, setShowExitConfirm] = useState<boolean>(false);
 
   // Soal & Notifikasi
   const [currentQ, setCurrentQ] = useState<MathQuestion>(INITIAL_QUESTION);
   const [lastRoundNotice, setLastRoundNotice] = useState<string | null>(null);
-  const [cheerReaction, setCheerReaction] = useState<string>("hebat!");
+  const [cheerReaction, setCheerReaction] = useState<string>("SIAP MULAI!");
+
+  // Reaksi cheer bervariasi
+  const pickReaction = (type: "p1_score" | "p2_score" | "wrong") => {
+    const p1Reactions = ["HEBAT!", "TARIK TERUS!", "MANTAP!", "KEREN!", "SEMPURNA!"];
+    const p2Reactions = ["AWAS LAWAN!", "KUATKAN!", "JANGAN MENYERAH!", "KEJAR SKOR!"];
+    const wrongReactions = ["COBA LAGI!", "FOKUS!", "AYO BISA!"];
+    const list = type === "p1_score" ? p1Reactions : type === "p2_score" ? p2Reactions : wrongReactions;
+    return list[Math.floor(Math.random() * list.length)];
+  };
+
+  // Proteksi sebelum reload / refresh saat game sedang berjalan
+  useEffect(() => {
+    if (gameState !== "playing") return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [gameState]);
 
   // Input Keypad Kalkulator Pemain 1 & Pemain 2
   const [p1Input, setP1Input] = useState<string>("");
@@ -853,11 +900,14 @@ export default function GameKompetitifPage() {
   const checkEarlyKO = useCallback((p1: number, p2: number) => {
     if (p1 >= 10 || p1 - p2 >= 5) {
       setWinner("Pemain 1");
+      setKoReason(p1 - p2 >= 5 ? "Menang Telak Knockout (Unggul Selisih 5 Poin)!" : "Mencapai Target 10 Poin!");
       setGameState("gameover");
       return true;
     }
     if (p2 >= 10 || p2 - p1 >= 5) {
-      setWinner(gameMode === "vsAI" ? "AI Bot" : "Pemain 2");
+      const w = gameMode === "vsAI" ? "AI Bot" : "Pemain 2";
+      setWinner(w);
+      setKoReason(p2 - p1 >= 5 ? `${w} Menang Telak Knockout (Unggul Selisih 5 Poin)!` : `${w} Mencapai Target 10 Poin!`);
       setGameState("gameover");
       return true;
     }
@@ -870,6 +920,7 @@ export default function GameKompetitifPage() {
     setP2Input("");
     setRoundNum((r) => r + 1);
     setCurrentQ(makeQuestion(selectedMateri, difficulty));
+    setRoundLocked(false);
   }, [selectedMateri, difficulty]);
 
   // ─── MULAI PERMAINAN (5 MENIT) ─────────────────────────────────────────────
@@ -883,8 +934,11 @@ export default function GameKompetitifPage() {
     setRoundNum(1);
     setTimeLeft(300); // 5 menit = 300 detik
     setWinner(null);
+    setKoReason(null);
+    setRoundLocked(false);
+    setShowExitConfirm(false);
     setLastRoundNotice(null);
-    setCheerReaction("hebat!");
+    setCheerReaction("SIAP MULAI!");
     setP1Input("");
     setP2Input("");
     setCurrentQ(makeQuestion(selectedMateri, difficulty));
@@ -893,52 +947,100 @@ export default function GameKompetitifPage() {
 
   // ─── SUBMIT JAWABAN PEMAIN 1 ───────────────────────────────────────────────
   const handleP1Submit = useCallback(() => {
-    if (gameState !== "playing" || winner || !p1Input.trim()) return;
+    if (gameState !== "playing" || winner || roundLocked) return;
 
-    const userNum = parseFloat(p1Input.trim().replace(",", "."));
-    const isCorrect = !isNaN(userNum) && Math.abs(userNum - currentQ.answer) < 0.001;
+    const trimmed = p1Input.trim();
+    if (!trimmed) {
+      playClick();
+      setLastRoundNotice("⚠️ Ketik angka jawaban sebelum menekan Enter!");
+      return;
+    }
+
+    if (trimmed === "-" || trimmed === "." || trimmed === "-." || trimmed === ".-") {
+      playClick();
+      setLastRoundNotice("⚠️ Masukkan angka yang lengkap dan valid!");
+      return;
+    }
+
+    const userNum = parseFloat(trimmed.replace(",", "."));
+    if (isNaN(userNum)) {
+      playClick();
+      setLastRoundNotice("⚠️ Format angka tidak valid! Ketik angka saja.");
+      return;
+    }
+
+    const isCorrect = Math.abs(userNum - currentQ.answer) < 0.001;
 
     if (isCorrect) {
       playCorrect();
+      setRoundLocked(true);
       const nextP1 = scoreP1 + 1;
       setScoreP1(nextP1);
       setLastRoundNotice(`✓ Pemain 1 Benar! (${currentQ.answer}) Tali ditarik ke kiri!`);
-      setCheerReaction("hebat!");
+      setCheerReaction(pickReaction("p1_score"));
       if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
-      if (!checkEarlyKO(nextP1, scoreP2)) nextRound();
+      if (!checkEarlyKO(nextP1, scoreP2)) {
+        setTimeout(() => {
+          nextRound();
+        }, 600);
+      }
     } else {
       playWrong();
       setP1Input("");
       setLastRoundNotice(`✗ Jawaban Pemain 1 (${p1Input}) belum tepat! Coba lagi!`);
-      setCheerReaction("ayo tarik!");
+      setCheerReaction(pickReaction("wrong"));
     }
-  }, [gameState, winner, p1Input, currentQ, scoreP1, scoreP2, playCorrect, playWrong, checkEarlyKO, nextRound]);
+  }, [gameState, winner, roundLocked, p1Input, currentQ, scoreP1, scoreP2, playCorrect, playWrong, playClick, checkEarlyKO, nextRound]);
 
   // ─── SUBMIT JAWABAN PEMAIN 2 ───────────────────────────────────────────────
   const handleP2Submit = useCallback(() => {
-    if (gameState !== "playing" || winner || gameMode === "vsAI" || !p2Input.trim()) return;
+    if (gameState !== "playing" || winner || gameMode === "vsAI" || roundLocked) return;
 
-    const userNum = parseFloat(p2Input.trim().replace(",", "."));
-    const isCorrect = !isNaN(userNum) && Math.abs(userNum - currentQ.answer) < 0.001;
+    const trimmed = p2Input.trim();
+    if (!trimmed) {
+      playClick();
+      setLastRoundNotice("⚠️ Ketik angka jawaban sebelum menekan Enter!");
+      return;
+    }
+
+    if (trimmed === "-" || trimmed === "." || trimmed === "-." || trimmed === ".-") {
+      playClick();
+      setLastRoundNotice("⚠️ Masukkan angka yang lengkap dan valid!");
+      return;
+    }
+
+    const userNum = parseFloat(trimmed.replace(",", "."));
+    if (isNaN(userNum)) {
+      playClick();
+      setLastRoundNotice("⚠️ Format angka tidak valid! Ketik angka saja.");
+      return;
+    }
+
+    const isCorrect = Math.abs(userNum - currentQ.answer) < 0.001;
 
     if (isCorrect) {
       playCorrect();
+      setRoundLocked(true);
       const nextP2 = scoreP2 + 1;
       setScoreP2(nextP2);
       setLastRoundNotice(`✓ Pemain 2 Benar! (${currentQ.answer}) Tali ditarik ke kanan!`);
-      setCheerReaction("hebat!");
-      if (!checkEarlyKO(scoreP1, nextP2)) nextRound();
+      setCheerReaction(pickReaction("p2_score"));
+      if (!checkEarlyKO(scoreP1, nextP2)) {
+        setTimeout(() => {
+          nextRound();
+        }, 600);
+      }
     } else {
       playWrong();
       setP2Input("");
       setLastRoundNotice(`✗ Jawaban Pemain 2 (${p2Input}) belum tepat! Coba lagi!`);
-      setCheerReaction("ayo tarik!");
+      setCheerReaction(pickReaction("wrong"));
     }
-  }, [gameState, winner, gameMode, p2Input, currentQ, scoreP1, scoreP2, playCorrect, playWrong, checkEarlyKO, nextRound]);
+  }, [gameState, winner, gameMode, roundLocked, p2Input, currentQ, scoreP1, scoreP2, playCorrect, playWrong, playClick, checkEarlyKO, nextRound]);
 
   // ─── LOGIKA AI BOT (BILA MODE vs AI) ───────────────────────────────────────
   useEffect(() => {
-    if (gameState !== "playing" || gameMode !== "vsAI" || winner) return;
+    if (gameState !== "playing" || gameMode !== "vsAI" || winner || roundLocked) return;
 
     // AI berpikir sesuai tingkat kesulitan:
     // Easy: 7-10s (akurasi 65%), Medium: 4-7s (akurasi 80%), Hard: 3-5s (akurasi 95%)
@@ -950,7 +1052,7 @@ export default function GameKompetitifPage() {
         : Math.random() * 2000 + 2500;
 
     aiTimerRef.current = setTimeout(() => {
-      if (gameState !== "playing" || winner) return;
+      if (gameState !== "playing" || winner || roundLocked) return;
 
       const accuracy = difficulty === "easy" ? 0.65 : difficulty === "medium" ? 0.8 : 0.95;
       const isCorrect = Math.random() < accuracy;
@@ -964,11 +1066,17 @@ export default function GameKompetitifPage() {
 
         if (isCorrect) {
           playCorrect();
+          setRoundLocked(true);
+          setP1Input(""); // Bersihkan input P1 saat AI berhasil menjawab agar tidak tertukar!
           const nextP2 = scoreP2 + 1;
           setScoreP2(nextP2);
-          setLastRoundNotice(`🤖 AI Bot menjawab tepat! (${currentQ.answer}) Tali ditarik!`);
-          setCheerReaction("hebat!");
-          if (!checkEarlyKO(scoreP1, nextP2)) nextRound();
+          setLastRoundNotice(`🤖 AI Bot menjawab tepat (${currentQ.answer})! Soal baru dimuat...`);
+          setCheerReaction(pickReaction("p2_score"));
+          if (!checkEarlyKO(scoreP1, nextP2)) {
+            setTimeout(() => {
+              nextRound();
+            }, 800);
+          }
         } else {
           playClick();
           setP2Input("");
@@ -980,7 +1088,7 @@ export default function GameKompetitifPage() {
     return () => {
       if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
     };
-  }, [currentQ, gameState, gameMode, difficulty, winner, scoreP1, scoreP2, checkEarlyKO, nextRound, playCorrect, playClick]);
+  }, [currentQ, gameState, gameMode, difficulty, winner, roundLocked, scoreP1, scoreP2, checkEarlyKO, nextRound, playCorrect, playClick]);
 
   // ─── COUNTDOWN TIMER (5 MENIT TOTAL) ───────────────────────────────────────
   useEffect(() => {
@@ -1001,11 +1109,18 @@ export default function GameKompetitifPage() {
 
   // ─── DUKUNGAN KEYBOARD FISIK (UNTUK PEMAIN 1) ──────────────────────────────
   useEffect(() => {
-    if (gameState !== "playing" || winner) return;
+    if (gameState !== "playing" || winner || roundLocked) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (roundLocked) return;
       if (["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(e.key)) {
-        setP1Input((prev) => (prev.length < 8 ? prev + e.key : prev));
+        setP1Input((prev) => {
+          if (prev.length >= 7) {
+            setLastRoundNotice("ℹ️ Maksimal 7 digit angka");
+            return prev;
+          }
+          return prev + e.key;
+        });
       } else if (e.key === "-") {
         setP1Input((prev) => (prev.startsWith("-") ? prev.slice(1) : "-" + prev));
       } else if (e.key === "." || e.key === ",") {
@@ -1022,13 +1137,14 @@ export default function GameKompetitifPage() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [gameState, winner, handleP1Submit]);
+  }, [gameState, winner, roundLocked, handleP1Submit]);
 
   // Handler klik keypad virtual
   const handleKeypadPress = (
     key: string,
     target: "P1" | "P2"
   ) => {
+    if (roundLocked) return;
     playClick();
     const setter = target === "P1" ? setP1Input : setP2Input;
     const submit = target === "P1" ? handleP1Submit : handleP2Submit;
@@ -1044,7 +1160,13 @@ export default function GameKompetitifPage() {
     } else if (key === ".") {
       setter((prev) => (!prev.includes(".") ? prev + "." : prev));
     } else {
-      setter((prev) => (prev.length < 8 ? prev + key : prev));
+      setter((prev) => {
+        if (prev.length >= 7) {
+          setLastRoundNotice("ℹ️ Maksimal 7 digit angka");
+          return prev;
+        }
+        return prev + key;
+      });
     }
   };
 
@@ -1138,6 +1260,19 @@ export default function GameKompetitifPage() {
                 })}
               </div>
 
+              {/* Aturan Kemenangan & Knockout Banner */}
+              <div className="mb-4 rounded-2xl border-2 border-white/80 bg-white/70 p-3 sm:p-3.5 text-xs sm:text-sm text-[#2a2830] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl sm:text-2xl">🎯</span>
+                  <div>
+                    <span className="font-bold text-[#422376] block">Syarat Kemenangan:</span>
+                    <span className="text-gray-700">
+                      <strong>Knockout (K.O.)</strong> jika unggul selisih 5 poin (atau capai 10 poin) • <strong>Waktu Habis</strong> skor tertinggi dalam 5 menit.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               {/* Pilihan Mode & Kesulitan */}
               <div className="flex flex-col md:flex-row items-center justify-between gap-3.5 sm:gap-4 border-t-2 border-white/60 pt-4 sm:pt-5">
                 <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
@@ -1228,8 +1363,7 @@ export default function GameKompetitifPage() {
                   <button
                     onClick={() => {
                       playClick();
-                      if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
-                      finishGame(scoreP1, scoreP2);
+                      setShowExitConfirm(true);
                     }}
                     className="flex items-center gap-1 rounded-xl sm:rounded-2xl border-[2.5px] sm:border-[3px] border-white bg-[#f59e0b] hover:bg-[#d97706] px-2.5 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-sm font-bold text-white shadow-[0px_3px_0px_0px_#b45309] active:translate-y-0.5 transition-all cursor-pointer shrink-0"
                     title="Selesaikan permainan sekarang dan tentukan pemenang dari skor saat ini"
@@ -1252,6 +1386,12 @@ export default function GameKompetitifPage() {
                   </button>
                 </div>
 
+                {/* Badge Syarat Kemenangan di Layar Besar */}
+                <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 border border-purple-200 text-xs font-bold text-purple-900 shadow-xs">
+                  <span>🎯</span>
+                  <span>Menang: Selisih 5 Poin (K.O.) atau Skor Tertinggi 5 Menit</span>
+                </div>
+
                 {/* Tombol Switch Tata Letak HP Portrait (Khusus 1 vs 1 di Layar HP < 640px) */}
                 {gameMode === "1vs1" && (
                   <button
@@ -1267,8 +1407,8 @@ export default function GameKompetitifPage() {
                   </button>
                 )}
 
-                {/* Balon Ucapan Komik ("hebat!") */}
-                <div className="relative bg-white/95 border-2 sm:border-3 border-[#2a2830] px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md shrink-0">
+                {/* Balon Ucapan Komik Dinamis */}
+                <div className="relative bg-white/95 border-2 sm:border-3 border-[#2a2830] px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md shrink-0 transition-transform duration-200 hover:scale-105">
                   <span className="game-font text-sm sm:text-2xl font-bold text-[#2a2830] tracking-wide uppercase">
                     {cheerReaction}
                   </span>
@@ -1288,7 +1428,11 @@ export default function GameKompetitifPage() {
                   className="relative z-20 transition-transform duration-500 ease-out flex items-center justify-center w-full max-w-2xl px-4 sm:px-8"
                 >
                   {/* Stickman Kiri (Pemain 1) */}
-                  <div className="flex flex-col items-center shrink-0 -mr-2">
+                  <div
+                    className={`flex flex-col items-center shrink-0 -mr-2 transition-transform duration-300 ${
+                      scoreP1 > scoreP2 ? "-rotate-12 scale-105" : scoreP1 < scoreP2 ? "rotate-6 scale-95" : ""
+                    }`}
+                  >
                     <svg viewBox="0 0 70 90" className="w-[52px] h-[68px] sm:w-[70px] sm:h-[90px] drop-shadow-sm select-none">
                       <circle cx="35" cy="20" r="16" fill="#fcd34d" stroke="#0284c7" strokeWidth="3" />
                       <path d="M 28 17 Q 31 14 34 17" stroke="#1e293b" strokeWidth="2.5" fill="none" strokeLinecap="round" />
@@ -1313,7 +1457,11 @@ export default function GameKompetitifPage() {
                   </div>
 
                   {/* Stickman Kanan (Pemain 2 / AI) */}
-                  <div className="flex flex-col items-center shrink-0 -ml-2">
+                  <div
+                    className={`flex flex-col items-center shrink-0 -ml-2 transition-transform duration-300 ${
+                      scoreP2 > scoreP1 ? "rotate-12 scale-105" : scoreP2 < scoreP1 ? "-rotate-6 scale-95" : ""
+                    }`}
+                  >
                     <svg viewBox="0 0 70 90" className="w-[52px] h-[68px] sm:w-[70px] sm:h-[90px] drop-shadow-sm select-none">
                       <circle cx="35" cy="20" r="16" fill="#fdba74" stroke="#dc2626" strokeWidth="3" />
                       <path d="M 27 15 L 33 19" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
@@ -1523,6 +1671,13 @@ export default function GameKompetitifPage() {
                   <span className="text-4xl sm:text-5xl animate-pulse">✨</span>
                 </div>
 
+                {/* Keterangan Kemenangan Knockout bila terjadi */}
+                {koReason && (
+                  <div className="mb-3 px-3 py-1.5 rounded-xl bg-amber-100 border-2 border-amber-300 text-xs sm:text-sm font-bold text-amber-900 shadow-xs">
+                    ⚡ {koReason}
+                  </div>
+                )}
+
                 {/* Skor Akhir dengan Highlight Pemenang */}
                 <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold mb-5 sm:mb-6 bg-white/70 px-3 sm:px-4 py-1.5 rounded-full border border-amber-200 shadow-xs">
                   <span className="text-gray-600">Skor akhir:</span>
@@ -1573,6 +1728,43 @@ export default function GameKompetitifPage() {
             {/* Efek Petasan & Kembang Api Kemenangan Heboh di DEPAN Modal (z-[100]) */}
             {winner !== "Seri / Imbang" && <CelebrationEffects zIndexClass="z-[100]" />}
           </>
+        )}
+
+        {/* Modal Konfirmasi Berhenti / Keluar Permainan Berjalan */}
+        {showExitConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="relative w-full max-w-sm rounded-[32px] border-[6px] border-white bg-white p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center">
+              <span className="text-5xl mb-3">🏁</span>
+              <h3 className="game-font text-2xl font-bold text-[#2a2830] mb-2">
+                Akhiri Permainan?
+              </h3>
+              <p className="text-gray-600 text-sm font-medium mb-6">
+                Permainan akan diselesaikan sekarang dan pemenang ditentukan dari skor saat ini (<strong>P1: {scoreP1}</strong> vs <strong>P2: {scoreP2}</strong>).
+              </p>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => {
+                    playClick();
+                    setShowExitConfirm(false);
+                  }}
+                  className="flex-1 py-3 rounded-2xl border-[3px] border-gray-300 bg-gray-100 font-bold text-gray-700 hover:bg-gray-200 transition-all cursor-pointer"
+                >
+                  Lanjut Main
+                </button>
+                <button
+                  onClick={() => {
+                    playClick();
+                    setShowExitConfirm(false);
+                    if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+                    finishGame(scoreP1, scoreP2);
+                  }}
+                  className="flex-1 py-3 rounded-2xl border-4 border-white bg-[#fd363a] font-bold text-white shadow hover:brightness-110 active:translate-y-0.5 transition-all cursor-pointer"
+                >
+                  Ya, Selesai
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
       </div>

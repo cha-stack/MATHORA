@@ -64,9 +64,33 @@ const SoundContext = createContext<SoundContextType>({
 
 export function SoundProvider({ children }: { children: React.ReactNode }) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [bgmVolume, setBgmVolumeState] = useState(50);
-  const [sfxVolume, setSfxVolumeState] = useState(80);
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("mathora_sound_muted");
+      if (saved !== null) return saved === "true";
+    }
+    return false;
+  });
+  const [bgmVolume, setBgmVolumeState] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("mathora_bgm_volume");
+      if (saved !== null) {
+        const val = parseInt(saved, 10);
+        if (!isNaN(val)) return val;
+      }
+    }
+    return 50;
+  });
+  const [sfxVolume, setSfxVolumeState] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("mathora_sfx_volume");
+      if (saved !== null) {
+        const val = parseInt(saved, 10);
+        if (!isNaN(val)) return val;
+      }
+    }
+    return 80;
+  });
   const [currentTrack, setCurrentTrack] = useState<BgmTrack>("bgm-ceria");
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -137,17 +161,34 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleMute = () => {
-    setIsMuted((prev) => !prev);
+    setIsMuted((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("mathora_sound_muted", String(next));
+      }
+      return next;
+    });
   };
 
   const setBgmVolume = (val: number) => {
     setBgmVolumeState(val);
-    if (val === 0) setIsMuted(true);
-    else if (isMuted) setIsMuted(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("mathora_bgm_volume", String(val));
+    }
+    if (val === 0) {
+      setIsMuted(true);
+      if (typeof window !== "undefined") localStorage.setItem("mathora_sound_muted", "true");
+    } else if (isMuted) {
+      setIsMuted(false);
+      if (typeof window !== "undefined") localStorage.setItem("mathora_sound_muted", "false");
+    }
   };
 
   const setSfxVolume = (val: number) => {
     setSfxVolumeState(val);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("mathora_sfx_volume", String(val));
+    }
   };
 
   // SFX Klik Tombol Kartun

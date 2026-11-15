@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { resetPasswordByEmail } from "@/lib/auth";
+import { resetPasswordByEmail, validatePassword } from "@/lib/auth";
 import { useSound } from "@/components/SoundContext";
 
 export default function LupaPasswordPage() {
@@ -28,8 +28,9 @@ export default function LupaPasswordPage() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setErrorMessage("Password baru minimal harus 6 karakter (bebas angka atau huruf)!");
+    const pwdValidation = validatePassword(newPassword);
+    if (!pwdValidation.isValid) {
+      setErrorMessage(pwdValidation.message || "Password baru minimal harus 6 karakter (bebas karakter/varchar tanpa spasi)!");
       return;
     }
 

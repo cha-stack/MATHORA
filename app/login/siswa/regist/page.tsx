@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { registerUser } from "@/lib/auth";
+import { registerUser, validatePassword } from "@/lib/auth";
 import { useSound } from "@/components/SoundContext";
 
 export default function RegistSiswa() {
@@ -29,8 +29,9 @@ export default function RegistSiswa() {
       return;
     }
 
-    if (password.length < 6) {
-      setErrorMessage("Password minimal harus 6 karakter (bebas angka atau huruf)!");
+    const pwdValidation = validatePassword(password);
+    if (!pwdValidation.isValid) {
+      setErrorMessage(pwdValidation.message || "Password minimal harus 6 karakter (bebas karakter/varchar tanpa spasi)!");
       return;
     }
 

@@ -24,14 +24,30 @@ function pick<T>(arr: T[], rng: () => number = Math.random): T {
   return arr[Math.floor(rng() * arr.length)];
 }
 
-/** Buat 3 pilihan salah yang wajar (bukan sama dengan benar, bukan duplikat) */
-function makeWrongOptions(correct: number, delta: number[] = [1, 2, 3]): number[] {
-  const wrongs: number[] = [];
+/** Buat 3 pilihan salah yang wajar (bukan sama dengan benar, bukan duplikat, dan >= minVal) */
+function makeWrongOptions(
+  correct: number,
+  delta: number[] = [1, 2, 3],
+  minVal = 1,
+  step = 1
+): number[] {
+  const wrongs = new Set<number>();
   for (const d of delta) {
     const candidate = correct + d;
-    if (candidate !== correct) wrongs.push(candidate);
+    if (candidate !== correct && candidate >= minVal) {
+      wrongs.add(candidate);
+    }
   }
-  return wrongs.slice(0, 3);
+  let offset = step;
+  while (wrongs.size < 3) {
+    const candPlus = correct + offset;
+    if (candPlus !== correct && candPlus >= minVal) wrongs.add(candPlus);
+    if (wrongs.size >= 3) break;
+    const candMinus = correct - offset;
+    if (candMinus !== correct && candMinus >= minVal) wrongs.add(candMinus);
+    offset += step;
+  }
+  return Array.from(wrongs).slice(0, 3);
 }
 
 /** Format angka menjadi string Rupiah (misal: 150000 → "Rp 150.000") */
@@ -174,7 +190,10 @@ function genSpldvCerita(id: string, rng: () => number, difficulty: string): Ques
   // Harga satuan X dan Y (ribuan rupiah, bilangan bulat cantik)
   const basePrice = difficulty === "easy" ? 1000 : difficulty === "hard" ? 5000 : 2000;
   const priceX = randInt(1, 8, rng) * basePrice;
-  const priceY = randInt(1, 8, rng) * basePrice;
+  let priceY = randInt(1, 8, rng) * basePrice;
+  while (priceY === priceX) {
+    priceY = randInt(1, 8, rng) * basePrice;
+  }
 
   // Koefisien pembelian
   const a = randInt(1, 5, rng);
@@ -208,9 +227,17 @@ function genSpldvCerita(id: string, rng: () => number, difficulty: string): Ques
     questionSuffix = `${qa} ${ctx.varA} dan ${qb} ${ctx.varB}`;
   }
 
-  const wrongPrices = makeWrongOptions(correctAnswer, [
-    basePrice, -basePrice, basePrice * 2,
-  ]);
+  const wrongPrices = makeWrongOptions(
+    correctAnswer,
+    [
+      qType === "hargaX" ? priceY : priceX,
+      correctAnswer + basePrice,
+      correctAnswer - basePrice,
+      correctAnswer + 2 * basePrice,
+    ],
+    basePrice,
+    basePrice
+  );
   const optionsRaw = shuffle(
     [formatRupiah(correctAnswer), ...wrongPrices.map(formatRupiah)],
     rng
@@ -228,7 +255,7 @@ function genSpldvCerita(id: string, rng: () => number, difficulty: string): Ques
     explanation:
       `Misalkan harga 1 ${ctx.varA} = x dan 1 ${ctx.varB} = y. ` +
       `Persamaan: ${a}x + ${b}y = ${formatRupiah(C1)} dan ${c}x + ${d}y = ${formatRupiah(C2)}. ` +
-      `Harga x = ${formatRupiah(priceX)}, y = ${formatRupiah(priceY)}. ` +
+      `Harga 1 ${ctx.varA} (x) = ${formatRupiah(priceX)}, harga 1 ${ctx.varB} (y) = ${formatRupiah(priceY)}. ` +
       `Maka harga ${questionSuffix} = ${formatRupiah(correctAnswer)}.`,
   };
 }

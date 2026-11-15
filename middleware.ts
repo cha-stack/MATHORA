@@ -13,6 +13,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/images") ||
     pathname.startsWith("/sounds") ||
+    pathname.startsWith("/auth/callback") || // Rute OAuth callback — selalu publik
     pathname.includes(".")
   ) {
     return NextResponse.next();
