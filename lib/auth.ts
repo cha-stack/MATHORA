@@ -502,13 +502,20 @@ export async function changeAccountPassword(
   if (typeof window !== "undefined") {
     const users = getUsers();
     const idx = users.findIndex(
-      (u) => u.username.toLowerCase() === currentUser.username.toLowerCase()
+      (u) =>
+        u.username.toLowerCase() === currentUser.username.toLowerCase() ||
+        (currentUser.email && u.email?.toLowerCase() === currentUser.email.toLowerCase())
     );
-    const hashed = await hashPassword(newPassword);
+    const hashed = await hashPassword(newPassword.trim());
     if (idx >= 0) {
       users[idx].password = hashed;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+    } else {
+      users.push({
+        ...currentUser,
+        password: hashed,
+      });
     }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
   }
 
   return {

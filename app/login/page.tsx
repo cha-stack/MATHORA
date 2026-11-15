@@ -7,18 +7,6 @@ import { useRouter } from "next/navigation";
 export default function PilihanLogin() {
   const router = useRouter();
 
-  const handleLoginGuru = () => {
-    // Navigasi atau action untuk Guru
-    console.log("Login Guru clicked");
-    alert("Menuju halaman Login Guru");
-  };
-
-  const handleLoginSiswa = () => {
-    // Navigasi atau action untuk Siswa
-    console.log("Login Siswa clicked");
-    alert("Menuju halaman Login Siswa");
-  };
-
   return (
     <main className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-hidden bg-gradient-to-b from-[#482b78] via-[#65439e] to-[#916dcb] select-none p-4 sm:p-8">
       {/* Background Math Formula Doodles */}

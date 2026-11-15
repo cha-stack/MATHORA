@@ -109,7 +109,7 @@ function SpldvMateriContent() {
 
   const [slide, setSlide] = useState(1);
   const totalSlides = 4;
-  const { playClick, playCorrect } = useSound();
+  const { playClick, playCorrect, playWrong } = useSound();
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -119,10 +119,8 @@ function SpldvMateriContent() {
     }
     const st = getSectionState(sectionNum);
     if (sectionNum > 1 && !st.unlocked) {
-      alert(`Section ${sectionNum} masih terkunci!`);
       router.replace("/spldv");
     } else if (!st.pretest) {
-      alert(`Kamu harus menyelesaikan Pre-Test Section ${sectionNum} terlebih dahulu!`);
       router.replace(`/spldv/pretest?section=${sectionNum}`);
     }
   }, [sectionNum, router]);
@@ -169,6 +167,8 @@ function SpldvMateriContent() {
   // Section 4 States:
   const [mixStage, setMixStage] = useState<number>(1);
   const [mixYGuess, setMixYGuess] = useState<string>("");
+  const [mixXGuess, setMixXGuess] = useState<string>("");
+  const [mixError, setMixError] = useState<string>("");
   const [a1, setA1] = useState(1);
   const [b1, setB1] = useState(1);
   const [c1, setC1] = useState(7);
@@ -205,28 +205,36 @@ function SpldvMateriContent() {
     setC2(pc2);
   };
 
+  const GRAPH_SCALE = 9; // 9px per unit (menampung koordinat -16 s/d +16 dalam kotak 300px)
+
   const renderLine = (a: number, b: number, c: number, color: string) => {
-    if (b !== 0) {
-      const x1 = -10;
-      const y1 = (c - a * x1) / b;
-      const x2 = 10;
-      const y2 = (c - a * x2) / b;
-      return (
-        <line
-          x1={150 + x1 * 12}
-          y1={150 - y1 * 12}
-          x2={150 + x2 * 12}
-          y2={150 - y2 * 12}
-          stroke={color}
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-      );
-    } else if (a !== 0) {
-      const svgX = 150 + (c / a) * 12;
-      return <line x1={svgX} y1={0} x2={svgX} y2={300} stroke={color} strokeWidth="3" strokeLinecap="round" />;
+    if (a === 0 && b === 0) return null;
+    let x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+    const FAR = 25; // Rentang komputasi diperpanjang agar garis tidak terpotong saat nilai batas digeser
+
+    if (Math.abs(b) >= Math.abs(a)) {
+      x1 = -FAR;
+      y1 = (c - a * x1) / b;
+      x2 = FAR;
+      y2 = (c - a * x2) / b;
+    } else {
+      y1 = -FAR;
+      x1 = (c - b * y1) / a;
+      y2 = FAR;
+      x2 = (c - b * y2) / a;
     }
-    return null;
+
+    return (
+      <line
+        x1={150 + x1 * GRAPH_SCALE}
+        y1={150 - y1 * GRAPH_SCALE}
+        x2={150 + x2 * GRAPH_SCALE}
+        y2={150 - y2 * GRAPH_SCALE}
+        stroke={color}
+        strokeWidth="3.5"
+        strokeLinecap="round"
+      />
+    );
   };
 
   const renderSectionFooterAction = () => {
@@ -988,58 +996,167 @@ function SpldvMateriContent() {
                     ⚡ Simulator Campuran 2-Tahap: Selesaikan Bersama!
                   </span>
                   <button
-                    onClick={() => { playClick(); setMixStage(1); setMixYGuess(""); }}
-                    className="text-xs font-bold text-[#5e65e9] underline cursor-pointer"
+                    onClick={() => {
+                      playClick();
+                      setMixStage(1);
+                      setMixYGuess("");
+                      setMixXGuess("");
+                      setMixError("");
+                    }}
+                    className="text-xs font-bold text-[#5e65e9] underline cursor-pointer hover:text-[#3d43ab]"
                   >
                     Ulangi Simulasi
                   </button>
                 </div>
 
-                <div className="rounded-xl bg-amber-50 p-3 font-bold text-sm text-[#2a2830]">
-                  Sistem: (1) <b>2x + 3y = 19</b> dan (2) <b>2x + y = 9</b>
+                <div className="rounded-xl bg-amber-50 p-3 font-bold text-xs sm:text-sm text-[#2a2830] border border-amber-200">
+                  Sistem Persamaan: (1) <b>2x + 3y = 19</b> &nbsp;|&nbsp; (2) <b>2x + y = 9</b>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
-                  <div className="rounded-xl bg-amber-50/70 p-3.5 border border-amber-200 flex flex-col gap-2">
-                    <b className="text-amber-900">Tahap 1: Eliminasi x (Kurangkan (1) - (2))</b>
-                    <div>(2x + 3y) - (2x + y) = 19 - 9 → <b>2y = 10</b></div>
-                    <div className="flex items-center gap-2">
-                      <span>Maka y =</span>
-                      <input
-                        type="number"
-                        value={mixYGuess}
-                        onChange={(e) => setMixYGuess(e.target.value)}
-                        placeholder="?"
-                        className="w-16 rounded-lg border-2 border-amber-400 bg-white px-2 py-1 text-center font-bold"
-                      />
-                      <button
-                        onClick={() => {
-                          if (mixYGuess.trim() === "5") {
-                            playCorrect();
-                            setMixStage(2);
-                          } else {
-                            playClick();
-                          }
-                        }}
-                        className="rounded-lg bg-[#e05f1e] text-white px-3 py-1 text-xs font-bold cursor-pointer"
-                      >
-                        Lanjut Substitusi →
-                      </button>
+                  {/* TAHAP 1: ELIMINASI x */}
+                  <div className={`rounded-xl p-3.5 border flex flex-col gap-2.5 transition-all ${
+                    mixStage >= 2 ? "bg-emerald-50/80 border-emerald-300" : "bg-amber-50/80 border-amber-300"
+                  }`}>
+                    <b className="text-amber-950 font-bold">Tahap 1: Eliminasi x (Kurangkan (1) - (2))</b>
+                    <div className="font-semibold text-gray-750">
+                      (2x + 3y) - (2x + y) = 19 - 9 → <b>2y = 10</b>
                     </div>
-                    {mixYGuess !== "" && mixYGuess.trim() !== "5" && (
-                      <span className="text-xs font-bold text-rose-700">Tip: 10 dibagi 2 berapa ya?</span>
+
+                    {mixStage === 1 ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold">Maka y =</span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9\-]*"
+                            value={mixYGuess}
+                            onChange={(e) => {
+                              setMixYGuess(e.target.value);
+                              if (mixError) setMixError("");
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                if (mixYGuess.trim() === "5") {
+                                  playCorrect();
+                                  setMixStage(2);
+                                  setMixError("");
+                                } else {
+                                  playWrong();
+                                  setMixError("Tip: 10 dibagi 2 hasilnya berapa ya?");
+                                }
+                              }
+                            }}
+                            placeholder="Isi angka..."
+                            className="w-24 rounded-xl border-3 border-amber-400 bg-white px-3 py-1.5 text-center font-bold text-base text-[#2a2830] outline-none focus:border-[#e05f1e]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (mixYGuess.trim() === "5") {
+                                playCorrect();
+                                setMixStage(2);
+                                setMixError("");
+                              } else {
+                                playWrong();
+                                setMixError("Tip: 10 dibagi 2 hasilnya berapa ya?");
+                              }
+                            }}
+                            className="rounded-xl bg-[#e05f1e] text-white px-3.5 py-1.5 text-xs sm:text-sm font-bold shadow hover:brightness-105 active:translate-y-0.5 cursor-pointer"
+                          >
+                            Lanjut Substitusi →
+                          </button>
+                        </div>
+                        {mixError && (
+                          <span className="text-xs font-bold text-rose-700 animate-pulse">
+                            ⚠️ {mixError}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="rounded-lg bg-emerald-100 p-2 text-emerald-900 font-bold text-xs flex items-center gap-1.5">
+                        <span>✓</span>
+                        <span>Berhasil! Nilai y = 5 (Eliminasi Selesai)</span>
+                      </div>
                     )}
                   </div>
 
-                  <div className={`rounded-xl p-3.5 border flex flex-col justify-center gap-1 transition-all ${mixStage >= 2 ? "bg-emerald-50 border-emerald-300" : "bg-gray-100 opacity-50 border-gray-200"}`}>
-                    <b className="text-emerald-900">Tahap 2: Substitusi y = 5 ke Persamaan (2)</b>
-                    {mixStage >= 2 ? (
-                      <>
-                        <div>2x + <b>5</b> = 9 → 2x = 4 → <b className="text-emerald-700">x = 2</b></div>
-                        <div className="font-bold text-emerald-950">✓ Selesai! Solusi = (2, 5)</div>
-                      </>
-                    ) : (
-                      <span className="text-xs text-gray-500 font-semibold">Isi nilai y terlebih dahulu di Tahap 1 untuk membuka Tahap 2!</span>
+                  {/* TAHAP 2: SUBSTITUSI y = 5 */}
+                  <div className={`rounded-xl p-3.5 border flex flex-col gap-2.5 transition-all ${
+                    mixStage === 3
+                      ? "bg-emerald-50 border-emerald-400"
+                      : mixStage === 2
+                      ? "bg-sky-50 border-sky-300"
+                      : "bg-gray-100 opacity-60 border-gray-200"
+                  }`}>
+                    <b className="text-sky-950 font-bold">Tahap 2: Substitusi y = 5 ke Persamaan (2)</b>
+
+                    {mixStage === 1 && (
+                      <span className="text-xs text-gray-500 font-semibold my-auto">
+                        👉 Isi kolom y di Tahap 1 terlebih dahulu untuk membuka kolom Tahap 2!
+                      </span>
+                    )}
+
+                    {mixStage === 2 && (
+                      <div className="flex flex-col gap-2">
+                        <div className="font-semibold text-gray-750">
+                          2x + <b>5</b> = 9 → 2x = 9 - 5 → <b>2x = 4</b>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold">Maka x =</span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9\-]*"
+                            value={mixXGuess}
+                            onChange={(e) => setMixXGuess(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                if (mixXGuess.trim() === "2") {
+                                  playCorrect();
+                                  setMixStage(3);
+                                } else {
+                                  playWrong();
+                                }
+                              }
+                            }}
+                            placeholder="Isi angka..."
+                            className="w-24 rounded-xl border-3 border-sky-400 bg-white px-3 py-1.5 text-center font-bold text-base text-[#2a2830] outline-none focus:border-sky-600"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (mixXGuess.trim() === "2") {
+                                playCorrect();
+                                setMixStage(3);
+                              } else {
+                                playWrong();
+                              }
+                            }}
+                            className="rounded-xl bg-[#0284c7] text-white px-3.5 py-1.5 text-xs sm:text-sm font-bold shadow hover:brightness-105 active:translate-y-0.5 cursor-pointer"
+                          >
+                            Periksa Solusi ✓
+                          </button>
+                        </div>
+                        {mixXGuess !== "" && mixXGuess.trim() !== "2" && (
+                          <span className="text-xs font-bold text-rose-700 animate-pulse">
+                            ⚠️ Tip: 4 dibagi 2 berapa ya?
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {mixStage === 3 && (
+                      <div className="flex flex-col gap-1 rounded-xl bg-emerald-100 p-2.5 text-emerald-950 font-bold text-xs sm:text-sm">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-lg">🎉</span>
+                          <span>Himpunan Penyelesaian Lengkap:</span>
+                        </div>
+                        <div className="text-base text-emerald-800">
+                          (x, y) = <strong>(2, 5)</strong>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1051,18 +1168,51 @@ function SpldvMateriContent() {
                 <div className="flex flex-col items-center">
                   <div className="relative size-[250px] sm:size-[270px] rounded-2xl border-4 border-white bg-white shadow overflow-hidden">
                     <svg viewBox="0 0 300 300" className="w-full h-full">
-                      {[-8, -6, -4, -2, 2, 4, 6, 8].map((i) => (
+                      {/* Grid Garis Koordinat (-15 s/d +15) */}
+                      {[-15, -12, -9, -6, -3, 3, 6, 9, 12, 15].map((i) => (
                         <g key={i}>
-                          <line x1={150 + i * 12} y1="0" x2={150 + i * 12} y2="300" stroke="#f0eaff" strokeWidth="1" />
-                          <line x1="0" y1={150 + i * 12} x2="300" y2={150 + i * 12} stroke="#f0eaff" strokeWidth="1" />
+                          <line
+                            x1={150 + i * GRAPH_SCALE}
+                            y1="0"
+                            x2={150 + i * GRAPH_SCALE}
+                            y2="300"
+                            stroke="#f2ecff"
+                            strokeWidth="1"
+                          />
+                          <line
+                            x1="0"
+                            y1={150 + i * GRAPH_SCALE}
+                            x2="300"
+                            y2={150 + i * GRAPH_SCALE}
+                            stroke="#f2ecff"
+                            strokeWidth="1"
+                          />
                         </g>
                       ))}
-                      <line x1="0" y1="150" x2="300" y2="150" stroke="#7251a8" strokeWidth="2" />
-                      <line x1="150" y1="0" x2="150" y2="300" stroke="#7251a8" strokeWidth="2" />
+
+                      {/* Sumbu X & Sumbu Y Utama */}
+                      <line x1="0" y1="150" x2="300" y2="150" stroke="#7251a8" strokeWidth="2.5" />
+                      <line x1="150" y1="0" x2="150" y2="300" stroke="#7251a8" strokeWidth="2.5" />
+
+                      {/* Label Sumbu X & Y */}
+                      <text x="286" y="144" fill="#7251a8" fontSize="11" fontWeight="bold">X</text>
+                      <text x="156" y="14" fill="#7251a8" fontSize="11" fontWeight="bold">Y</text>
+                      <text x="153" y="163" fill="#7251a8" fontSize="9" fontWeight="bold">0</text>
+
+                      {/* Garis 1 & Garis 2 */}
                       {renderLine(a1, b1, c1, "#e0457b")}
                       {renderLine(a2, b2, c2, "#0f9d8a")}
+
+                      {/* Titik Potong */}
                       {hasSingleSolution && (
-                        <circle cx={150 + solX * 12} cy={150 - solY * 12} r="6" fill="#f4ad21" stroke="#ffffff" strokeWidth="2" />
+                        <circle
+                          cx={150 + solX * GRAPH_SCALE}
+                          cy={150 - solY * GRAPH_SCALE}
+                          r="6"
+                          fill="#f4ad21"
+                          stroke="#ffffff"
+                          strokeWidth="2.5"
+                        />
                       )}
                     </svg>
                   </div>
@@ -1079,9 +1229,9 @@ function SpldvMateriContent() {
                       Garis 1: {a1}x {b1 >= 0 ? `+ ${b1}y` : `- ${Math.abs(b1)}y`} = {c1}
                     </span>
                     <div className="grid grid-cols-3 gap-2 text-xs font-semibold">
-                      <div>a₁: <input type="range" min="-5" max="5" value={a1} onChange={(e) => setA1(Number(e.target.value))} className="w-full accent-[#e0457b]" /></div>
-                      <div>b₁: <input type="range" min="-5" max="5" value={b1} onChange={(e) => setB1(Number(e.target.value))} className="w-full accent-[#e0457b]" /></div>
-                      <div>c₁: <input type="range" min="-15" max="15" value={c1} onChange={(e) => setC1(Number(e.target.value))} className="w-full accent-[#e0457b]" /></div>
+                      <div>a₁ ({a1}): <input type="range" min="-5" max="5" value={a1} onChange={(e) => setA1(Number(e.target.value))} className="w-full accent-[#e0457b]" /></div>
+                      <div>b₁ ({b1}): <input type="range" min="-5" max="5" value={b1} onChange={(e) => setB1(Number(e.target.value))} className="w-full accent-[#e0457b]" /></div>
+                      <div>c₁ ({c1}): <input type="range" min="-15" max="15" value={c1} onChange={(e) => setC1(Number(e.target.value))} className="w-full accent-[#e0457b]" /></div>
                     </div>
                   </div>
                   <div className="rounded-xl border-2 border-white bg-white/95 p-3 shadow-xs">
@@ -1089,9 +1239,9 @@ function SpldvMateriContent() {
                       Garis 2: {a2}x {b2 >= 0 ? `+ ${b2}y` : `- ${Math.abs(b2)}y`} = {c2}
                     </span>
                     <div className="grid grid-cols-3 gap-2 text-xs font-semibold">
-                      <div>a₂: <input type="range" min="-5" max="5" value={a2} onChange={(e) => setA2(Number(e.target.value))} className="w-full accent-[#0f9d8a]" /></div>
-                      <div>b₂: <input type="range" min="-5" max="5" value={b2} onChange={(e) => setB2(Number(e.target.value))} className="w-full accent-[#0f9d8a]" /></div>
-                      <div>c₂: <input type="range" min="-15" max="15" value={c2} onChange={(e) => setC2(Number(e.target.value))} className="w-full accent-[#0f9d8a]" /></div>
+                      <div>a₂ ({a2}): <input type="range" min="-5" max="5" value={a2} onChange={(e) => setA2(Number(e.target.value))} className="w-full accent-[#0f9d8a]" /></div>
+                      <div>b₂ ({b2}): <input type="range" min="-5" max="5" value={b2} onChange={(e) => setB2(Number(e.target.value))} className="w-full accent-[#0f9d8a]" /></div>
+                      <div>c₂ ({c2}): <input type="range" min="-15" max="15" value={c2} onChange={(e) => setC2(Number(e.target.value))} className="w-full accent-[#0f9d8a]" /></div>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1101,10 +1251,17 @@ function SpldvMateriContent() {
                   </div>
                   <div className="rounded-xl border-2 border-white bg-[#fdffd3] p-2.5 text-xs font-bold text-[#2a2830]">
                     {hasSingleSolution && (
-                      <span>✓ Titik Potong: x = {solX.toFixed(1).replace(/\.0$/, "")}, y = {solY.toFixed(1).replace(/\.0$/, "")}</span>
+                      <span>
+                        ✓ Titik Potong: x = {solX.toFixed(1).replace(/\.0$/, "")}, y = {solY.toFixed(1).replace(/\.0$/, "")}
+                        {(Math.abs(solX) > 16 || Math.abs(solY) > 16) && (
+                          <span className="text-amber-800 ml-1 block sm:inline font-semibold">
+                            (Titik di luar grid pandang, klik tombol preset untuk mereset)
+                          </span>
+                        )}
+                      </span>
                     )}
-                    {isParallel && <span>⚠️ Sejajar → 0 solusi</span>}
-                    {isCoincident && <span>♾️ Berimpit → ∞ solusi</span>}
+                    {isParallel && <span>⚠️ Garis Sejajar → Tidak ada titik potong (0 solusi)</span>}
+                    {isCoincident && <span>♾️ Garis Berimpit → Titik potong tak terhingga (∞ solusi)</span>}
                   </div>
                 </div>
               </div>

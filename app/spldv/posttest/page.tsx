@@ -16,7 +16,7 @@ function PosttestContent() {
   const parsedSec = Number(sectionParam);
   const sectionNum = (parsedSec >= 1 && parsedSec <= 5 ? parsedSec : 1) as 1 | 2 | 3 | 4 | 5;
 
-  const { playClick, playCorrect } = useSound();
+  const { playClick, playCorrect, playWrong } = useSound();
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
 
   // Validasi prasyarat: Khusus Siswa (Guru bebas tanpa post-test)
@@ -28,13 +28,10 @@ function PosttestContent() {
     }
     const st = getSectionState(sectionNum);
     if (sectionNum > 1 && !st.unlocked) {
-      alert(`Section ${sectionNum} masih terkunci!`);
       router.replace("/spldv");
     } else if (!st.pretest) {
-      alert(`Kamu harus mengerjakan Pre-Test Section ${sectionNum} terlebih dahulu!`);
       router.replace(`/spldv/pretest?section=${sectionNum}`);
     } else if (!st.materi) {
-      alert(`Kamu harus mempelajari Materi Section ${sectionNum} terlebih dahulu sebelum Post-Test!`);
       router.replace(`/spldv/materi?section=${sectionNum}`);
     }
   }, [sectionNum, router]);
@@ -48,6 +45,7 @@ function PosttestContent() {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
+  const [validationWarning, setValidationWarning] = useState<string | null>(null);
   const [isFinished, setIsFinished] = useState(false);
 
   const currentQ = questions[currentIndex];
@@ -56,13 +54,16 @@ function PosttestContent() {
     if (showAnswer) return;
     playClick();
     setSelectedOption(idx);
+    if (validationWarning) setValidationWarning(null);
   };
 
   const handleTampilkanHasil = () => {
     if (selectedOption === null) {
-      alert("Pilih salah satu jawaban terlebih dahulu!");
+      playWrong();
+      setValidationWarning("Pilih salah satu jawaban (A, B, C, atau D) terlebih dahulu!");
       return;
     }
+    setValidationWarning(null);
     playCorrect();
     setShowAnswer(true);
 
@@ -271,6 +272,14 @@ function PosttestContent() {
           <div className="mt-4 rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-4 text-emerald-950 text-xs sm:text-sm font-semibold animate-in fade-in duration-200">
             <span className="font-bold block mb-1">💡 Pembahasan Kunci Jawaban:</span>
             {currentQ.explanation}
+          </div>
+        )}
+
+        {/* Peringatan Pilih Jawaban Terlebih Dahulu (Non-prompt alert) */}
+        {validationWarning && (
+          <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl border-2 border-amber-400 bg-amber-100/95 px-4 py-2.5 text-amber-950 font-bold text-xs sm:text-sm shadow-sm animate-pulse">
+            <span className="text-base sm:text-lg">⚠️</span>
+            <span>{validationWarning}</span>
           </div>
         )}
 

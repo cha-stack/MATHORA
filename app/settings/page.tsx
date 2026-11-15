@@ -28,6 +28,8 @@ export default function SettingsPage() {
     isMuted,
     toggleMute,
     playClick,
+    playWrong,
+    playCorrect,
     currentTrack,
     setTrack,
   } = useSound();
@@ -44,8 +46,8 @@ export default function SettingsPage() {
   const [saveError, setSaveError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // State Keamanan Password
-  const [hasPassword, setHasPassword] = useState<boolean | null>(null);
+  // State Keamanan Password (default true agar field password lama muncul bagi pengguna terdaftar)
+  const [hasPassword, setHasPassword] = useState<boolean>(true);
   const [oldPasswordInput, setOldPasswordInput] = useState("");
   const [newPasswordInput, setNewPasswordInput] = useState("");
   const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
@@ -62,7 +64,7 @@ export default function SettingsPage() {
       setUsernameInput(active.username);
       setSelectedAvatar(active.avatar || "/images/avatar-1.svg");
 
-      // Cek apakah akun ini sudah punya password di database
+      // Cek apakah akun ini belum punya password (misal siswa login via Google OAuth)
       checkUserHasPassword(active.username).then((hasPwd) => {
         setHasPassword(hasPwd);
       });
@@ -71,32 +73,53 @@ export default function SettingsPage() {
 
   const handleSavePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    playClick();
     setPasswordMsg("");
     setPasswordError("");
 
-    if (hasPassword && !oldPasswordInput) {
-      setPasswordError("Harap masukkan password saat ini!");
+    if (hasPassword && !oldPasswordInput.trim()) {
+      playWrong();
+      setPasswordError("Harap masukkan kata sandi saat ini (kata sandi lama) Anda!");
       return;
     }
 
     if (!newPasswordInput) {
-      setPasswordError("Password baru tidak boleh kosong!");
+      playWrong();
+      setPasswordError("Kata sandi baru tidak boleh kosong!");
+      return;
+    }
+
+    if (newPasswordInput.length < 6) {
+      playWrong();
+      setPasswordError("Kata sandi baru minimal harus 6 karakter!");
+      return;
+    }
+
+    if (/\s/.test(newPasswordInput)) {
+      playWrong();
+      setPasswordError("Kata sandi tidak boleh mengandung spasi!");
       return;
     }
 
     if (newPasswordInput !== confirmPasswordInput) {
-      setPasswordError("Konfirmasi password baru tidak cocok!");
+      playWrong();
+      setPasswordError("Konfirmasi kata sandi baru tidak cocok!");
       return;
     }
 
+    playClick();
     setIsSavingPassword(true);
     try {
       const res = await changeAccountPassword(newPasswordInput, oldPasswordInput);
       setIsSavingPassword(false);
       if (!res.success) {
+        playWrong();
         setPasswordError(res.message);
+        // Jika server mengindikasikan akun membutuhkan password lama, otomatis munculkan input password lama
+        if (res.message.toLowerCase().includes("password lama") || res.message.toLowerCase().includes("kata sandi lama")) {
+          setHasPassword(true);
+        }
       } else {
+        playCorrect();
         setPasswordMsg(res.message);
         setHasPassword(true);
         setOldPasswordInput("");
@@ -106,34 +129,39 @@ export default function SettingsPage() {
       }
     } catch {
       setIsSavingPassword(false);
-      setPasswordError("Terjadi kendala saat menyimpan password.");
+      playWrong();
+      setPasswordError("Terjadi kendala saat menyimpan kata sandi. Silakan coba kembali.");
     }
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    playClick();
     setSaveMessage("");
     setSaveError("");
 
     if (!usernameInput.trim()) {
-      setSaveError("Username tidak boleh kosong!");
+      playWrong();
+      setSaveError("Nama pengguna tidak boleh kosong!");
       return;
     }
 
+    playClick();
     setIsSaving(true);
     try {
       const res = await updateUserProfile(usernameInput, selectedAvatar);
       setIsSaving(false);
       if (!res.success) {
+        playWrong();
         setSaveError(res.message);
       } else {
+        playCorrect();
         setSaveMessage("Profil berhasil disimpan!");
         setUser(res.user || null);
         setTimeout(() => setSaveMessage(""), 3000);
       }
     } catch {
       setIsSaving(false);
+      playWrong();
       setSaveError("Gagal menyimpan profil.");
     }
   };
@@ -146,14 +174,14 @@ export default function SettingsPage() {
         {/* Settings Box */}
         <div className="relative w-full max-w-3xl rounded-[32px] sm:rounded-[42px] border-[7px] border-white bg-[#e4d3ff]/85 p-6 sm:p-10 shadow-2xl backdrop-blur-xs flex flex-col items-center">
           <h2 className="game-font text-3xl sm:text-5xl text-[#2a2830] mb-6 font-bold">
-            Pengaturan Game
+            Pengaturan Akun &amp; Aplikasi
           </h2>
 
           <div className="flex flex-col gap-6 w-full max-w-xl">
-            {/* SECTION 1: EDIT PROFIL & PILIH KARAKTER */}
+            {/* BAGIAN 1: PENGATURAN PROFIL & KARAKTER */}
             <form onSubmit={handleSaveProfile} className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
               <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
-                Kustom Karakter & Profil
+                Profil &amp; Karakter Avatar
               </span>
 
               {saveMessage && (
@@ -170,7 +198,7 @@ export default function SettingsPage() {
               {/* Karakter Avatar Kartun */}
               <div>
                 <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-2">
-                  Pilih Karakter Maskot:
+                  Pilihan Karakter Maskot:
                 </label>
                 <div className="grid grid-cols-4 gap-2.5">
                   {AVATAR_OPTIONS.map((av) => (
@@ -208,7 +236,7 @@ export default function SettingsPage() {
                   type="text"
                   value={usernameInput}
                   onChange={(e) => setUsernameInput(e.target.value)}
-                  placeholder="Masukkan nama..."
+                  placeholder="Masukkan nama pengguna..."
                   maxLength={25}
                   className="w-full rounded-2xl border-3 border-[#cbb3f5] bg-[#f7f2ff] px-4 py-2 text-base font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
                 />
@@ -220,19 +248,19 @@ export default function SettingsPage() {
                 className="mt-1 flex items-center justify-center rounded-2xl border-4 border-white bg-[#1cd8a4] disabled:opacity-80 py-2.5 shadow-[0px_4px_0px_0px_#028560] transition-all hover:scale-102 active:translate-y-1 active:shadow-none cursor-pointer"
               >
                 <span className="game-font text-base sm:text-lg font-bold text-[#144837]">
-                  {isSaving ? "Menyimpan..." : "Simpan Perubahan Karakter"}
+                  {isSaving ? "Menyimpan..." : "Simpan Perubahan Profil"}
                 </span>
               </button>
             </form>
 
-            {/* SECTION 2: KEAMANAN & PASSWORD AKUN */}
+            {/* BAGIAN 2: KEAMANAN & KATA SANDI */}
             <form onSubmit={handleSavePassword} className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
               <div className="flex items-center justify-between">
                 <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
-                  Keamanan Akun & Password
+                  Keamanan &amp; Kata Sandi
                 </span>
                 <span className="text-xs font-bold px-3 py-1 rounded-full bg-purple-100 text-[#7251a8] border border-purple-200">
-                  {hasPassword === false ? "Akun Google" : "Password Aktif"}
+                  {hasPassword === false ? "Akun Google" : "Kata Sandi Aktif"}
                 </span>
               </div>
 
@@ -241,9 +269,9 @@ export default function SettingsPage() {
                 <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-3 text-xs sm:text-sm font-semibold text-amber-900 flex items-start gap-2 shadow-xs">
                   <span className="text-lg">💡</span>
                   <div>
-                    <p className="font-bold">Akun Terhubung dengan Google</p>
+                    <p className="font-bold">Akun Terhubung dengan Akun Google</p>
                     <p className="mt-0.5 text-amber-800">
-                      Anda belum memiliki password lokal. Buat password di bawah ini agar Anda juga bisa login menggunakan <strong>Username & Password</strong> di komputer lain (misalnya lab sekolah yang tidak ada akun Google Anda).
+                      Anda belum memiliki kata sandi lokal. Buat kata sandi di bawah ini agar Anda juga dapat masuk menggunakan <strong>Nama Pengguna &amp; Kata Sandi</strong> di perangkat lain (seperti komputer lab sekolah yang tidak terhubung dengan akun Google Anda).
                     </p>
                   </div>
                 </div>
@@ -264,7 +292,7 @@ export default function SettingsPage() {
               {hasPassword === true && (
                 <div>
                   <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
-                    Password Saat Ini (Password Lama)
+                    Kata Sandi Saat Ini (Kata Sandi Lama)
                   </label>
                   <div className="relative flex items-center">
                     <input
@@ -274,7 +302,7 @@ export default function SettingsPage() {
                         setOldPasswordInput(e.target.value);
                         if (passwordError) setPasswordError("");
                       }}
-                      placeholder="Masukkan password saat ini..."
+                      placeholder="Masukkan kata sandi saat ini..."
                       className="w-full rounded-2xl border-3 border-[#cbb3f5] bg-[#f7f2ff] pl-4 pr-12 py-2 text-base font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
                     />
                     <button
@@ -291,7 +319,7 @@ export default function SettingsPage() {
               {/* Input Password Baru */}
               <div>
                 <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
-                  {hasPassword === false ? "Buat Password Baru" : "Password Baru"}
+                  {hasPassword === false ? "Buat Kata Sandi Baru" : "Kata Sandi Baru"}
                 </label>
                 <div className="relative flex items-center">
                   <input
@@ -313,14 +341,14 @@ export default function SettingsPage() {
                   </button>
                 </div>
                 <span className="text-[11px] font-semibold text-gray-500 mt-1 block">
-                  *Bebas huruf, angka, atau simbol (minimal 6 karakter tanpa spasi)
+                  *Bebas kombinasi huruf, angka, atau simbol (minimal 6 karakter tanpa spasi)
                 </span>
               </div>
 
               {/* Konfirmasi Password Baru */}
               <div>
                 <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
-                  Konfirmasi Password Baru
+                  Konfirmasi Kata Sandi Baru
                 </label>
                 <input
                   type="password"
@@ -329,7 +357,7 @@ export default function SettingsPage() {
                     setConfirmPasswordInput(e.target.value);
                     if (passwordError) setPasswordError("");
                   }}
-                  placeholder="Ulangi password baru..."
+                  placeholder="Ulangi kata sandi baru..."
                   className="w-full rounded-2xl border-3 border-[#cbb3f5] bg-[#f7f2ff] px-4 py-2 text-base font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
                 />
               </div>
@@ -343,19 +371,22 @@ export default function SettingsPage() {
                   {isSavingPassword
                     ? "Menyimpan..."
                     : hasPassword === false
-                    ? "Simpan & Buat Password"
-                    : "Perbarui Password"}
+                    ? "Buat &amp; Simpan Kata Sandi"
+                    : "Perbarui Kata Sandi"}
                 </span>
               </button>
             </form>
 
-            {/* SECTION 3: 3 PILIHAN MUSIK BACKSOUND (NO COPYRIGHT) */}
+            {/* BAGIAN 3: PENGATURAN MUSIK & EFEK SUARA */}
             <div className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
               <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
-                Pilihan Backsound (3 Opsi Bebas Copyright)
+                Pengaturan Musik &amp; Efek Suara
               </span>
 
               <div className="flex flex-col gap-2.5">
+                <span className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block">
+                  Pilihan Musik Latar (Bebas Hak Cipta):
+                </span>
                 {AVAILABLE_TRACKS.map((t) => (
                   <button
                     key={t.id}
@@ -397,11 +428,11 @@ export default function SettingsPage() {
                 ))}
               </div>
 
-              {/* Slider Volume */}
+              {/* Slider Volume Musik */}
               <div className="flex flex-col gap-2 rounded-2xl bg-[#f7f2ff] p-3 border-2 border-purple-100 mt-2">
                 <div className="flex justify-between items-center">
                   <span className="text-xs sm:text-sm text-[#2a2830] font-bold">
-                    Volume Musik (BGM)
+                    Volume Musik Latar
                   </span>
                   <span className="game-font text-sm text-[#7251a8] font-bold">
                     {isMuted ? 0 : bgmVolume}%
@@ -417,10 +448,30 @@ export default function SettingsPage() {
                 />
               </div>
 
+              {/* Slider Volume Efek Suara (SFX) */}
+              <div className="flex flex-col gap-2 rounded-2xl bg-[#f7f2ff] p-3 border-2 border-purple-100">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm text-[#2a2830] font-bold">
+                    Volume Efek Suara (SFX)
+                  </span>
+                  <span className="game-font text-sm text-[#7251a8] font-bold">
+                    {isMuted ? 0 : sfxVolume}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={isMuted ? 0 : sfxVolume}
+                  onChange={(e) => setSfxVolume(Number(e.target.value))}
+                  className="w-full accent-[#7251a8] cursor-pointer h-2.5"
+                />
+              </div>
+
               {/* Toggle Master Sound */}
               <div className="flex items-center justify-between rounded-2xl bg-[#f7f2ff] p-3 border-2 border-purple-100">
                 <span className="text-xs sm:text-sm text-[#2a2830] font-bold">
-                  Aktifkan Suara & SFX
+                  Aktifkan Semua Suara Game
                 </span>
                 <button
                   type="button"

@@ -14,20 +14,20 @@ export interface TrackOption {
 export const AVAILABLE_TRACKS: TrackOption[] = [
   {
     id: "bgm-ceria",
-    title: "Joyful Adventure",
-    desc: "Musik ceria khas petualangan kartun edukatif, membangkitkan semangat belajar.",
+    title: "Petualangan Ceria",
+    desc: "Musik ceria bertema petualangan edukatif, membangkitkan semangat belajar.",
     tag: "Ceria & Fun",
   },
   {
     id: "bgm-lofi",
-    title: "Chill Math Study",
-    desc: "Melodi tenang santai dan menyejukkan, cocok untuk fokus mengerjakan soal.",
+    title: "Belajar Santai & Fokus",
+    desc: "Melodi santai dan menyejukkan, cocok untuk konsentrasi mengerjakan soal.",
     tag: "Fokus & Tenang",
   },
   {
     id: "bgm-retro",
-    title: "8-Bit Arcade Quest",
-    desc: "Nuansa game arcade retro 8-bit klasik yang seru dan kompetitif.",
+    title: "Arkade 8-Bit Retro",
+    desc: "Nuansa game klasik 8-bit yang penuh energi, seru, dan kompetitif.",
     tag: "Retro 8-Bit",
   },
 ];
@@ -95,8 +95,13 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const isMutedRef = useRef(isMuted);
 
-  // Inisialisasi Audio Track BGM dari storage
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
+
+  // Inisialisasi Audio Track BGM dari storage & auto-play yang ramah browser
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedTrack = localStorage.getItem("mathora_bgm_track") as BgmTrack;
@@ -107,26 +112,53 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
 
     const audio = new Audio("/audio/bgm.mp3");
     audio.loop = true;
-    audio.volume = bgmVolume / 100;
+    audio.volume = isMuted ? 0 : bgmVolume / 100;
     audioRef.current = audio;
 
-    const handleFirstInteraction = () => {
-      if (audioRef.current && !isPlaying && !isMuted) {
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("pause", onPause);
+
+    // Coba putar langsung (berhasil jika user sudah pernah mengizinkan autoplay di situs ini)
+    if (!isMuted) {
+      audio.play().catch(() => {
+        // Autoplay terblokir sementara oleh kebijakan browser hingga ada gestur pengguna
+      });
+    }
+
+    // Listener gestur pertama pengguna (klik / sentuh / tekan tombol apapun di layar)
+    const handleUserInteraction = () => {
+      if (audioRef.current && !isMutedRef.current && audioRef.current.paused) {
         audioRef.current
           .play()
-          .then(() => setIsPlaying(true))
-          .catch(() => {});
+          .then(() => {
+            cleanupInteraction();
+          })
+          .catch(() => {
+            // Jika masih terblokir, pertahankan listener sampai sentuhan berikutnya berhasil
+          });
+      } else if (audioRef.current && !audioRef.current.paused) {
+        cleanupInteraction();
       }
-      window.removeEventListener("pointerdown", handleFirstInteraction);
-      window.removeEventListener("keydown", handleFirstInteraction);
     };
 
-    window.addEventListener("pointerdown", handleFirstInteraction);
-    window.addEventListener("keydown", handleFirstInteraction);
+    const cleanupInteraction = () => {
+      window.removeEventListener("click", handleUserInteraction);
+      window.removeEventListener("touchstart", handleUserInteraction);
+      window.removeEventListener("pointerdown", handleUserInteraction);
+      window.removeEventListener("keydown", handleUserInteraction);
+    };
+
+    window.addEventListener("click", handleUserInteraction, { passive: true });
+    window.addEventListener("touchstart", handleUserInteraction, { passive: true });
+    window.addEventListener("pointerdown", handleUserInteraction, { passive: true });
+    window.addEventListener("keydown", handleUserInteraction, { passive: true });
 
     return () => {
-      window.removeEventListener("pointerdown", handleFirstInteraction);
-      window.removeEventListener("keydown", handleFirstInteraction);
+      cleanupInteraction();
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("pause", onPause);
       audio.pause();
     };
   }, []);
@@ -166,6 +198,11 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== "undefined") {
         localStorage.setItem("mathora_sound_muted", String(next));
       }
+      if (!next && audioRef.current) {
+        audioRef.current.play().catch(() => {});
+      } else if (next && audioRef.current) {
+        audioRef.current.pause();
+      }
       return next;
     });
   };
@@ -193,6 +230,10 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
 
   // SFX Klik Tombol Kartun
   const playClick = () => {
+    // Jika BGM tertahan kebijakan autoplay browser, lanjutkan otomatis
+    if (audioRef.current && !isMuted && audioRef.current.paused) {
+      audioRef.current.play().catch(() => {});
+    }
     if (isMuted || sfxVolume === 0) return;
     try {
       if (!audioContextRef.current) {

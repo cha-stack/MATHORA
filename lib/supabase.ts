@@ -246,15 +246,17 @@ export async function sbLoginUser(
 /**
  * Cek apakah user sudah memiliki password lokal atau masih kosong (akun Google OAuth)
  */
-export async function sbCheckUserHasPassword(username: string): Promise<boolean> {
+export async function sbCheckUserHasPassword(identifier: string): Promise<boolean> {
   if (!supabase) return false;
   try {
-    const trimmed = username.trim().toLowerCase();
-    const { data, error } = await supabase
-      .from("users")
-      .select("password")
-      .ilike("username", trimmed)
-      .maybeSingle();
+    const trimmed = identifier.trim().toLowerCase();
+    let query = supabase.from("users").select("password");
+    if (trimmed.includes("@")) {
+      query = query.ilike("email", trimmed);
+    } else {
+      query = query.or(`username.ilike.${trimmed},email.ilike.${trimmed}`);
+    }
+    const { data, error } = await query.maybeSingle();
 
     if (error || !data) return false;
     return Boolean(data.password && data.password.trim() !== "");
@@ -267,19 +269,21 @@ export async function sbCheckUserHasPassword(username: string): Promise<boolean>
  * Buat atau ubah password user (didukung pengecekan password lama jika sebelumnya sudah ada)
  */
 export async function sbUpdateUserPassword(
-  username: string,
+  identifier: string,
   newPassword: string,
   oldPassword?: string
 ): Promise<{ success: boolean; message: string }> {
   if (!supabase) return { success: false, message: "Supabase belum terhubung." };
 
   try {
-    const trimmed = username.trim().toLowerCase();
-    const { data: user, error: findErr } = await supabase
-      .from("users")
-      .select("id, password")
-      .ilike("username", trimmed)
-      .maybeSingle();
+    const trimmed = identifier.trim().toLowerCase();
+    let query = supabase.from("users").select("id, password, username, email");
+    if (trimmed.includes("@")) {
+      query = query.ilike("email", trimmed);
+    } else {
+      query = query.or(`username.ilike.${trimmed},email.ilike.${trimmed}`);
+    }
+    const { data: user, error: findErr } = await query.maybeSingle();
 
     if (findErr || !user) {
       return { success: false, message: "Akun tidak ditemukan di database!" };
@@ -289,17 +293,17 @@ export async function sbUpdateUserPassword(
 
     // Jika user sudah punya password sebelumnya, verifikasi password lama
     if (hasExistingPassword) {
-      if (!oldPassword) {
-        return { success: false, message: "Harap masukkan password lama Anda!" };
+      if (!oldPassword || !oldPassword.trim()) {
+        return { success: false, message: "Harap masukkan password saat ini (password lama) Anda!" };
       }
-      const isValid = await verifyPassword(oldPassword, user.password);
+      const isValid = await verifyPassword(oldPassword.trim(), user.password);
       if (!isValid) {
-        return { success: false, message: "Password lama tidak sesuai!" };
+        return { success: false, message: "Password lama tidak sesuai! Harap periksa kembali huruf besar/kecil." };
       }
     }
 
-    // Hash password baru dengan SHA-256
-    const hashedPassword = await hashPassword(newPassword);
+    // Hash password baru dengan bcrypt
+    const hashedPassword = await hashPassword(newPassword.trim());
     const { error: updateErr } = await supabase
       .from("users")
       .update({
@@ -313,7 +317,7 @@ export async function sbUpdateUserPassword(
     }
 
     const successMsg = hasExistingPassword
-      ? "Password berhasil diubah!"
+      ? "Password berhasil diperbarui! Silakan gunakan password baru ini untuk login berikutnya."
       : "Password berhasil dibuat! Sekarang Anda juga bisa login dengan username & password di perangkat manapun.";
 
     return { success: true, message: successMsg };
