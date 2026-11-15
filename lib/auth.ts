@@ -492,9 +492,7 @@ export async function loginWithGoogle(
 
   try {
     const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: { persistSession: false },
-    });
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const redirectTo = `${window.location.origin}/auth/callback?role=${role}`;
 
