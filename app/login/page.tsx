@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -9,87 +8,15 @@ export default function PilihanLogin() {
 
   return (
     <main className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-hidden bg-gradient-to-b from-[#482b78] via-[#65439e] to-[#916dcb] select-none p-4 sm:p-8">
-      {/* Background Math Formula Doodles */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-85">
-        {/* Top-right formula */}
-        <div className="absolute top-10 -right-8 w-60 sm:w-80 md:w-[420px] rotate-[22deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 1"
-            width={450}
-            height={280}
-            className="w-full object-contain"
-            priority
-          />
-        </div>
-
-        {/* Top-left formula */}
-        <div className="absolute -top-16 -left-12 w-64 sm:w-96 md:w-[480px] -rotate-[30deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 2"
-            width={500}
-            height={300}
-            className="w-full object-contain"
-            priority
-          />
-        </div>
-
-        {/* Top middle formula */}
-        <div className="absolute -top-10 left-[20%] w-48 sm:w-64 md:w-80 -rotate-[12deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 3"
-            width={380}
-            height={240}
-            className="w-full object-contain"
-          />
-        </div>
-
-        {/* Left middle graph */}
-        <div className="absolute top-[10%] -left-20 w-60 sm:w-80 md:w-[400px] -rotate-[21deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 4"
-            width={450}
-            height={320}
-            className="w-full object-contain"
-          />
-        </div>
-
-        {/* Middle bottom formula */}
-        <div className="absolute bottom-[20%] left-[45%] hidden sm:block w-36 md:w-48 -rotate-[28deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 5"
-            width={260}
-            height={180}
-            className="w-full object-contain"
-          />
-        </div>
-
-        {/* Bottom right coordinate graph */}
-        <div className="absolute -bottom-16 right-[-2%] w-64 sm:w-96 md:w-[400px] -rotate-[136deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 6"
-            width={450}
-            height={320}
-            className="w-full object-contain"
-          />
-        </div>
-
-        {/* Bottom left graph */}
-        <div className="absolute -bottom-12 left-[15%] w-60 sm:w-80 md:w-[420px] rotate-[22deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 7"
-            width={450}
-            height={280}
-            className="w-full object-contain"
-          />
-        </div>
-      </div>
+      {/* Background Math Formula Wallpaper Pattern - Merata, Rapi & Estetik */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-15"
+        style={{
+          backgroundImage: "url('/images/math-formula.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "460px 460px",
+        }}
+      />
 
       {/* Top Spacer for Balance */}
       <div className="w-full h-2 sm:h-6 shrink-0" />

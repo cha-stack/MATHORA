@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useSound } from "@/components/SoundContext";
@@ -24,82 +23,15 @@ export default function Home() {
 
   return (
     <main className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-hidden bg-gradient-to-b from-[#482b78] via-[#65439e] to-[#916dcb] select-none p-4 sm:p-6">
-      {/* Background Math Formula Doodles - reduced sizes */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-70">
-        {/* Top-left formula */}
-        <div className="absolute -top-4 -left-4 w-36 sm:w-48 md:w-60 rotate-[22deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 1"
-            width={300}
-            height={200}
-            sizes="(max-width: 640px) 150px, 240px"
-            className="w-full h-auto object-contain"
-            priority
-          />
-        </div>
-
-        {/* Top-right formula */}
-        <div className="absolute -top-8 -right-8 w-44 sm:w-64 md:w-80 -rotate-[30deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 2"
-            width={350}
-            height={220}
-            sizes="(max-width: 640px) 180px, 320px"
-            className="w-full h-auto object-contain"
-            priority
-          />
-        </div>
-
-        {/* Left middle formula */}
-        <div className="absolute top-[35%] -left-6 w-32 sm:w-44 md:w-56 -rotate-[10deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 3"
-            width={280}
-            height={180}
-            sizes="(max-width: 640px) 140px, 220px"
-            className="w-full h-auto object-contain"
-          />
-        </div>
-
-        {/* Right middle graph formula */}
-        <div className="absolute top-[38%] -right-10 w-40 sm:w-60 md:w-80 rotate-[22deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 5"
-            width={360}
-            height={240}
-            sizes="(max-width: 640px) 160px, 320px"
-            className="w-full h-auto object-contain"
-          />
-        </div>
-
-        {/* Bottom right coordinate graph */}
-        <div className="absolute -bottom-10 right-[8%] w-44 sm:w-64 md:w-80 -rotate-[21deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 6"
-            width={360}
-            height={240}
-            sizes="(max-width: 640px) 180px, 320px"
-            className="w-full h-auto object-contain"
-          />
-        </div>
-
-        {/* Bottom left formula */}
-        <div className="absolute -bottom-12 -left-8 w-40 sm:w-56 md:w-72 rotate-[15deg]">
-          <Image
-            src="/images/math-formula.png"
-            alt="Math Doodle 7"
-            width={320}
-            height={220}
-            sizes="(max-width: 640px) 160px, 280px"
-            className="w-full h-auto object-contain"
-          />
-        </div>
-      </div>
+      {/* Background Math Formula Wallpaper Pattern - Merata, Rapi & Estetik */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-15"
+        style={{
+          backgroundImage: "url('/images/math-formula.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "460px 460px",
+        }}
+      />
 
       {/* Top Spacer for Balance */}
       <div className="w-full h-2 sm:h-6 shrink-0" />
