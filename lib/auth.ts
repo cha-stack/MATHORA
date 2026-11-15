@@ -28,6 +28,28 @@ const STORAGE_KEY = "mathora_users";
 const CURRENT_USER_KEY = "mathora_current_user";
 const PROGRESS_KEY = "mathora_progress";
 
+/**
+ * Cookie Auth Session Helper (Bekerja sama dengan Next.js Server Middleware)
+ */
+export function setAuthCookie(user: { username: string; role: string }) {
+  if (typeof document === "undefined") return;
+  try {
+    const val = encodeURIComponent(JSON.stringify({ username: user.username, role: user.role }));
+    document.cookie = `mathora_auth_session=${val}; path=/; max-age=${7 * 24 * 3600}; SameSite=Lax`;
+  } catch {
+    // Ignore
+  }
+}
+
+export function removeAuthCookie() {
+  if (typeof document === "undefined") return;
+  try {
+    document.cookie = "mathora_auth_session=; path=/; max-age=0; SameSite=Lax";
+  } catch {
+    // Ignore
+  }
+}
+
 // Ambil semua user yang tersimpan di cache lokal
 export function getUsers(): UserAccount[] {
   if (typeof window === "undefined") return [];
@@ -217,8 +239,9 @@ export async function loginUser(
       };
 
       if (typeof window !== "undefined") {
-        // Simpan sesi login aktif di browser
+        // Simpan sesi login aktif di browser & cookie untuk middleware
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(activeUser));
+        setAuthCookie(activeUser);
         // Sinkronkan progres terbaru dari cloud database
         await syncProgressFromSupabase(activeUser.username);
       }
@@ -294,6 +317,7 @@ export async function loginUser(
   resetRateLimit(userRateKey);
   resetRateLimit(deviceRateKey);
   localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+  setAuthCookie(user);
   return { success: true, message: "Login berhasil!", user };
 }
 
@@ -347,7 +371,16 @@ export function getCurrentUser(): UserAccount | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(CURRENT_USER_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) {
+      removeAuthCookie();
+      return null;
+    }
+    const user: UserAccount = JSON.parse(raw);
+    // Sinkronisasi otomatis ke cookie agar middleware server selalu sinkron
+    if (typeof document !== "undefined" && !document.cookie.includes("mathora_auth_session")) {
+      setAuthCookie(user);
+    }
+    return user;
   } catch {
     return null;
   }
@@ -397,6 +430,7 @@ export async function updateUserProfile(
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
   localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
+  setAuthCookie(updatedUser);
   return { success: true, message: "Profil berhasil diperbarui!", user: updatedUser };
 }
 
@@ -404,6 +438,7 @@ export async function updateUserProfile(
 export function logoutUser(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(CURRENT_USER_KEY);
+  removeAuthCookie();
 }
 
 // ─── SISTEM TINGKATAN & PROGRESSION LOCK MATERI ──────────────────────────────

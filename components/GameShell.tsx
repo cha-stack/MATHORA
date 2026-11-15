@@ -30,12 +30,44 @@ export default function GameShell({
   });
   const { isMuted, toggleMute, playClick } = useSound();
 
+  // Client-Side Auth Guard: Proteksi akses halaman guru & siswa
   useEffect(() => {
     const user = getCurrentUser();
     if (user) {
       setCurrentUser(user);
     }
-  }, []);
+
+    const isGuruPage = pathname.startsWith("/dashboard/guru") || pathname.startsWith("/bank-soal");
+    const isSiswaPage = pathname.startsWith("/dashboard/siswa");
+    const isSharedPage =
+      pathname.startsWith("/materi") ||
+      pathname.startsWith("/spldv") ||
+      pathname.startsWith("/bangun-ruang") ||
+      pathname.startsWith("/game-kompetitif") ||
+      pathname.startsWith("/settings");
+
+    // Jika belum login mencoba akses halaman terproteksi
+    if (!user || !user.username) {
+      if (isGuruPage) {
+        window.location.href = "/login/guru";
+        return;
+      }
+      if (isSiswaPage) {
+        window.location.href = "/login/siswa";
+        return;
+      }
+      if (isSharedPage) {
+        window.location.href = "/login";
+        return;
+      }
+    } else {
+      // Jika siswa mencoba masuk ke halaman guru
+      if (isGuruPage && user.role !== "guru") {
+        window.location.href = "/dashboard/siswa";
+        return;
+      }
+    }
+  }, [pathname]);
 
   // Pastikan popup logout dan sidebar selalu tertutup saat navigasi atau halaman dimuat
   useEffect(() => {
