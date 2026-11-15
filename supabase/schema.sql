@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS public.users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username TEXT NOT NULL,
   email TEXT,
-  password TEXT NOT NULL,
+  password VARCHAR(255) NOT NULL,
   role TEXT NOT NULL DEFAULT 'siswa', -- 'siswa' atau 'guru'
   avatar TEXT DEFAULT '/images/avatar-1.svg',
   created_at TIMESTAMPTZ DEFAULT now(),
