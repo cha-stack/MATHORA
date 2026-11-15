@@ -6,6 +6,14 @@ import { useState } from "react";
 import { registerUser, validatePassword } from "@/lib/auth";
 import { useSound } from "@/components/SoundContext";
 
+// Daftar kode rahasia yang diizinkan untuk registrasi akun Guru
+const VALID_SECRET_CODES = [
+  (process.env.NEXT_PUBLIC_GURU_SECRET_CODE || "").trim().toLowerCase(),
+  "mathora2026",
+  "mathora-parung-2026",
+  "smp-parung-2026",
+].filter(Boolean);
+
 export default function RegistGuru() {
   const router = useRouter();
   const { playClick } = useSound();
@@ -14,6 +22,7 @@ export default function RegistGuru() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [secretCode, setSecretCode] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -24,14 +33,24 @@ export default function RegistGuru() {
     setErrorMessage("");
     setSuccessMessage("");
 
-    if (!username.trim() || !email.trim() || !password) {
-      setErrorMessage("Harap lengkapi semua kolom pendaftaran!");
+    if (!username.trim() || !email.trim() || !password || !secretCode.trim()) {
+      setErrorMessage("Harap lengkapi semua kolom pendaftaran termasuk Kode Rahasia!");
       return;
     }
 
+    // 1. Verifikasi Kode Rahasia Pendidik (Proteksi anti-penyusupan siswa)
+    const cleanedCode = secretCode.trim().toLowerCase();
+    if (!VALID_SECRET_CODES.includes(cleanedCode)) {
+      setErrorMessage(
+        "Kode Rahasia Pendidik salah! Pendaftaran akun guru hanya diizinkan untuk guru/pengampu resmi SMP Islam Parung."
+      );
+      return;
+    }
+
+    // 2. Validasi format password
     const pwdValidation = validatePassword(password);
     if (!pwdValidation.isValid) {
-      setErrorMessage(pwdValidation.message || "Password minimal harus 6 karakter (bebas karakter/varchar tanpa spasi)!");
+      setErrorMessage(pwdValidation.message || "Password minimal harus 6 karakter tanpa spasi!");
       return;
     }
 
@@ -75,7 +94,7 @@ export default function RegistGuru() {
           Daftar Akun Guru
         </h2>
         <p className="text-xs text-gray-600 text-center mb-5 font-medium">
-          Daftarkan akun pendidik untuk mengelola pembelajaran dan bank soal.
+          Daftarkan akun pendidik resmi untuk mengelola pembelajaran dan bank soal.
         </p>
 
         {errorMessage && (
@@ -91,6 +110,27 @@ export default function RegistGuru() {
         )}
 
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3.5">
+          {/* Kode Rahasia Pendidik */}
+          <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-3 shadow-xs">
+            <label className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5 mb-1">
+              <span>🔑</span>
+              <span>Kode Rahasia Pendidik:</span>
+            </label>
+            <input
+              type="text"
+              value={secretCode}
+              onChange={(e) => {
+                setSecretCode(e.target.value);
+                if (errorMessage) setErrorMessage("");
+              }}
+              placeholder="Contoh: MATHORA2026"
+              className="w-full rounded-xl border-2 border-amber-300 bg-white px-3.5 py-2 text-sm font-bold text-[#2a2830] outline-none focus:border-[#7251a8]"
+            />
+            <span className="text-[10px] text-amber-800 font-medium block mt-1">
+              *Hanya dibagikan kepada pendidik matematika resmi SMP Islam Parung
+            </span>
+          </div>
+
           <div>
             <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1">
               Username Guru:
@@ -98,7 +138,10 @@ export default function RegistGuru() {
             <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                if (errorMessage) setErrorMessage("");
+              }}
               placeholder="contoh: pak_budi atau bu_siti"
               className="w-full rounded-2xl border-2 border-[#cbb3f5] bg-[#f7f2ff] px-4 py-2 text-sm font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
             />
@@ -111,7 +154,10 @@ export default function RegistGuru() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errorMessage) setErrorMessage("");
+              }}
               placeholder="contoh: guru@mathora.sch.id"
               className="w-full rounded-2xl border-2 border-[#cbb3f5] bg-[#f7f2ff] px-4 py-2 text-sm font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
             />
@@ -119,13 +165,16 @@ export default function RegistGuru() {
 
           <div>
             <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1">
-              Password (Min. 6 Karakter Bebas):
+              Password (Min. 6 Karakter):
             </label>
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Minimal 6 karakter (bebas angka / huruf)..."
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errorMessage) setErrorMessage("");
+              }}
+              placeholder="Minimal 6 karakter tanpa spasi..."
               className="w-full rounded-2xl border-2 border-[#cbb3f5] bg-[#f7f2ff] px-4 py-2 text-sm font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
             />
           </div>
@@ -137,7 +186,10 @@ export default function RegistGuru() {
             <input
               type="password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (errorMessage) setErrorMessage("");
+              }}
               placeholder="Ulangi password..."
               className="w-full rounded-2xl border-2 border-[#cbb3f5] bg-[#f7f2ff] px-4 py-2 text-sm font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
             />
@@ -148,7 +200,7 @@ export default function RegistGuru() {
             disabled={isLoading}
             className="mt-2 w-full rounded-2xl border-4 border-white bg-[#3499d0] disabled:opacity-80 py-3 game-font text-base font-bold text-white shadow-[0px_4px_0px_0px_#1f6d99] hover:scale-102 active:translate-y-1 cursor-pointer transition-all"
           >
-            {isLoading ? "Mendaftarkan Akun Guru..." : "Daftar Akun Guru"}
+            {isLoading ? "Memverifikasi & Mendaftar..." : "Daftar Akun Guru"}
           </button>
         </form>
 
@@ -164,4 +216,3 @@ export default function RegistGuru() {
     </main>
   );
 }
-

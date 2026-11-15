@@ -96,12 +96,17 @@ function CallbackHandler() {
         let activeAvatar = "/images/avatar-1.svg";
 
         if (!existingUser) {
-          // Buat akun baru otomatis
+          // Akun Guru TIDAK BOLEH auto-register via Google tanpa Kode Rahasia
+          if (targetRole === "guru") {
+            window.location.href = `/login/guru?error=guru_oauth_disabled`;
+            return;
+          }
+
+          // Buat akun baru otomatis khusus Siswa
           const rawName = googleName || email.split("@")[0];
           const sanitized = rawName.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 20);
-          const prefix = targetRole === "guru" ? "guru_" : "siswa_";
           const baseUsername =
-            sanitized.length >= 3 ? sanitized : `${prefix}${Date.now().toString().slice(-5)}`;
+            sanitized.length >= 3 ? sanitized : `siswa_${Date.now().toString().slice(-5)}`;
 
           const { data: usernameCheck } = await supabase
             .from("users")
@@ -112,7 +117,7 @@ function CallbackHandler() {
           activeUsername = usernameCheck
             ? `${baseUsername}_${Date.now().toString().slice(-4)}`
             : baseUsername;
-          activeRole = targetRole;
+          activeRole = "siswa";
 
           const { error: insertError } = await supabase.from("users").insert({
             username: activeUsername,

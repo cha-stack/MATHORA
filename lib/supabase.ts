@@ -214,8 +214,8 @@ export async function sbLoginUser(
       return { success: false, message: "Password salah! Silakan periksa kembali." };
     }
 
-    // Otomatis upgrade ke hash jika di Supabase masih berupa plaintext lama
-    if (data.password === password) {
+    // Otomatis upgrade ke Bcrypt jika di Supabase masih berupa plaintext atau SHA-256 lama
+    if (!data.password.startsWith("$2a$") && !data.password.startsWith("$2b$") && !data.password.startsWith("$2y$")) {
       try {
         const upgradedHash = await hashPassword(password);
         await supabase.from("users").update({ password: upgradedHash }).eq("id", data.id);
