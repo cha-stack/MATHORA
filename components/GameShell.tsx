@@ -37,6 +37,12 @@ export default function GameShell({
     }
   }, []);
 
+  // Pastikan popup logout dan sidebar selalu tertutup saat navigasi atau halaman dimuat
+  useEffect(() => {
+    setShowLogoutModal(false);
+    setSidebarOpen(false);
+  }, [pathname]);
+
   const activeUser = currentUser || (typeof window !== "undefined" ? getCurrentUser() : null);
   const isGuru = activeUser?.role === "guru";
   const homeUrl = isGuru ? "/dashboard/guru" : "/dashboard/siswa";
@@ -407,8 +413,9 @@ export default function GameShell({
                 type="button"
                 onClick={() => {
                   playClick();
+                  setShowLogoutModal(false);
                   logoutUser();
-                  router.push("/login");
+                  window.location.href = "/login";
                 }}
                 className="flex-1 py-3 rounded-2xl border-[3px] border-white bg-[#fd363a] font-bold text-white shadow hover:brightness-110 active:translate-y-0.5 transition-all cursor-pointer"
               >
