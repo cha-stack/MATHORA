@@ -8,6 +8,7 @@ import { useSound } from "@/components/SoundContext";
 import { SECTION_1_PRETEST, SECTION_2_PRETEST, buildPretestPool, QuestionItem } from "@/lib/questions";
 import { getSectionState, saveSectionState, getCurrentUser } from "@/lib/auth";
 import ScratchpadModal from "@/components/ScratchpadModal";
+import TestReviewBreakdown from "@/components/TestReviewBreakdown";
 
 function PretestContent() {
   const router = useRouter();
@@ -43,19 +44,22 @@ function PretestContent() {
   );
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [userScore, setUserScore] = useState(0);
+  // Rekam seluruh jawaban user: mapping index soal -> opsi yang dipilih (0..3)
+  const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
+  // Catat soal mana saja yang sudah di-klik "Periksa dan Tampilkan Hasil"
+  const [inspectedQuestions, setInspectedQuestions] = useState<Record<number, boolean>>({});
   const [validationWarning, setValidationWarning] = useState<string | null>(null);
 
   const [isFinished, setIsFinished] = useState(false);
 
   const currentQ = questions[currentIndex];
+  const selectedOption = userAnswers[currentIndex] ?? null;
+  const showAnswer = Boolean(inspectedQuestions[currentIndex]);
 
   const handleSelect = (idx: number) => {
     if (showAnswer) return;
     playClick();
-    setSelectedOption(idx);
+    setUserAnswers((prev) => ({ ...prev, [currentIndex]: idx }));
     if (validationWarning) setValidationWarning(null);
   };
 
@@ -66,34 +70,43 @@ function PretestContent() {
       return;
     }
     setValidationWarning(null);
-    playCorrect();
-    setShowAnswer(true);
-
     if (selectedOption === currentQ.correctIndex) {
-      setUserScore((prev) => prev + 1);
+      playCorrect();
+    } else {
+      playWrong();
     }
+    setInspectedQuestions((prev) => ({ ...prev, [currentIndex]: true }));
   };
 
   const handleNext = () => {
+    // Validasi: pastikan user telah memilih jawaban sebelum lanjut ke soal berikutnya
+    if (selectedOption === null) {
+      playWrong();
+      setValidationWarning("Pilih salah satu jawaban (A, B, C, atau D) terlebih dahulu sebelum lanjut!");
+      return;
+    }
+
+    setValidationWarning(null);
     playClick();
-    setShowAnswer(false);
-    setSelectedOption(null);
 
     if (currentIndex + 1 < questions.length) {
       setCurrentIndex((prev) => prev + 1);
     } else {
-      // Hitung skor akhir pre-test
-      const finalScore = Math.round((userScore / questions.length) * 100);
+      // Hitung skor akhir pre-test langsung dari seluruh jawaban yang dipilih user
+      const correctCount = questions.reduce((acc, q, idx) => {
+        return acc + (userAnswers[idx] === q.correctIndex ? 1 : 0);
+      }, 0);
+      const finalScore = Math.round((correctCount / questions.length) * 100);
 
       // Simpan progress & skor via helper per section (1..5)
       saveSectionState(sectionNum, {
         pretest: true,
         pretest_score: finalScore,
-        pretest_correct: userScore,
+        pretest_correct: correctCount,
         pretest_total: questions.length,
       });
 
-      // Tampilkan screen hasil evaluasi pre-test
+      // Tampilkan screen hasil & review evaluasi pre-test
       setIsFinished(true);
     }
   };
@@ -101,69 +114,31 @@ function PretestContent() {
   const handlePrev = () => {
     if (currentIndex > 0) {
       playClick();
-      setShowAnswer(false);
-      setSelectedOption(null);
+      setValidationWarning(null);
       setCurrentIndex((prev) => prev - 1);
     }
   };
 
-  // TAMPILAN SCREEN HASIL PRETEST (Bisa dilihat kapan saja & ada navigasi lanjut materi)
+  // TAMPILAN SCREEN HASIL & REVIEW PRETEST
   if (isFinished) {
-    const finalScore = Math.round((userScore / questions.length) * 100);
-    const isLulus = finalScore >= 60;
     return (
-      <div className="flex w-full flex-col items-center animate-in zoom-in-95 duration-200">
-        <div className="relative w-full max-w-2xl rounded-[36px] border-[8px] border-white bg-[#e4d3ff]/95 p-8 shadow-2xl text-center">
-          <span className="rounded-full bg-[#1cd8a4] px-4 py-1 text-xs font-bold text-[#144837] shadow">
-            Pre-Test Selesai
-          </span>
-          <h2 className="game-font text-3xl sm:text-4xl text-[#2a2830] font-bold my-3">
-            Hasil Pre-Test Section {sectionNum}
-          </h2>
-
-          <div className="relative my-4 flex size-44 mx-auto items-center justify-center rounded-full border-[8px] border-white bg-gradient-to-b from-[#f8f298] to-[#f4ad21] shadow-[0px_8px_0px_0px_#aaafaf]">
-            <div className="flex flex-col items-center">
-              <span className="game-font text-6xl font-bold text-[#2a2830]">
-                {finalScore}
-              </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#2a2830]/80">
-                Poin Kamu
-              </span>
-            </div>
-          </div>
-
-          <p className="text-base sm:text-lg font-bold text-[#2a2830]">
-            Kamu menjawab benar <b>{userScore}</b> dari <b>{questions.length}</b> soal.
-          </p>
-          <p className="text-xs sm:text-sm font-semibold text-gray-700 mt-1">
-            {isLulus
-              ? "🎉 Pemahaman awalmu sangat baik! Yuk perdalam lagi lewat materi interaktif."
-              : "💪 Jangan khawatir, ini tes awal. Pelajari materi interaktif agar semakin paham!"}
-          </p>
-
-          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => {
-                playClick();
-                setCurrentIndex(0);
-                setSelectedOption(null);
-                setShowAnswer(false);
-                setUserScore(0);
-                setIsFinished(false);
-              }}
-              className="rounded-2xl border-4 border-white bg-zinc-600 px-6 py-2.5 game-font text-base font-bold text-white shadow hover:scale-102 cursor-pointer"
-            >
-              Ulangi Tes
-            </button>
-            <Link
-              href={`/spldv/materi?section=${sectionNum}`}
-              className="rounded-2xl border-4 border-white bg-[#1cd8a4] px-8 py-2.5 game-font text-base font-bold text-[#144837] shadow hover:scale-103"
-            >
-              Lanjut ke Materi &rarr;
-            </Link>
-          </div>
-        </div>
-      </div>
+      <TestReviewBreakdown
+        questions={questions}
+        userAnswers={userAnswers}
+        sectionNum={sectionNum}
+        testType="pretest"
+        onRestart={() => {
+          setUserAnswers({});
+          setInspectedQuestions({});
+          setCurrentIndex(0);
+          setValidationWarning(null);
+          setIsFinished(false);
+        }}
+        nextHref={`/spldv/materi?section=${sectionNum}`}
+        nextLabel="Lanjut ke Materi"
+        backHref="/spldv"
+        backLabel="Menu SPLDV"
+      />
     );
   }
 
@@ -351,12 +326,20 @@ function PretestContent() {
 
         <button
           onClick={handleNext}
-          className="flex size-12 sm:size-14 items-center justify-center rounded-full border-[4px] border-white bg-[#1cd8a4] text-white shadow-[0px_4px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-1 cursor-pointer"
-          aria-label="Lanjut Soal Berikutnya"
+          className="flex h-12 sm:h-14 min-w-12 sm:min-w-14 items-center justify-center rounded-full border-[4px] border-white bg-[#1cd8a4] px-3 sm:px-4 text-white shadow-[0px_4px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-1 cursor-pointer"
+          aria-label={currentIndex + 1 === questions.length ? "Selesaikan Pre-Test" : "Lanjut Soal Berikutnya"}
+          title={currentIndex + 1 === questions.length ? "Selesaikan Pre-Test" : "Lanjut Soal Berikutnya"}
         >
-          <svg viewBox="0 0 24 24" fill="currentColor" className="size-6 sm:size-7">
-            <path d="M8 5v14l11-7z" />
-          </svg>
+          {currentIndex + 1 === questions.length ? (
+            <span className="game-font text-xs sm:text-sm font-bold text-[#144837] flex items-center gap-1">
+              <span>Selesai</span>
+              <span>✓</span>
+            </span>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="currentColor" className="size-6 sm:size-7">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          )}
         </button>
       </div>
 

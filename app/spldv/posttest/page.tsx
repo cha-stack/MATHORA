@@ -8,6 +8,7 @@ import { useSound } from "@/components/SoundContext";
 import { SECTION_1_POSTTEST, SECTION_2_POSTTEST, buildPosttestPool, QuestionItem } from "@/lib/questions";
 import { getSectionState, saveSectionState, getCurrentUser } from "@/lib/auth";
 import ScratchpadModal from "@/components/ScratchpadModal";
+import TestReviewBreakdown from "@/components/TestReviewBreakdown";
 
 function PosttestContent() {
   const router = useRouter();
@@ -42,18 +43,21 @@ function PosttestContent() {
   );
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [correctCount, setCorrectCount] = useState(0);
+  // Rekam seluruh jawaban user: mapping index soal -> opsi yang dipilih (0..3)
+  const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
+  // Catat soal mana saja yang sudah di-klik "Periksa dan Tampilkan Hasil"
+  const [inspectedQuestions, setInspectedQuestions] = useState<Record<number, boolean>>({});
   const [validationWarning, setValidationWarning] = useState<string | null>(null);
   const [isFinished, setIsFinished] = useState(false);
 
   const currentQ = questions[currentIndex];
+  const selectedOption = userAnswers[currentIndex] ?? null;
+  const showAnswer = Boolean(inspectedQuestions[currentIndex]);
 
   const handleSelect = (idx: number) => {
     if (showAnswer) return;
     playClick();
-    setSelectedOption(idx);
+    setUserAnswers((prev) => ({ ...prev, [currentIndex]: idx }));
     if (validationWarning) setValidationWarning(null);
   };
 
@@ -64,22 +68,32 @@ function PosttestContent() {
       return;
     }
     setValidationWarning(null);
-    playCorrect();
-    setShowAnswer(true);
-
     if (selectedOption === currentQ.correctIndex) {
-      setCorrectCount((prev) => prev + 1);
+      playCorrect();
+    } else {
+      playWrong();
     }
+    setInspectedQuestions((prev) => ({ ...prev, [currentIndex]: true }));
   };
 
   const handleNext = () => {
+    // Validasi: pastikan user telah memilih jawaban sebelum lanjut ke soal berikutnya
+    if (selectedOption === null) {
+      playWrong();
+      setValidationWarning("Pilih salah satu jawaban (A, B, C, atau D) terlebih dahulu sebelum lanjut!");
+      return;
+    }
+
+    setValidationWarning(null);
     playClick();
-    setShowAnswer(false);
-    setSelectedOption(null);
 
     if (currentIndex + 1 < questions.length) {
       setCurrentIndex((prev) => prev + 1);
     } else {
+      // Hitung skor akhir post-test langsung dari seluruh jawaban yang dipilih user
+      const correctCount = questions.reduce((acc, q, idx) => {
+        return acc + (userAnswers[idx] === q.correctIndex ? 1 : 0);
+      }, 0);
       const finalScore = Math.round((correctCount / questions.length) * 100);
 
       // Selesaikan Post-test & otomatis buka Section berikutnya (jika < 5)
@@ -96,58 +110,30 @@ function PosttestContent() {
   const handlePrev = () => {
     if (currentIndex > 0) {
       playClick();
-      setShowAnswer(false);
-      setSelectedOption(null);
+      setValidationWarning(null);
       setCurrentIndex((prev) => prev - 1);
     }
   };
 
   if (isFinished) {
-    const finalScore = Math.round((correctCount / questions.length) * 100);
     return (
-      <div className="flex w-full flex-col items-center">
-        <div className="relative w-full max-w-2xl rounded-[36px] border-[8px] border-white bg-[#e4d3ff]/95 p-8 shadow-2xl text-center">
-          <span className="rounded-full bg-[#16a34a] px-4 py-1 text-xs font-bold text-white shadow">
-            Post-Test Selesai
-          </span>
-          <h2 className="game-font text-3xl sm:text-4xl text-[#2a2830] font-bold my-3">
-            Hasil Evaluasi Section {sectionNum}
-          </h2>
-
-          <div className="relative my-4 flex size-40 mx-auto items-center justify-center rounded-full border-[7px] border-white bg-gradient-to-b from-[#f8f298] to-[#f4ad21] shadow-md">
-            <span className="game-font text-5xl font-bold text-[#2a2830]">
-              {finalScore}
-            </span>
-          </div>
-
-          <p className="text-base sm:text-lg font-bold text-[#2a2830]">
-            Kamu berhasil menjawab benar <b>{correctCount}</b> dari <b>{questions.length}</b> soal!
-          </p>
-
-          {sectionNum < 5 && (
-            <div className="my-4 rounded-2xl bg-emerald-100 border-2 border-emerald-400 p-3 text-xs sm:text-sm font-bold text-emerald-900">
-              🔓 Selamat! Section {sectionNum + 1} sekarang sudah TERBUKA!
-            </div>
-          )}
-
-          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/spldv"
-              className="rounded-2xl border-4 border-white bg-[#5e65e9] px-6 py-2.5 game-font text-base font-bold text-white shadow hover:scale-103"
-            >
-              Kembali ke Menu SPLDV
-            </Link>
-            {sectionNum < 5 && (
-              <Link
-                href={`/spldv/pretest?section=${sectionNum + 1}`}
-                className="rounded-2xl border-4 border-white bg-[#1cd8a4] px-6 py-2.5 game-font text-base font-bold text-[#144837] shadow hover:scale-103"
-              >
-                Lanjut ke Section {sectionNum + 1} &rarr;
-              </Link>
-            )}
-          </div>
-        </div>
-      </div>
+      <TestReviewBreakdown
+        questions={questions}
+        userAnswers={userAnswers}
+        sectionNum={sectionNum}
+        testType="posttest"
+        onRestart={() => {
+          setUserAnswers({});
+          setInspectedQuestions({});
+          setCurrentIndex(0);
+          setValidationWarning(null);
+          setIsFinished(false);
+        }}
+        nextHref={sectionNum < 5 ? `/spldv/pretest?section=${sectionNum + 1}` : "/spldv"}
+        nextLabel={sectionNum < 5 ? `Lanjut ke Section ${sectionNum + 1}` : "Kembali ke Menu SPLDV"}
+        backHref="/spldv"
+        backLabel="Menu SPLDV"
+      />
     );
   }
 
@@ -335,12 +321,20 @@ function PosttestContent() {
 
         <button
           onClick={handleNext}
-          className="flex size-12 sm:size-14 items-center justify-center rounded-full border-[4px] border-white bg-[#1cd8a4] text-white shadow-[0px_4px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-1 cursor-pointer"
-          aria-label="Lanjut Soal Berikutnya"
+          className="flex h-12 sm:h-14 min-w-12 sm:min-w-14 items-center justify-center rounded-full border-[4px] border-white bg-[#1cd8a4] px-3 sm:px-4 text-white shadow-[0px_4px_0px_0px_#aaafaf] transition-all hover:scale-105 active:translate-y-1 cursor-pointer"
+          aria-label={currentIndex + 1 === questions.length ? "Selesaikan Post-Test" : "Lanjut Soal Berikutnya"}
+          title={currentIndex + 1 === questions.length ? "Selesaikan Post-Test" : "Lanjut Soal Berikutnya"}
         >
-          <svg viewBox="0 0 24 24" fill="currentColor" className="size-6 sm:size-7">
-            <path d="M8 5v14l11-7z" />
-          </svg>
+          {currentIndex + 1 === questions.length ? (
+            <span className="game-font text-xs sm:text-sm font-bold text-[#144837] flex items-center gap-1">
+              <span>Selesai</span>
+              <span>✓</span>
+            </span>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="currentColor" className="size-6 sm:size-7">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          )}
         </button>
       </div>
 

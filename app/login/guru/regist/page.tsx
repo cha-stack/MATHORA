@@ -9,7 +9,7 @@ import { useSound } from "@/components/SoundContext";
 // Daftar kode rahasia yang diizinkan untuk registrasi akun Guru
 const VALID_SECRET_CODES = [
   (process.env.NEXT_PUBLIC_GURU_SECRET_CODE || "").trim().toLowerCase(),
-  "grsip26",
+  "grsip90",
 ].filter(Boolean);
 
 export default function RegistGuru() {
