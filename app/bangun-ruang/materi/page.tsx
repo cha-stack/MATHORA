@@ -656,6 +656,7 @@ export default function BangunRuangMateriPage() {
   const [activeViewTab, setActiveViewTab] = useState<BangunViewTab>("lab3d");
   const [selectedShape, setSelectedShape] = useState<ShapeType>("kubus");
   const [showJaring, setShowJaring] = useState(false);
+  const [netAction, setNetAction] = useState<"buka" | "tutup" | "reset">("tutup");
   const [showExampleSteps, setShowExampleSteps] = useState(false);
   const [dashboardUrl, setDashboardUrl] = useState("/dashboard/siswa");
   const [autoSpin, setAutoSpin] = useState(false);
@@ -797,6 +798,8 @@ export default function BangunRuangMateriPage() {
     setValL(currentCfg.defaultL);
     setValT(currentCfg.defaultT);
     setShowJaring(false);
+    setNetAction("reset");
+    setTimeout(() => setNetAction("tutup"), 1000);
     setReverseError(null);
   };
 
@@ -1299,13 +1302,13 @@ export default function BangunRuangMateriPage() {
     <GameShell backUrl="/materi" showBack={true}>
       <div className="flex w-full flex-col items-center">
         {/* Main Big Glass Container */}
-        <div className="relative w-full max-w-6xl rounded-[36px] sm:rounded-[44px] border-[8px] border-white bg-[#d5cfeb]/95 p-5 sm:p-8 shadow-2xl backdrop-blur-xs flex flex-col gap-5">
+        <div className="relative w-full max-w-6xl rounded-[22px] sm:rounded-[44px] border-[3px] sm:border-[8px] border-white bg-[#d5cfeb]/95 p-2.5 sm:p-6 md:p-8 shadow-2xl backdrop-blur-xs flex flex-col gap-3.5 sm:gap-5">
           
           {/* Header Title & Sub-Navigation Tabs */}
           <div className="flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <h2 className="game-font text-3xl sm:text-4xl text-[#2a2830] font-semibold tracking-wide">
+                <h2 className="game-font text-2xl sm:text-4xl text-[#2a2830] font-semibold tracking-wide">
                   Materi &amp; Lab Bangun Ruang
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-700 font-medium">
@@ -1336,7 +1339,7 @@ export default function BangunRuangMateriPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-white/75 rounded-2xl border-2 border-white shadow-xs">
               <button
                 onClick={() => { playClick(); setActiveViewTab("lab3d"); }}
-                className={`rounded-xl py-2.5 px-3 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                className={`rounded-xl py-2 sm:py-2.5 px-3 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                   activeViewTab === "lab3d" ? "bg-[#126b7c] text-white shadow" : "text-[#2a2830] hover:bg-white"
                 }`}
               >
@@ -1345,7 +1348,7 @@ export default function BangunRuangMateriPage() {
               </button>
               <button
                 onClick={() => { playClick(); setActiveViewTab("materi"); }}
-                className={`rounded-xl py-2.5 px-3 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                className={`rounded-xl py-2 sm:py-2.5 px-3 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                   activeViewTab === "materi" ? "bg-[#5e65e9] text-white shadow" : "text-[#2a2830] hover:bg-white"
                 }`}
               >
@@ -1354,7 +1357,7 @@ export default function BangunRuangMateriPage() {
               </button>
               <button
                 onClick={() => { playClick(); setActiveViewTab("perbandingan"); }}
-                className={`rounded-xl py-2.5 px-3 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                className={`rounded-xl py-2 sm:py-2.5 px-3 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                   activeViewTab === "perbandingan" ? "bg-[#e05f1e] text-white shadow" : "text-[#2a2830] hover:bg-white"
                 }`}
               >
@@ -1362,20 +1365,43 @@ export default function BangunRuangMateriPage() {
                 <span>Rangkuman 7 Bangun Ruang</span>
               </button>
             </div>
+
+            {/* Quick Shape Selector Khusus Mobile (Agar siswa/guru di HP tidak perlu scroll jauh ke bawah) */}
+            {activeViewTab === "lab3d" && (
+              <div className="lg:hidden flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 w-full">
+                {(["kubus", "balok", "prisma", "limas", "tabung", "kerucut", "bola"] as ShapeType[]).map((shape) => {
+                  const isSel = selectedShape === shape;
+                  return (
+                    <button
+                      key={shape}
+                      type="button"
+                      onClick={() => { playClick(); setSelectedShape(shape); }}
+                      className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all cursor-pointer ${
+                        isSel
+                          ? "bg-[#1cd8a4] text-[#144837] border-white shadow-xs scale-102"
+                          : "bg-white/85 text-[#2a2830] border-transparent hover:bg-white"
+                      }`}
+                    >
+                      {shape.charAt(0).toUpperCase() + shape.slice(1)}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {activeViewTab === "lab3d" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 w-full items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-5 w-full items-start">
             
             {/* KOLOM KIRI (8 Kolom): 3D Canvas Box + 2-POV Panel + Proses Hitung Manual */}
-            <div className="lg:col-span-8 flex flex-col rounded-[32px] border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
+            <div className="lg:col-span-8 flex flex-col rounded-[20px] sm:rounded-[32px] border-[3px] sm:border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-2.5 sm:p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
               
               {/* Header Box Interaksi 3D */}
               <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-1.5 rounded-full border-2 border-white/60 bg-white/20 px-3 py-1 text-xs font-semibold shadow-xs">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <div className="flex items-center gap-1 rounded-full border-2 border-white/60 bg-white/20 px-2.5 sm:px-3 py-0.5 sm:py-1 text-[11px] sm:text-xs font-semibold shadow-xs">
                     <span>🖐️</span>
-                    <span>Geser Objek 360°</span>
+                    <span className="hidden xs:inline">Geser 360°</span>
                   </div>
                   <button
                     onClick={() => { playClick(); setRotX(-0.35); setRotY(0.55); }}
@@ -1400,14 +1426,36 @@ export default function BangunRuangMateriPage() {
                     {autoSpin ? "⏸ Stop Putar" : "🔄 Putar Otomatis"}
                   </button>
                   <button
-                    onClick={() => { setAutoSpin(false); handleReset(); }}
-                    className="flex items-center gap-1 rounded-full border-2 border-white/80 bg-white/30 px-3 py-1 text-xs font-semibold hover:bg-white hover:text-[#126b7c] transition-all cursor-pointer shadow-xs active:scale-95"
+                    onClick={() => {
+                      playClick();
+                      const next = !showJaring;
+                      setShowJaring(next);
+                      setNetAction(next ? "buka" : "tutup");
+                    }}
+                    className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all cursor-pointer ${
+                      showJaring
+                        ? "bg-amber-300 text-amber-950 border-amber-200 shadow"
+                        : "border-white/60 bg-white/15 hover:bg-white hover:text-[#126b7c]"
+                    }`}
+                  >
+                    {showJaring ? "📦 Tutup Jaring" : "✂️ Buka Jaring"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAutoSpin(false);
+                      handleReset();
+                    }}
+                    className={`flex items-center gap-1 rounded-full border-2 px-2.5 sm:px-3 py-0.5 sm:py-1 text-[11px] sm:text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95 ${
+                      netAction === "reset"
+                        ? "bg-amber-300 text-amber-950 border-amber-200 shadow"
+                        : "border-white/80 bg-white/30 hover:bg-white hover:text-[#126b7c]"
+                    }`}
                   >
                     <span>Reset</span>
                   </button>
                 </div>
 
-                <span className="game-font text-lg sm:text-xl font-semibold tracking-wide uppercase text-amber-200">
+                <span className="game-font text-base sm:text-xl font-semibold tracking-wide uppercase text-amber-200">
                   {currentCfg.name}
                 </span>
               </div>
@@ -1690,7 +1738,7 @@ export default function BangunRuangMateriPage() {
               </div>
 
               {/* ─── PANEL KALKULASI 2 POV (DUA SUDUT PANDANG) ─── */}
-              <div className="rounded-[24px] bg-[#f8f7fc] p-4 sm:p-5 text-[#2a2830] border-2 border-white shadow-md mt-2 flex flex-col gap-4">
+              <div className="rounded-[18px] sm:rounded-[24px] bg-[#f8f7fc] p-2.5 sm:p-5 text-[#2a2830] border-2 border-white shadow-md mt-2 flex flex-col gap-3.5 sm:gap-4">
                 
                 {/* Switch Tab 2 POV */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-1 bg-purple-100 rounded-2xl border border-purple-200">
@@ -2006,22 +2054,22 @@ export default function BangunRuangMateriPage() {
             </div>
 
             {/* KOLOM KANAN (4 Kolom): Materi Bangun Ruang & Eksplorasi Interaktif */}
-            <div className="lg:col-span-4 flex flex-col gap-5">
+            <div className="lg:col-span-4 flex flex-col gap-3.5 sm:gap-5">
               
               {/* CARD 1: Pilihan Bentuk Bangun Ruang (7 Bentuk Lengkap) */}
-              <div className="flex flex-col rounded-[32px] border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
+              <div className="flex flex-col rounded-[20px] sm:rounded-[32px] border-[3px] sm:border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-3.5 sm:p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
                 <h3 className="game-font text-xl sm:text-2xl font-semibold mb-3 text-center">
                   Materi Bangun Ruang
                 </h3>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2 sm:gap-2.5">
                   {(["kubus", "balok", "prisma", "limas", "tabung", "kerucut", "bola"] as ShapeType[]).map((shape) => {
                     const isSelected = selectedShape === shape;
                     return (
                       <button
                         key={shape}
                         onClick={() => handleSelectShape(shape)}
-                        className={`rounded-[16px] border-[3px] border-white py-2 px-2 text-center game-font text-sm font-semibold capitalize transition-all cursor-pointer ${
+                        className={`rounded-[16px] border-[3px] border-white py-2 px-2 text-center game-font text-xs sm:text-sm font-semibold capitalize transition-all cursor-pointer ${
                           isSelected
                             ? "bg-white text-[#126b7c] shadow-md scale-103"
                             : "bg-white/80 text-[#2a2830] hover:bg-white"
@@ -2051,17 +2099,17 @@ export default function BangunRuangMateriPage() {
               </div>
 
               {/* CARD 2: Eksplorasi Interaktif */}
-              <div className="flex flex-col rounded-[32px] border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
+              <div className="flex flex-col rounded-[20px] sm:rounded-[32px] border-[3px] sm:border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-3.5 sm:p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
                 <h3 className="game-font text-xl sm:text-2xl font-semibold mb-3 text-center">
                   Eksplorasi Interaktif
                 </h3>
 
                 <div className="flex flex-col gap-2.5">
                   <button
-                    onClick={() => { playClick(); setShowJaring(true); }}
+                    onClick={() => { playClick(); setShowJaring(true); setNetAction("buka"); }}
                     className={`rounded-[18px] border-[4px] border-white py-2.5 game-font text-base font-semibold shadow transition-all cursor-pointer ${
-                      showJaring
-                        ? "bg-amber-400 text-amber-950 scale-102"
+                      showJaring || netAction === "buka"
+                        ? "bg-amber-400 text-amber-950 scale-102 shadow-md border-amber-200"
                         : "bg-white text-[#2a2830] hover:brightness-105"
                     }`}
                   >
@@ -2069,19 +2117,26 @@ export default function BangunRuangMateriPage() {
                   </button>
 
                   <button
-                    onClick={() => { playClick(); setShowJaring(false); }}
+                    onClick={() => { playClick(); setShowJaring(false); setNetAction("tutup"); }}
                     className={`rounded-[18px] border-[4px] border-white py-2.5 game-font text-base font-semibold shadow transition-all cursor-pointer ${
-                      !showJaring
-                        ? "bg-white text-[#2a2830] hover:brightness-105"
-                        : "bg-white/80 text-gray-700"
+                      !showJaring || netAction === "tutup"
+                        ? "bg-amber-400 text-amber-950 scale-102 shadow-md border-amber-200"
+                        : "bg-white text-[#2a2830] hover:brightness-105"
                     }`}
                   >
                     Tutup Jaring-Jaring
                   </button>
 
                   <button
-                    onClick={handleReset}
-                    className="rounded-[18px] border-[4px] border-white bg-white py-2.5 game-font text-base font-semibold text-[#2a2830] shadow transition-all hover:brightness-105 active:scale-98 cursor-pointer"
+                    onClick={() => {
+                      playClick();
+                      handleReset();
+                    }}
+                    className={`rounded-[18px] border-[4px] border-white py-2.5 game-font text-base font-semibold shadow transition-all cursor-pointer ${
+                      netAction === "reset"
+                        ? "bg-amber-400 text-amber-950 scale-102 shadow-md border-amber-200"
+                        : "bg-white text-[#2a2830] hover:brightness-105 active:scale-98"
+                    }`}
                   >
                     Reset Objek
                   </button>

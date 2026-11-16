@@ -11,7 +11,7 @@ const VALID_SECRET_CODES = [
   (process.env.NEXT_PUBLIC_GURU_SECRET_CODE || "").trim().toLowerCase(),
   "grsip90",
 ].filter(Boolean);
-
+//26
 export default function RegistGuru() {
   const router = useRouter();
   const { playClick } = useSound();
