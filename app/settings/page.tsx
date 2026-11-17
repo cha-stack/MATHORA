@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import GameShell from "@/components/GameShell";
 import { useSound, AVAILABLE_TRACKS, BgmTrack } from "@/components/SoundContext";
 import {
@@ -195,10 +196,32 @@ export default function SettingsPage() {
                 </div>
               )}
 
+              {/* Tombol Menuju Studio Karakter 2D */}
+              <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-purple-100 to-indigo-100 p-3 sm:p-3.5 border-2 border-purple-300">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl sm:text-3xl">✨</span>
+                  <div>
+                    <h4 className="game-font text-xs sm:text-sm font-bold text-[#2a2830]">
+                      Studio Karakter 2D (ChibiForge)
+                    </h4>
+                    <p className="text-[11px] sm:text-xs text-[#555]">
+                      Desain avatar kustommu sendiri secara detail!
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href="/karakter"
+                  onClick={playClick}
+                  className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#7c3aed] text-white text-xs font-bold hover:bg-[#6b21a8] transition-colors shadow-xs shrink-0"
+                >
+                  Buka Studio &rarr;
+                </Link>
+              </div>
+
               {/* Karakter Avatar Kartun */}
               <div>
                 <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-2">
-                  Pilihan Karakter Maskot:
+                  Atau Pilih Karakter Maskot Cepat:
                 </label>
                 <div className="grid grid-cols-4 gap-2.5">
                   {AVATAR_OPTIONS.map((av) => (
@@ -217,7 +240,7 @@ export default function SettingsPage() {
                       title={av.label}
                     >
                       <div className="relative size-12 sm:size-14 overflow-hidden rounded-full">
-                        <Image src={av.path} alt={av.label} fill className="object-cover" />
+                        <Image src={av.path} alt={av.label} fill unoptimized className="object-cover" />
                       </div>
                       <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
                         {av.label.split(" ")[0]}

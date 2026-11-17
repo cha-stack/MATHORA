@@ -281,6 +281,7 @@ export default function GameShell({
                 src={userAvatar}
                 alt="Avatar Profile"
                 fill
+                unoptimized
                 className="object-cover"
               />
             </div>
@@ -362,6 +363,24 @@ export default function GameShell({
                 </div>
                 <span className={`game-font text-2xl ${isKompetitifActive ? "text-[#2a2830] font-bold" : "text-[#422376]"}`}>Kompetitif</span>
               </Link>
+
+              {/* Menu Khusus Siswa: Studio Karakter 2D */}
+              {!isGuru && (
+                <Link
+                  href="/karakter"
+                  onClick={() => setSidebarOpen(false)}
+                  className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${
+                    pathname === "/karakter"
+                      ? "bg-[#f8f298] shadow-sm"
+                      : "hover:bg-white/50"
+                  }`}
+                >
+                  <div className="flex size-10 items-center justify-center text-[#7c3aed]">
+                    <span className="text-2xl">✨</span>
+                  </div>
+                  <span className={`game-font text-2xl ${pathname === "/karakter" ? "text-[#2a2830] font-bold" : "text-[#422376]"}`}>Karakter</span>
+                </Link>
+              )}
 
               {/* Menu Khusus Guru: Kuis & Bank Soal */}
               {isGuru && (
