@@ -25,7 +25,6 @@ interface CharacterStudioRendererProps {
   zoom?: number;
 }
 
-// Global image cache agar rendering instan saat ganti warna atau gaya
 const imageCache: Record<string, HTMLImageElement> = {};
 
 function loadImage(src: string): Promise<HTMLImageElement | null> {
@@ -45,6 +44,21 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
     };
     img.src = src;
   });
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  let c = hex.replace(/^#/, "");
+  if (c.length === 3) {
+    c = c.split("").map((x) => x + x).join("");
+  }
+  if (c.length !== 6) return null;
+  const num = parseInt(c, 16);
+  if (isNaN(num)) return null;
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255,
+  };
 }
 
 function drawTinted(
@@ -72,10 +86,52 @@ function drawTinted(
   ctx.restore();
 }
 
+function drawTintedIris(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  color: string,
+  width: number,
+  height: number
+) {
+  const offscreen = document.createElement("canvas");
+  offscreen.width = width;
+  offscreen.height = height;
+  const oCtx = offscreen.getContext("2d");
+  if (!oCtx) return;
+
+  oCtx.drawImage(img, 0, 0, width, height);
+
+  try {
+    const imgData = oCtx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+    const rgb = hexToRgb(color) || { r: 16, g: 185, b: 129 };
+
+    for (let i = 0; i < data.length; i += 4) {
+      const a = data[i + 3];
+      if (a > 10) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        if (r > 215 && g > 215 && b > 215) {
+          continue;
+        }
+        data[i] = rgb.r;
+        data[i + 1] = rgb.g;
+        data[i + 2] = rgb.b;
+      }
+    }
+    oCtx.putImageData(imgData, 0, 0);
+    ctx.drawImage(offscreen, 0, 0, width, height);
+  } catch {
+    drawTinted(ctx, img, color, width, height);
+  }
+}
+
 const CharacterStudioRenderer = forwardRef<CharacterRendererHandle, CharacterStudioRendererProps>(
   ({ config, className = "", zoom = 1.0 }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [isRendering, setIsRendering] = useState(false);
+    const renderIdRef = useRef(0);
 
     const renderCharacter = useCallback(async () => {
       const canvas = canvasRef.current;
@@ -83,107 +139,133 @@ const CharacterStudioRenderer = forwardRef<CharacterRendererHandle, CharacterStu
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
+      const currentRenderId = ++renderIdRef.current;
       setIsRendering(true);
 
       const size = 1000;
-      ctx.clearRect(0, 0, size, size);
 
-      // 1. Latar Belakang
-      if (config.bgColor && config.bgColor !== "transparent") {
-        ctx.fillStyle = config.bgColor;
-        ctx.fillRect(0, 0, size, size);
-      }
+      const curEar = EAR_OPTIONS.find((e) => e.id === config.earStyle) || EAR_OPTIONS[0];
+      const curEye = EYE_OPTIONS.find((e) => e.id === config.eyeStyle) || EYE_OPTIONS[0];
+      const curEyebrow = EYEBROW_OPTIONS.find((e) => e.id === config.eyebrowStyle) || EYEBROW_OPTIONS[0];
+      const curNose = NOSE_OPTIONS.find((n) => n.id === config.noseStyle) || NOSE_OPTIONS[0];
+      const curMouth = MOUTH_OPTIONS.find((m) => m.id === config.mouthStyle) || MOUTH_OPTIONS[0];
+      const curBlush = config.blushStyle && config.blushStyle !== "none" ? BLUSH_OPTIONS.find((b) => b.id === config.blushStyle) : null;
+      const curOutfit = OUTFIT_OPTIONS.find((o) => o.id === config.outfitStyle) || OUTFIT_OPTIONS[0];
+      const curHair = HAIR_OPTIONS.find((h) => h.id === config.hairStyle) || HAIR_OPTIONS[0];
+      const curAcc = config.accessoryStyle && config.accessoryStyle !== "none" ? ACCESSORY_OPTIONS.find((a) => a.id === config.accessoryStyle) : null;
 
-      // 2. Base Kulit & Outline Badan
-      const [baseFill, baseLine] = await Promise.all([
+      const [
+        baseFill,
+        baseLine,
+        earFill,
+        earLine,
+        eyeSclera,
+        eyeIris,
+        eyeLine,
+        eyebrowImg,
+        noseImg,
+        mouthImg,
+        blushImg,
+        outfitLine,
+        outfitFill,
+        outfitCollar,
+        outfitVestFill,
+        hairFill,
+        hairLine,
+        accImg,
+      ] = await Promise.all([
         loadImage("/characters/Base/color_id230.png"),
         loadImage("/characters/Base/Base_id6.png"),
+        curEar?.fill ? loadImage(curEar.fill) : Promise.resolve(null),
+        curEar?.line ? loadImage(curEar.line) : Promise.resolve(null),
+        curEye?.sclera ? loadImage(curEye.sclera) : Promise.resolve(null),
+        curEye?.iris ? loadImage(curEye.iris) : Promise.resolve(null),
+        curEye?.line ? loadImage(curEye.line) : Promise.resolve(null),
+        curEyebrow?.line ? loadImage(curEyebrow.line) : Promise.resolve(null),
+        curNose?.line ? loadImage(curNose.line) : Promise.resolve(null),
+        curMouth?.line ? loadImage(curMouth.line) : Promise.resolve(null),
+        curBlush?.line ? loadImage(curBlush.line) : Promise.resolve(null),
+        curOutfit?.line ? loadImage(curOutfit.line) : Promise.resolve(null),
+        curOutfit?.fill ? loadImage(curOutfit.fill) : Promise.resolve(null),
+        curOutfit?.collar ? loadImage(curOutfit.collar) : Promise.resolve(null),
+        curOutfit?.vestFill ? loadImage(curOutfit.vestFill) : Promise.resolve(null),
+        curHair?.fill ? loadImage(curHair.fill) : Promise.resolve(null),
+        curHair?.line ? loadImage(curHair.line) : Promise.resolve(null),
+        curAcc?.file ? loadImage(curAcc.file) : Promise.resolve(null),
       ]);
-      if (baseFill) drawTinted(ctx, baseFill, config.skinColor, size, size);
-      if (baseLine) ctx.drawImage(baseLine, 0, 0, size, size);
 
-      // 3. Telinga
-      const curEar = EAR_OPTIONS.find((e) => e.id === config.earStyle) || EAR_OPTIONS[0];
-      const [earFill, earLine] = await Promise.all([loadImage(curEar.fill), loadImage(curEar.line)]);
-      if (earFill) drawTinted(ctx, earFill, config.skinColor, size, size);
-      if (earLine) ctx.drawImage(earLine, 0, 0, size, size);
+      if (currentRenderId !== renderIdRef.current) {
+        return;
+      }
 
-      // 4. Mata
-      const curEye = EYE_OPTIONS.find((e) => e.id === config.eyeStyle) || EYE_OPTIONS[0];
-      const [eyeSclera, eyeIris, eyeLine] = await Promise.all([
-        loadImage(curEye.sclera),
-        loadImage(curEye.iris),
-        loadImage(curEye.line),
-      ]);
-      if (eyeSclera) ctx.drawImage(eyeSclera, 0, 0, size, size);
-      if (eyeIris) drawTinted(ctx, eyeIris, config.eyeColor, size, size);
-      if (eyeLine) ctx.drawImage(eyeLine, 0, 0, size, size);
+      const offscreen = document.createElement("canvas");
+      offscreen.width = size;
+      offscreen.height = size;
+      const offCtx = offscreen.getContext("2d");
+      if (!offCtx) return;
 
-      // 5. Alis
-      const curEyebrow = EYEBROW_OPTIONS.find((e) => e.id === config.eyebrowStyle) || EYEBROW_OPTIONS[0];
-      const eyebrowImg = await loadImage(curEyebrow.line);
-      if (eyebrowImg) drawTinted(ctx, eyebrowImg, config.hairColor, size, size);
+      // 1. Background
+      if (config.bgColor && config.bgColor !== "transparent") {
+        offCtx.fillStyle = config.bgColor;
+        offCtx.fillRect(0, 0, size, size);
+      }
 
-      // 6. Hidung
-      const curNose = NOSE_OPTIONS.find((n) => n.id === config.noseStyle) || NOSE_OPTIONS[0];
-      const noseImg = await loadImage(curNose.line);
-      if (noseImg) ctx.drawImage(noseImg, 0, 0, size, size);
+      // 2. Base Skin & Body Line
+      if (baseFill) drawTinted(offCtx, baseFill, config.skinColor, size, size);
+      if (baseLine) offCtx.drawImage(baseLine, 0, 0, size, size);
 
-      // 7. Mulut
-      const curMouth = MOUTH_OPTIONS.find((m) => m.id === config.mouthStyle) || MOUTH_OPTIONS[0];
-      const mouthImg = await loadImage(curMouth.line);
-      if (mouthImg) ctx.drawImage(mouthImg, 0, 0, size, size);
+      // 3. Ears
+      if (earFill) drawTinted(offCtx, earFill, config.skinColor, size, size);
+      if (earLine) offCtx.drawImage(earLine, 0, 0, size, size);
 
-      // 8. Blush (Rona Pipi)
-      if (config.blushStyle && config.blushStyle !== "none") {
-        const curBlush = BLUSH_OPTIONS.find((b) => b.id === config.blushStyle);
-        if (curBlush && curBlush.line) {
-          const blushImg = await loadImage(curBlush.line);
-          if (blushImg) drawTinted(ctx, blushImg, config.blushColor, size, size, 0.85);
-        }
+      // 4. Eyes (Sclera -> Iris -> Line)
+      if (eyeSclera) offCtx.drawImage(eyeSclera, 0, 0, size, size);
+      if (eyeIris) drawTintedIris(offCtx, eyeIris, config.eyeColor, size, size);
+      if (eyeLine) offCtx.drawImage(eyeLine, 0, 0, size, size);
+
+      // 5. Eyebrows
+      if (eyebrowImg) drawTinted(offCtx, eyebrowImg, config.hairColor, size, size);
+
+      // 6. Nose
+      if (noseImg) offCtx.drawImage(noseImg, 0, 0, size, size);
+
+      // 7. Mouth
+      if (mouthImg) offCtx.drawImage(mouthImg, 0, 0, size, size);
+
+      // 8. Blush
+      if (blushImg) {
+        drawTinted(offCtx, blushImg, config.blushColor, size, size, 0.85);
       }
 
       // 9. Outfit
-      const curOutfit = OUTFIT_OPTIONS.find((o) => o.id === config.outfitStyle) || OUTFIT_OPTIONS[0];
       if (curOutfit.id === "vest") {
-        const [vestLine, vestCollar, vestFill] = await Promise.all([
-          loadImage(curOutfit.line),
-          curOutfit.collar ? loadImage(curOutfit.collar) : null,
-          curOutfit.vestFill ? loadImage(curOutfit.vestFill) : null,
-        ]);
-        if (vestCollar) ctx.drawImage(vestCollar, 0, 0, size, size);
-        if (vestFill) drawTinted(ctx, vestFill, config.outfitColor, size, size);
-        if (vestLine) ctx.drawImage(vestLine, 0, 0, size, size);
+        if (outfitCollar) offCtx.drawImage(outfitCollar, 0, 0, size, size);
+        if (outfitVestFill) drawTinted(offCtx, outfitVestFill, config.outfitColor, size, size);
+        if (outfitLine) offCtx.drawImage(outfitLine, 0, 0, size, size);
       } else {
-        const [outfitLine, outfitFill] = await Promise.all([
-          loadImage(curOutfit.line),
-          curOutfit.fill ? loadImage(curOutfit.fill) : null,
-        ]);
-        if (outfitFill) drawTinted(ctx, outfitFill, config.outfitColor, size, size);
-        if (outfitLine) ctx.drawImage(outfitLine, 0, 0, size, size);
+        if (outfitFill) drawTinted(offCtx, outfitFill, config.outfitColor, size, size);
+        if (outfitLine) offCtx.drawImage(outfitLine, 0, 0, size, size);
       }
 
-      // 10. Rambut
-      const curHair = HAIR_OPTIONS.find((h) => h.id === config.hairStyle) || HAIR_OPTIONS[0];
-      const [hairFill, hairLine] = await Promise.all([loadImage(curHair.fill), loadImage(curHair.line)]);
-      if (hairFill) drawTinted(ctx, hairFill, config.hairColor, size, size);
-      if (hairLine) ctx.drawImage(hairLine, 0, 0, size, size);
+      // 10. Hair
+      if (hairFill) drawTinted(offCtx, hairFill, config.hairColor, size, size);
+      if (hairLine) offCtx.drawImage(hairLine, 0, 0, size, size);
 
-      // 11. Aksesoris
-      if (config.accessoryStyle && config.accessoryStyle !== "none") {
-        const curAcc = ACCESSORY_OPTIONS.find((a) => a.id === config.accessoryStyle);
-        if (curAcc && curAcc.file) {
-          const accImg = await loadImage(curAcc.file);
-          if (accImg) {
-            // Jika pita rambut, warnai dengan accessoryColor jika bukan none
-            if (curAcc.id === "hair_bow" && config.accessoryColor) {
-              drawTinted(ctx, accImg, config.accessoryColor, size, size);
-            } else {
-              ctx.drawImage(accImg, 0, 0, size, size);
-            }
-          }
+      // 11. Accessories
+      if (accImg && curAcc) {
+        if (curAcc.id === "hair_bow" && config.accessoryColor) {
+          drawTinted(offCtx, accImg, config.accessoryColor, size, size);
+        } else {
+          offCtx.drawImage(accImg, 0, 0, size, size);
         }
       }
+
+      if (currentRenderId !== renderIdRef.current) {
+        return;
+      }
+
+      ctx.clearRect(0, 0, size, size);
+      ctx.drawImage(offscreen, 0, 0, size, size);
 
       setIsRendering(false);
     }, [config]);
