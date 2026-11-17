@@ -1,10 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import GameShell from "@/components/GameShell";
 import { useSound, AVAILABLE_TRACKS, BgmTrack } from "@/components/SoundContext";
+import CharacterStudioRenderer, { CharacterRendererHandle } from "@/components/CharacterStudioRenderer";
+import {
+  CharacterConfig,
+  DEFAULT_CHARACTER,
+  COLOR_PALETTES,
+  HAIR_OPTIONS,
+  EYE_OPTIONS,
+  EAR_OPTIONS,
+  EYEBROW_OPTIONS,
+  NOSE_OPTIONS,
+  MOUTH_OPTIONS,
+  BLUSH_OPTIONS,
+  OUTFIT_OPTIONS,
+  ACCESSORY_OPTIONS,
+  getRandomCharacterConfig,
+} from "@/lib/characterConfig";
 import {
   getCurrentUser,
   updateUserProfile,
@@ -20,20 +35,56 @@ const AVATAR_OPTIONS = [
   { id: "avatar-guru", path: "/images/avatar-guru.svg", label: "Topi Toga (Pendidik)" },
 ];
 
+type ChibiCategory =
+  | "rambut"
+  | "mata"
+  | "outfit"
+  | "aksesoris"
+  | "blush"
+  | "badan"
+  | "telinga"
+  | "alis"
+  | "hidung"
+  | "mulut"
+  | "latar";
+
+interface ChibiCategoryMeta {
+  id: ChibiCategory;
+  label: string;
+  icon: string;
+  hasColor: boolean;
+  colorField?: keyof CharacterConfig;
+  paletteKey?: keyof typeof COLOR_PALETTES;
+}
+
+const CHIBI_CATEGORIES: ChibiCategoryMeta[] = [
+  { id: "rambut", label: "Rambut", icon: "💇", hasColor: true, colorField: "hairColor", paletteKey: "hair" },
+  { id: "mata", label: "Mata", icon: "👁️", hasColor: true, colorField: "eyeColor", paletteKey: "eye" },
+  { id: "outfit", label: "Outfit", icon: "👕", hasColor: true, colorField: "outfitColor", paletteKey: "outfit" },
+  { id: "aksesoris", label: "Aksesoris", icon: "🎀", hasColor: true, colorField: "accessoryColor", paletteKey: "accessory" },
+  { id: "blush", label: "Blush", icon: "💖", hasColor: true, colorField: "blushColor", paletteKey: "blush" },
+  { id: "badan", label: "Kulit", icon: "🧑", hasColor: true, colorField: "skinColor", paletteKey: "skin" },
+  { id: "telinga", label: "Telinga", icon: "🧝", hasColor: false },
+  { id: "alis", label: "Alis", icon: "✏️", hasColor: false },
+  { id: "hidung", label: "Hidung", icon: "👃", hasColor: false },
+  { id: "mulut", label: "Mulut", icon: "👄", hasColor: false },
+  { id: "latar", label: "Latar", icon: "🎨", hasColor: true, colorField: "bgColor", paletteKey: "bg" },
+];
+
 export default function SettingsPage() {
   const {
     bgmVolume,
     setBgmVolume,
     sfxVolume,
     setSfxVolume,
-    isMuted,
-    toggleMute,
-    playClick,
-    playWrong,
-    playCorrect,
     currentTrack,
     setTrack,
+    playClick,
+    playCorrect,
+    playWrong,
   } = useSound();
+
+  const rendererRef = useRef<CharacterRendererHandle | null>(null);
 
   const [user, setUser] = useState<UserAccount | null>(() => {
     if (typeof window !== "undefined") {
@@ -47,7 +98,12 @@ export default function SettingsPage() {
   const [saveError, setSaveError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // State Keamanan Password (default true agar field password lama muncul bagi pengguna terdaftar)
+  // Mode Karakter: ChibiForge vs Maskot Cepat
+  const [avatarMode, setAvatarMode] = useState<"chibi" | "maskot">("chibi");
+  const [chibiCategory, setChibiCategory] = useState<ChibiCategory>("rambut");
+  const [charConfig, setCharConfig] = useState<CharacterConfig>(DEFAULT_CHARACTER);
+
+  // State Keamanan Password
   const [hasPassword, setHasPassword] = useState<boolean>(true);
   const [oldPasswordInput, setOldPasswordInput] = useState("");
   const [newPasswordInput, setNewPasswordInput] = useState("");
@@ -65,12 +121,50 @@ export default function SettingsPage() {
       setUsernameInput(active.username);
       setSelectedAvatar(active.avatar || "/images/avatar-1.svg");
 
+      // Cek apakah user punya config karakter Chibi tersimpan
+      try {
+        const savedChar = localStorage.getItem(`mathora_char_cfg_${active.username}`);
+        if (savedChar) {
+          setCharConfig(JSON.parse(savedChar));
+          setAvatarMode("chibi");
+        } else if (active.avatar?.startsWith("data:image")) {
+          setAvatarMode("chibi");
+        } else if (active.avatar?.includes("avatar-")) {
+          setAvatarMode("maskot");
+        }
+      } catch {
+        // Ignore
+      }
+
       // Cek apakah akun ini belum punya password (misal siswa login via Google OAuth)
       checkUserHasPassword(active.username).then((hasPwd) => {
         setHasPassword(hasPwd);
       });
     }
   }, []);
+
+  const curCatMeta = CHIBI_CATEGORIES.find((c) => c.id === chibiCategory) || CHIBI_CATEGORIES[0];
+
+  const handleRandomizeChibi = () => {
+    playClick();
+    const randomized = getRandomCharacterConfig();
+    setCharConfig((prev) => ({
+      ...randomized,
+      bgColor: prev.bgColor,
+    }));
+  };
+
+  const handleResetChibi = () => {
+    playClick();
+    setCharConfig(DEFAULT_CHARACTER);
+  };
+
+  const handleDownloadChibi = () => {
+    playClick();
+    if (rendererRef.current) {
+      rendererRef.current.downloadPng("karakter-mathora.png");
+    }
+  };
 
   const handleSavePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,7 +209,6 @@ export default function SettingsPage() {
       if (!res.success) {
         playWrong();
         setPasswordError(res.message);
-        // Jika server mengindikasikan akun membutuhkan password lama, otomatis munculkan input password lama
         if (res.message.toLowerCase().includes("password lama") || res.message.toLowerCase().includes("kata sandi lama")) {
           setHasPassword(true);
         }
@@ -149,16 +242,30 @@ export default function SettingsPage() {
     playClick();
     setIsSaving(true);
     try {
-      const res = await updateUserProfile(usernameInput, selectedAvatar);
+      let finalAvatar = selectedAvatar;
+
+      // Jika menggunakan mode ChibiForge, render dan gunakan data URL PNG
+      if (avatarMode === "chibi" && rendererRef.current) {
+        const dataUrl = rendererRef.current.exportDataUrl();
+        if (dataUrl) {
+          finalAvatar = dataUrl;
+          if (user?.username) {
+            localStorage.setItem(`mathora_char_cfg_${user.username}`, JSON.stringify(charConfig));
+          }
+        }
+      }
+
+      const res = await updateUserProfile(usernameInput, finalAvatar);
       setIsSaving(false);
       if (!res.success) {
         playWrong();
         setSaveError(res.message);
       } else {
         playCorrect();
-        setSaveMessage("Profil berhasil disimpan!");
+        setSaveMessage("Profil dan karakter avatar berhasil disimpan!");
         setUser(res.user || null);
-        setTimeout(() => setSaveMessage(""), 3000);
+        setSelectedAvatar(finalAvatar);
+        setTimeout(() => setSaveMessage(""), 3500);
       }
     } catch {
       setIsSaving(false);
@@ -171,108 +278,609 @@ export default function SettingsPage() {
 
   return (
     <GameShell backUrl={backUrl} showBack={true}>
-      <div className="flex w-full flex-col items-center">
+      <div className="flex w-full flex-col items-center px-2 sm:px-4 py-2">
         {/* Settings Box */}
-        <div className="relative w-full max-w-3xl rounded-[32px] sm:rounded-[42px] border-[7px] border-white bg-[#e4d3ff]/85 p-6 sm:p-10 shadow-2xl backdrop-blur-xs flex flex-col items-center">
-          <h2 className="game-font text-3xl sm:text-5xl text-[#2a2830] mb-6 font-bold">
-            Pengaturan Akun &amp; Aplikasi
+        <div className="relative w-full max-w-4xl rounded-[32px] sm:rounded-[42px] border-[7px] border-white bg-[#e4d3ff]/85 p-4 sm:p-8 md:p-10 shadow-2xl backdrop-blur-xs flex flex-col items-center">
+          <h2 className="game-font text-3xl sm:text-5xl text-[#2a2830] mb-6 font-bold text-center">
+            Pengaturan Akun &amp; Karakter
           </h2>
 
-          <div className="flex flex-col gap-6 w-full max-w-xl">
-            {/* BAGIAN 1: PENGATURAN PROFIL & KARAKTER */}
-            <form onSubmit={handleSaveProfile} className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
-              <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
-                Profil &amp; Karakter Avatar
-              </span>
+          <div className="flex flex-col gap-6 w-full max-w-2xl">
+            {/* BAGIAN 1: PENGATURAN PROFIL & KARAKTER (CHIBIFORGE LANGSUNG DISINI) */}
+            <form onSubmit={handleSaveProfile} className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-4 sm:p-6 shadow">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-purple-100 pb-3">
+                <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
+                  Profil &amp; Karakter Avatar
+                </span>
+
+                {/* Toggle Mode: ChibiForge vs Maskot */}
+                <div className="flex items-center rounded-xl bg-purple-100 p-1 border border-purple-200 text-xs font-bold text-[#4c3575]">
+                  <button
+                    type="button"
+                    onClick={() => { playClick(); setAvatarMode("chibi"); }}
+                    className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                      avatarMode === "chibi" ? "bg-[#7c3aed] text-white shadow-xs" : "hover:bg-purple-200"
+                    }`}
+                  >
+                    ✨ Karakter 2D (ChibiForge)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { playClick(); setAvatarMode("maskot"); }}
+                    className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                      avatarMode === "maskot" ? "bg-[#7c3aed] text-white shadow-xs" : "hover:bg-purple-200"
+                    }`}
+                  >
+                    🐾 Maskot Cepat
+                  </button>
+                </div>
+              </div>
 
               {saveMessage && (
-                <div className="rounded-xl bg-emerald-100 border-2 border-emerald-400 p-2 text-center text-xs sm:text-sm font-bold text-emerald-800">
+                <div className="rounded-xl bg-emerald-100 border-2 border-emerald-400 p-2.5 text-center text-xs sm:text-sm font-bold text-emerald-800 animate-pulse">
                   {saveMessage}
                 </div>
               )}
               {saveError && (
-                <div className="rounded-xl bg-rose-100 border-2 border-rose-400 p-2 text-center text-xs sm:text-sm font-bold text-rose-800">
+                <div className="rounded-xl bg-rose-100 border-2 border-rose-400 p-2.5 text-center text-xs sm:text-sm font-bold text-rose-800">
                   {saveError}
                 </div>
               )}
 
-              {/* Tombol Menuju Studio Karakter 2D */}
-              <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-purple-100 to-indigo-100 p-3 sm:p-3.5 border-2 border-purple-300">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-2xl sm:text-3xl">✨</span>
-                  <div>
-                    <h4 className="game-font text-xs sm:text-sm font-bold text-[#2a2830]">
-                      Studio Karakter 2D (ChibiForge)
-                    </h4>
-                    <p className="text-[11px] sm:text-xs text-[#555]">
-                      Desain avatar kustommu sendiri secara detail!
-                    </p>
+              {/* JIKA MODE CHIBIFORGE AKTIF: STUDIO TERTANAM LANGSUNG DI SINI */}
+              {avatarMode === "chibi" && (
+                <div className="flex flex-col gap-3 rounded-2xl bg-[#f8f5fc] p-3 sm:p-4 border-2 border-[#8e78ca]/30">
+                  {/* Top Bar: Preview + Action Buttons */}
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    {/* Live Canvas Preview Mini */}
+                    <div className="relative size-36 sm:size-44 shrink-0 rounded-2xl border-2 border-[#8e78ca]/30 bg-white shadow-inner overflow-hidden flex items-center justify-center">
+                      <CharacterStudioRenderer
+                        ref={rendererRef}
+                        config={charConfig}
+                        zoom={1.0}
+                        className="w-full h-full"
+                      />
+                    </div>
+
+                    {/* Kontrol & Aksi Cepat Karakter */}
+                    <div className="flex flex-col justify-between h-full gap-2 w-full">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="size-2.5 rounded-full bg-[#7c3aed]" />
+                          <span className="text-xs font-bold text-[#2a2830] uppercase tracking-wider">
+                            Kustomisasi Karakter Aktif
+                          </span>
+                        </div>
+                        <p className="text-[11px] sm:text-xs text-[#666] mt-0.5">
+                          Ubah rambut, ekspresi wajah, pakaian, dan aksesoris di bawah. Saat klik <b>Simpan Perubahan Profil</b>, avatar ini langsung aktif!
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={handleRandomizeChibi}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#9333ea] text-white text-xs font-bold shadow-xs hover:bg-[#7e22ce] transition-transform active:scale-95 cursor-pointer"
+                        >
+                          <span>🎲</span>
+                          <span>Acak Gaya</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleResetChibi}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white border border-[#8e78ca]/40 text-[#4c3575] text-xs font-bold shadow-xs hover:bg-purple-50 transition-transform active:scale-95 cursor-pointer"
+                        >
+                          <span>🔄</span>
+                          <span>Reset</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleDownloadChibi}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#0284c7] text-white text-xs font-bold shadow-xs hover:bg-[#0369a1] transition-transform active:scale-95 cursor-pointer"
+                        >
+                          <span>📥</span>
+                          <span>Unduh PNG</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Kategori Tabs Kustomisasi Karakter */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-2 border-t border-purple-200/60 scrollbar-thin">
+                    {CHIBI_CATEGORIES.map((cat) => {
+                      const isActive = chibiCategory === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => {
+                            playClick();
+                            setChibiCategory(cat.id);
+                          }}
+                          className={`flex items-center gap-1 shrink-0 px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                            isActive
+                              ? "border-[#7c3aed] bg-[#7c3aed] text-white shadow-xs"
+                              : "border-[#e0d7f2] bg-white text-[#474451] hover:bg-purple-100"
+                          }`}
+                        >
+                          <span>{cat.icon}</span>
+                          <span>{cat.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Palet Warna jika Kategori Mendukung Warna */}
+                  {curCatMeta.hasColor && curCatMeta.colorField && curCatMeta.paletteKey && (
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1 bg-white/70 p-2 rounded-xl border border-purple-100">
+                      <span className="text-[10px] font-bold uppercase text-[#6b52b8] mr-1">
+                        Warna {curCatMeta.label}:
+                      </span>
+                      {COLOR_PALETTES[curCatMeta.paletteKey].map((pal) => {
+                        const currentColor = charConfig[curCatMeta.colorField!];
+                        const isSelected = currentColor.toLowerCase() === pal.hex.toLowerCase();
+                        return (
+                          <button
+                            key={pal.hex}
+                            type="button"
+                            onClick={() => {
+                              playClick();
+                              setCharConfig((prev) => ({
+                                ...prev,
+                                [curCatMeta.colorField!]: pal.hex,
+                              }));
+                            }}
+                            title={pal.label}
+                            style={{ backgroundColor: pal.hex === "transparent" ? "#ffffff" : pal.hex }}
+                            className={`size-6 rounded-full border-2 transition-all flex items-center justify-center cursor-pointer ${
+                              isSelected ? "border-[#7c3aed] scale-110 ring-2 ring-purple-300" : "border-white hover:scale-105"
+                            }`}
+                          >
+                            {isSelected && (
+                              <span
+                                className={`text-[9px] font-bold ${
+                                  pal.hex === "#FFFFFF" || pal.hex === "#F8FAFC" || pal.hex === "transparent"
+                                    ? "text-black"
+                                    : "text-white"
+                                }`}
+                              >
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+
+                      {/* Custom Color Input */}
+                      <label className="flex items-center gap-1 ml-1 cursor-pointer" title="Warna Kustom">
+                        <input
+                          type="color"
+                          value={
+                            charConfig[curCatMeta.colorField] === "transparent"
+                              ? "#ffffff"
+                              : charConfig[curCatMeta.colorField]
+                          }
+                          onChange={(e) => {
+                            setCharConfig((prev) => ({
+                              ...prev,
+                              [curCatMeta.colorField!]: e.target.value,
+                            }));
+                          }}
+                          className="size-6 rounded-md border border-gray-300 cursor-pointer p-0"
+                        />
+                        <span className="text-[10px] text-[#7c3aed] font-bold">Kustom</span>
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Grid Item Sesuai Kategori yang Dipilih */}
+                  <div className="max-h-48 overflow-y-auto pr-1 pt-1">
+                    {/* RAMBUT */}
+                    {chibiCategory === "rambut" && (
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        {HAIR_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              playClick();
+                              setCharConfig((prev) => ({ ...prev, hairStyle: opt.id }));
+                            }}
+                            className={`relative flex flex-col items-center p-1.5 rounded-xl border-2 transition-all cursor-pointer ${
+                              charConfig.hairStyle === opt.id
+                                ? "border-[#7c3aed] bg-purple-100 shadow-xs ring-1 ring-purple-300"
+                                : "border-[#e0d7f2] bg-white hover:bg-purple-50"
+                            }`}
+                          >
+                            <div className="size-12 rounded-lg bg-white overflow-hidden flex items-center justify-center">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
+                            </div>
+                            <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
+                              {opt.label}
+                            </span>
+                            {charConfig.hairStyle === opt.id && (
+                              <span className="absolute top-1 right-1 size-3.5 rounded-full bg-[#7c3aed] text-white text-[9px] flex items-center justify-center font-bold">
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* MATA */}
+                    {chibiCategory === "mata" && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {EYE_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              playClick();
+                              setCharConfig((prev) => ({ ...prev, eyeStyle: opt.id }));
+                            }}
+                            className={`relative flex flex-col items-center p-1.5 rounded-xl border-2 transition-all cursor-pointer ${
+                              charConfig.eyeStyle === opt.id
+                                ? "border-[#7c3aed] bg-purple-100 shadow-xs ring-1 ring-purple-300"
+                                : "border-[#e0d7f2] bg-white hover:bg-purple-50"
+                            }`}
+                          >
+                            <div className="size-12 rounded-lg bg-white overflow-hidden flex items-center justify-center">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
+                            </div>
+                            <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
+                              {opt.label}
+                            </span>
+                            {charConfig.eyeStyle === opt.id && (
+                              <span className="absolute top-1 right-1 size-3.5 rounded-full bg-[#7c3aed] text-white text-[9px] flex items-center justify-center font-bold">
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* OUTFIT */}
+                    {chibiCategory === "outfit" && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {OUTFIT_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              playClick();
+                              setCharConfig((prev) => ({ ...prev, outfitStyle: opt.id }));
+                            }}
+                            className={`relative flex flex-col items-center p-1.5 rounded-xl border-2 transition-all cursor-pointer ${
+                              charConfig.outfitStyle === opt.id
+                                ? "border-[#7c3aed] bg-purple-100 shadow-xs ring-1 ring-purple-300"
+                                : "border-[#e0d7f2] bg-white hover:bg-purple-50"
+                            }`}
+                          >
+                            <div className="size-14 rounded-lg bg-white overflow-hidden flex items-center justify-center">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
+                            </div>
+                            <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
+                              {opt.label}
+                            </span>
+                            {charConfig.outfitStyle === opt.id && (
+                              <span className="absolute top-1 right-1 size-3.5 rounded-full bg-[#7c3aed] text-white text-[9px] flex items-center justify-center font-bold">
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* AKSESORIS */}
+                    {chibiCategory === "aksesoris" && (
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        {ACCESSORY_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              playClick();
+                              setCharConfig((prev) => ({ ...prev, accessoryStyle: opt.id }));
+                            }}
+                            className={`relative flex flex-col items-center p-1.5 rounded-xl border-2 transition-all cursor-pointer ${
+                              charConfig.accessoryStyle === opt.id
+                                ? "border-[#7c3aed] bg-purple-100 shadow-xs ring-1 ring-purple-300"
+                                : "border-[#e0d7f2] bg-white hover:bg-purple-50"
+                            }`}
+                          >
+                            <div className="size-11 rounded-lg bg-white overflow-hidden flex items-center justify-center">
+                              {opt.file ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={opt.file} alt={opt.label} className="w-full h-full object-contain" />
+                              ) : (
+                                <span className="text-xl text-gray-400">🚫</span>
+                              )}
+                            </div>
+                            <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
+                              {opt.label}
+                            </span>
+                            {charConfig.accessoryStyle === opt.id && (
+                              <span className="absolute top-1 right-1 size-3.5 rounded-full bg-[#7c3aed] text-white text-[9px] flex items-center justify-center font-bold">
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* BLUSH */}
+                    {chibiCategory === "blush" && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {BLUSH_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              playClick();
+                              setCharConfig((prev) => ({ ...prev, blushStyle: opt.id }));
+                            }}
+                            className={`relative flex flex-col items-center p-2 rounded-xl border-2 transition-all cursor-pointer ${
+                              charConfig.blushStyle === opt.id
+                                ? "border-[#7c3aed] bg-purple-100 shadow-xs ring-1 ring-purple-300"
+                                : "border-[#e0d7f2] bg-white hover:bg-purple-50"
+                            }`}
+                          >
+                            <div className="size-11 rounded-lg bg-white overflow-hidden flex items-center justify-center">
+                              {opt.line ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={opt.line} alt={opt.label} className="w-full h-full object-contain" />
+                              ) : (
+                                <span className="text-xl text-gray-400">🚫</span>
+                              )}
+                            </div>
+                            <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
+                              {opt.label}
+                            </span>
+                            {charConfig.blushStyle === opt.id && (
+                              <span className="absolute top-1 right-1 size-3.5 rounded-full bg-[#7c3aed] text-white text-[9px] flex items-center justify-center font-bold">
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* TELINGA */}
+                    {chibiCategory === "telinga" && (
+                      <div className="grid grid-cols-2 gap-2">
+                        {EAR_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              playClick();
+                              setCharConfig((prev) => ({ ...prev, earStyle: opt.id }));
+                            }}
+                            className={`relative flex flex-col items-center p-2 rounded-xl border-2 transition-all cursor-pointer ${
+                              charConfig.earStyle === opt.id
+                                ? "border-[#7c3aed] bg-purple-100 shadow-xs ring-1 ring-purple-300"
+                                : "border-[#e0d7f2] bg-white hover:bg-purple-50"
+                            }`}
+                          >
+                            <div className="size-12 rounded-lg bg-white overflow-hidden flex items-center justify-center">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
+                            </div>
+                            <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
+                              {opt.label}
+                            </span>
+                            {charConfig.earStyle === opt.id && (
+                              <span className="absolute top-1 right-1 size-3.5 rounded-full bg-[#7c3aed] text-white text-[9px] flex items-center justify-center font-bold">
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* ALIS */}
+                    {chibiCategory === "alis" && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {EYEBROW_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              playClick();
+                              setCharConfig((prev) => ({ ...prev, eyebrowStyle: opt.id }));
+                            }}
+                            className={`relative flex flex-col items-center p-2 rounded-xl border-2 transition-all cursor-pointer ${
+                              charConfig.eyebrowStyle === opt.id
+                                ? "border-[#7c3aed] bg-purple-100 shadow-xs ring-1 ring-purple-300"
+                                : "border-[#e0d7f2] bg-white hover:bg-purple-50"
+                            }`}
+                          >
+                            <div className="size-11 rounded-lg bg-white overflow-hidden flex items-center justify-center">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={opt.line} alt={opt.label} className="w-full h-full object-contain" />
+                            </div>
+                            <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
+                              {opt.label}
+                            </span>
+                            {charConfig.eyebrowStyle === opt.id && (
+                              <span className="absolute top-1 right-1 size-3.5 rounded-full bg-[#7c3aed] text-white text-[9px] flex items-center justify-center font-bold">
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* HIDUNG */}
+                    {chibiCategory === "hidung" && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {NOSE_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              playClick();
+                              setCharConfig((prev) => ({ ...prev, noseStyle: opt.id }));
+                            }}
+                            className={`relative flex flex-col items-center p-2 rounded-xl border-2 transition-all cursor-pointer ${
+                              charConfig.noseStyle === opt.id
+                                ? "border-[#7c3aed] bg-purple-100 shadow-xs ring-1 ring-purple-300"
+                                : "border-[#e0d7f2] bg-white hover:bg-purple-50"
+                            }`}
+                          >
+                            <div className="size-11 rounded-lg bg-white overflow-hidden flex items-center justify-center">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={opt.line} alt={opt.label} className="w-full h-full object-contain" />
+                            </div>
+                            <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
+                              {opt.label}
+                            </span>
+                            {charConfig.noseStyle === opt.id && (
+                              <span className="absolute top-1 right-1 size-3.5 rounded-full bg-[#7c3aed] text-white text-[9px] flex items-center justify-center font-bold">
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* MULUT */}
+                    {chibiCategory === "mulut" && (
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        {MOUTH_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              playClick();
+                              setCharConfig((prev) => ({ ...prev, mouthStyle: opt.id }));
+                            }}
+                            className={`relative flex flex-col items-center p-2 rounded-xl border-2 transition-all cursor-pointer ${
+                              charConfig.mouthStyle === opt.id
+                                ? "border-[#7c3aed] bg-purple-100 shadow-xs ring-1 ring-purple-300"
+                                : "border-[#e0d7f2] bg-white hover:bg-purple-50"
+                            }`}
+                          >
+                            <div className="size-11 rounded-lg bg-white overflow-hidden flex items-center justify-center">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={opt.line} alt={opt.label} className="w-full h-full object-contain" />
+                            </div>
+                            <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
+                              {opt.label}
+                            </span>
+                            {charConfig.mouthStyle === opt.id && (
+                              <span className="absolute top-1 right-1 size-3.5 rounded-full bg-[#7c3aed] text-white text-[9px] flex items-center justify-center font-bold">
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* BADAN & KULIT */}
+                    {chibiCategory === "badan" && (
+                      <div className="p-3 bg-purple-50 rounded-xl text-center text-xs text-[#555] font-semibold">
+                        Gunakan palet warna di atas untuk menyesuaikan warna kulit karakter.
+                      </div>
+                    )}
+
+                    {/* LATAR */}
+                    {chibiCategory === "latar" && (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                        {COLOR_PALETTES.bg.map((opt) => (
+                          <button
+                            key={opt.hex}
+                            type="button"
+                            onClick={() => {
+                              playClick();
+                              setCharConfig((prev) => ({ ...prev, bgColor: opt.hex }));
+                            }}
+                            className={`p-2 rounded-xl border-2 flex items-center gap-2 cursor-pointer ${
+                              charConfig.bgColor.toLowerCase() === opt.hex.toLowerCase()
+                                ? "border-[#7c3aed] bg-purple-100"
+                                : "border-gray-200 bg-white"
+                            }`}
+                          >
+                            <span
+                              className="size-5 rounded-md border border-gray-300"
+                              style={{ backgroundColor: opt.hex === "transparent" ? "#ffffff" : opt.hex }}
+                            />
+                            <span className="text-[10px] font-bold text-[#333]">{opt.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-                <Link
-                  href="/karakter"
-                  onClick={playClick}
-                  className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#7c3aed] text-white text-xs font-bold hover:bg-[#6b21a8] transition-colors shadow-xs shrink-0"
-                >
-                  Buka Studio &rarr;
-                </Link>
-              </div>
+              )}
 
-              {/* Karakter Avatar Kartun */}
-              <div>
-                <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-2">
-                  Atau Pilih Karakter Maskot Cepat:
-                </label>
-                <div className="grid grid-cols-4 gap-2.5">
-                  {AVATAR_OPTIONS.map((av) => (
-                    <button
-                      key={av.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedAvatar(av.path);
-                        playClick();
-                      }}
-                      className={`group relative flex flex-col items-center rounded-2xl border-4 p-2 transition-all cursor-pointer ${
-                        selectedAvatar === av.path
-                          ? "border-[#7251a8] bg-[#f8f298] scale-105 shadow-md"
-                          : "border-transparent bg-purple-50 hover:bg-purple-100"
-                      }`}
-                      title={av.label}
-                    >
-                      <div className="relative size-12 sm:size-14 overflow-hidden rounded-full">
-                        <Image src={av.path} alt={av.label} fill unoptimized className="object-cover" />
-                      </div>
-                      <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
-                        {av.label.split(" ")[0]}
-                      </span>
-                    </button>
-                  ))}
+              {/* JIKA MODE MASKOT CEPAT AKTIF */}
+              {avatarMode === "maskot" && (
+                <div>
+                  <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-2">
+                    Pilihan Maskot Klasik:
+                  </label>
+                  <div className="grid grid-cols-4 gap-2.5">
+                    {AVATAR_OPTIONS.map((av) => (
+                      <button
+                        key={av.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedAvatar(av.path);
+                          playClick();
+                        }}
+                        className={`group relative flex flex-col items-center rounded-2xl border-4 p-2 transition-all cursor-pointer ${
+                          selectedAvatar === av.path
+                            ? "border-[#7251a8] bg-[#f8f298] scale-105 shadow-md"
+                            : "border-transparent bg-purple-50 hover:bg-purple-100"
+                        }`}
+                        title={av.label}
+                      >
+                        <div className="relative size-12 sm:size-14 overflow-hidden rounded-full">
+                          <Image src={av.path} alt={av.label} fill unoptimized className="object-cover" />
+                        </div>
+                        <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
+                          {av.label.split(" ")[0]}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Username Input */}
-              <div>
+              <div className="mt-2">
                 <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
-                  Nama Pengguna (Username)
+                  Nama Pengguna (Username):
                 </label>
                 <input
                   type="text"
                   value={usernameInput}
                   onChange={(e) => setUsernameInput(e.target.value)}
-                  placeholder="Masukkan nama pengguna..."
-                  maxLength={25}
-                  className="w-full rounded-2xl border-3 border-[#cbb3f5] bg-[#f7f2ff] px-4 py-2 text-base font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
+                  placeholder="Masukkan nama pengguna"
+                  className="w-full rounded-2xl bg-[#f8f7fc] px-4 py-3 text-lg font-bold game-font text-[#333] border-2 border-[#8e78ca]/40 focus:border-[#7c3aed] focus:outline-none transition-all shadow-inner"
                 />
               </div>
 
+              {/* Tombol Simpan Perubahan Profil */}
               <button
                 type="submit"
                 disabled={isSaving}
-                className="mt-1 flex items-center justify-center rounded-2xl border-4 border-white bg-[#1cd8a4] disabled:opacity-80 py-2.5 shadow-[0px_4px_0px_0px_#028560] transition-all hover:scale-102 active:translate-y-1 active:shadow-none cursor-pointer"
+                className="w-full rounded-2xl bg-[#1cd8a4] border-3 border-white py-3.5 text-center text-lg sm:text-xl font-bold game-font text-[#144837] shadow-[0px_4px_0px_0px_#028560] hover:brightness-105 active:translate-y-1 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
               >
-                <span className="game-font text-base sm:text-lg font-bold text-[#144837]">
-                  {isSaving ? "Menyimpan..." : "Simpan Perubahan Profil"}
-                </span>
+                {isSaving ? "Menyimpan Perubahan..." : "Simpan Perubahan Profil"}
               </button>
             </form>
 
@@ -282,236 +890,173 @@ export default function SettingsPage() {
                 <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
                   Keamanan &amp; Kata Sandi
                 </span>
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-purple-100 text-[#7251a8] border border-purple-200">
-                  {hasPassword === false ? "Akun Google" : "Kata Sandi Aktif"}
+                <span className="text-xs font-bold text-purple-700 bg-purple-100 px-3 py-1 rounded-full border border-purple-200">
+                  {hasPassword ? "Kata Sandi Aktif" : "Belum Ada Sandi (Google)"}
                 </span>
               </div>
 
-              {/* Info banner khusus akun Google yang belum punya password */}
-              {hasPassword === false && (
-                <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-3 text-xs sm:text-sm font-semibold text-amber-900 flex items-start gap-2 shadow-xs">
-                  <span className="text-lg">💡</span>
-                  <div>
-                    <p className="font-bold">Akun Terhubung dengan Akun Google</p>
-                    <p className="mt-0.5 text-amber-800">
-                      Anda belum memiliki kata sandi lokal. Buat kata sandi di bawah ini agar Anda juga dapat masuk menggunakan <strong>Nama Pengguna &amp; Kata Sandi</strong> di perangkat lain (seperti komputer lab sekolah yang tidak terhubung dengan akun Google Anda).
-                    </p>
-                  </div>
-                </div>
-              )}
-
               {passwordMsg && (
-                <div className="rounded-xl bg-emerald-100 border-2 border-emerald-400 p-2.5 text-center text-xs sm:text-sm font-bold text-emerald-800">
+                <div className="rounded-xl bg-emerald-100 border-2 border-emerald-400 p-2 text-center text-xs sm:text-sm font-bold text-emerald-800">
                   {passwordMsg}
                 </div>
               )}
               {passwordError && (
-                <div className="rounded-xl bg-rose-100 border-2 border-rose-400 p-2.5 text-center text-xs sm:text-sm font-bold text-rose-800">
+                <div className="rounded-xl bg-rose-100 border-2 border-rose-400 p-2 text-center text-xs sm:text-sm font-bold text-rose-800">
                   {passwordError}
                 </div>
               )}
 
-              {/* Input Password Lama (Hanya jika user sudah punya password) */}
-              {hasPassword === true && (
-                <div>
-                  <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
-                    Kata Sandi Saat Ini (Kata Sandi Lama)
-                  </label>
-                  <div className="relative flex items-center">
-                    <input
-                      type={showOldPassword ? "text" : "password"}
-                      value={oldPasswordInput}
-                      onChange={(e) => {
-                        setOldPasswordInput(e.target.value);
-                        if (passwordError) setPasswordError("");
-                      }}
-                      placeholder="Masukkan kata sandi saat ini..."
-                      className="w-full rounded-2xl border-3 border-[#cbb3f5] bg-[#f7f2ff] pl-4 pr-12 py-2 text-base font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowOldPassword(!showOldPassword)}
-                      className="absolute right-3 p-1 text-gray-500 hover:text-black cursor-pointer"
-                    >
-                      {showOldPassword ? "🙈" : "👁️"}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Input Password Baru */}
-              <div>
-                <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
-                  {hasPassword === false ? "Buat Kata Sandi Baru" : "Kata Sandi Baru"}
-                </label>
+              {/* Kata Sandi Lama */}
+              {hasPassword && (
                 <div className="relative flex items-center">
                   <input
-                    type={showNewPassword ? "text" : "password"}
-                    value={newPasswordInput}
-                    onChange={(e) => {
-                      setNewPasswordInput(e.target.value);
-                      if (passwordError) setPasswordError("");
-                    }}
-                    placeholder="Minimal 6 karakter tanpa spasi..."
-                    className="w-full rounded-2xl border-3 border-[#cbb3f5] bg-[#f7f2ff] pl-4 pr-12 py-2 text-base font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
+                    type={showOldPassword ? "text" : "password"}
+                    value={oldPasswordInput}
+                    onChange={(e) => setOldPasswordInput(e.target.value)}
+                    placeholder="Kata Sandi Saat Ini (Kata Sandi Lama)"
+                    className="w-full rounded-2xl bg-[#f8f7fc] pl-4 pr-12 py-3 text-base font-bold game-font text-[#333] border-2 border-[#8e78ca]/40 focus:border-[#7251a8] focus:outline-none transition-all shadow-inner"
                   />
                   <button
                     type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 p-1 text-gray-500 hover:text-black cursor-pointer"
+                    onClick={() => setShowOldPassword(!showOldPassword)}
+                    className="absolute right-3 p-1 text-[#474451] hover:text-black cursor-pointer"
+                    aria-label="Lihat kata sandi lama"
                   >
-                    {showNewPassword ? "🙈" : "👁️"}
+                    {showOldPassword ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="size-5">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="size-5">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
                   </button>
                 </div>
-                <span className="text-[11px] font-semibold text-gray-500 mt-1 block">
-                  *Bebas kombinasi huruf, angka, atau simbol (minimal 6 karakter tanpa spasi)
-                </span>
+              )}
+
+              {/* Kata Sandi Baru */}
+              <div className="relative flex items-center">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPasswordInput}
+                  onChange={(e) => setNewPasswordInput(e.target.value)}
+                  placeholder="Kata Sandi Baru (Min. 6 Karakter)"
+                  className="w-full rounded-2xl bg-[#f8f7fc] pl-4 pr-12 py-3 text-base font-bold game-font text-[#333] border-2 border-[#8e78ca]/40 focus:border-[#7251a8] focus:outline-none transition-all shadow-inner"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 p-1 text-[#474451] hover:text-black cursor-pointer"
+                  aria-label="Lihat kata sandi baru"
+                >
+                  {showNewPassword ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="size-5">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="size-5">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
               </div>
 
-              {/* Konfirmasi Password Baru */}
-              <div>
-                <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
-                  Konfirmasi Kata Sandi Baru
-                </label>
-                <input
-                  type="password"
-                  value={confirmPasswordInput}
-                  onChange={(e) => {
-                    setConfirmPasswordInput(e.target.value);
-                    if (passwordError) setPasswordError("");
-                  }}
-                  placeholder="Ulangi kata sandi baru..."
-                  className="w-full rounded-2xl border-3 border-[#cbb3f5] bg-[#f7f2ff] px-4 py-2 text-base font-semibold text-[#2a2830] outline-none focus:border-[#7251a8]"
-                />
-              </div>
+              {/* Konfirmasi Kata Sandi Baru */}
+              <input
+                type={showNewPassword ? "text" : "password"}
+                value={confirmPasswordInput}
+                onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                placeholder="Ulangi Kata Sandi Baru"
+                className="w-full rounded-2xl bg-[#f8f7fc] px-4 py-3 text-base font-bold game-font text-[#333] border-2 border-[#8e78ca]/40 focus:border-[#7251a8] focus:outline-none transition-all shadow-inner"
+              />
 
               <button
                 type="submit"
                 disabled={isSavingPassword}
-                className="mt-1 flex items-center justify-center rounded-2xl border-4 border-white bg-[#3499d0] disabled:opacity-80 py-2.5 shadow-[0px_4px_0px_0px_#186996] transition-all hover:scale-102 active:translate-y-1 active:shadow-none cursor-pointer"
+                className="w-full rounded-2xl bg-[#3499d0] border-3 border-white py-3 text-center text-lg font-bold game-font text-white shadow-[0px_4px_0px_0px_#0284c7] hover:brightness-105 active:translate-y-1 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
               >
-                <span className="game-font text-base sm:text-lg font-bold text-white">
-                  {isSavingPassword
-                    ? "Menyimpan..."
-                    : hasPassword === false
-                    ? "Buat &amp; Simpan Kata Sandi"
-                    : "Perbarui Kata Sandi"}
-                </span>
+                {isSavingPassword ? "Memperbarui Kata Sandi..." : "Perbarui Kata Sandi"}
               </button>
             </form>
 
-            {/* BAGIAN 3: PENGATURAN MUSIK & EFEK SUARA */}
-            <div className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
+            {/* BAGIAN 3: PENGATURAN MUSIK & AUDIO */}
+            <div className="flex flex-col gap-5 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
               <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
-                Pengaturan Musik &amp; Efek Suara
+                Audio &amp; Musik Latar
               </span>
 
-              <div className="flex flex-col gap-2.5">
-                <span className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block">
-                  Pilihan Musik Latar (Bebas Hak Cipta):
+              {/* Volume BGM */}
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center text-sm font-bold text-[#2a2830]">
+                  <span>Volume Musik (BGM)</span>
+                  <span className="text-purple-700 font-bold">{Math.round(bgmVolume * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={bgmVolume}
+                  onChange={(e) => setBgmVolume(parseFloat(e.target.value))}
+                  className="accent-[#7251a8] h-3 bg-purple-100 rounded-lg cursor-pointer w-full"
+                />
+              </div>
+
+              {/* Volume Efek Suara (SFX) */}
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center text-sm font-bold text-[#2a2830]">
+                  <span>Volume Efek Suara (SFX)</span>
+                  <span className="text-purple-700 font-bold">{Math.round(sfxVolume * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={sfxVolume}
+                  onChange={(e) => setSfxVolume(parseFloat(e.target.value))}
+                  className="accent-[#7251a8] h-3 bg-purple-100 rounded-lg cursor-pointer w-full"
+                />
+              </div>
+
+              {/* Pilihan Lagu Latar */}
+              <div className="flex flex-col gap-2 pt-2 border-t border-purple-100">
+                <span className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider">
+                  Pilihan Musik Latar:
                 </span>
-                {AVAILABLE_TRACKS.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => {
-                      playClick();
-                      setTrack(t.id);
-                    }}
-                    className={`flex items-center justify-between rounded-2xl border-3 p-3 text-left transition-all cursor-pointer ${
-                      currentTrack === t.id
-                        ? "border-[#7251a8] bg-[#f8f298] shadow-sm"
-                        : "border-purple-100 bg-[#f7f2ff] hover:bg-white"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm sm:text-base text-[#2a2830]">
-                          {t.title}
-                        </span>
-                        <span className="rounded-md bg-purple-200 px-2 py-0.5 text-[10px] font-bold text-purple-900">
-                          {t.tag}
-                        </span>
+                <div className="flex flex-col gap-2">
+                  {AVAILABLE_TRACKS.map((track) => (
+                    <button
+                      key={track.id}
+                      type="button"
+                      onClick={() => {
+                        setTrack(track.id as BgmTrack);
+                        playClick();
+                      }}
+                      className={`flex items-center justify-between p-3 rounded-2xl border-2 transition-all cursor-pointer ${
+                        currentTrack === track.id
+                          ? "border-[#7251a8] bg-purple-50 shadow-sm"
+                          : "border-transparent bg-[#f8f7fc] hover:bg-purple-50/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🎵</span>
+                        <div className="flex flex-col text-left">
+                          <span className="text-sm font-bold text-[#2a2830]">{track.title}</span>
+                          <span className="text-[11px] text-gray-500">{track.desc}</span>
+                        </div>
                       </div>
-                      <p className="text-xs text-gray-600 mt-0.5">{t.desc}</p>
-                    </div>
-
-                    <div className="ml-3">
-                      <span
-                        className={`size-6 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
-                          currentTrack === t.id
-                            ? "bg-[#7251a8] text-white border-[#7251a8]"
-                            : "border-gray-400 text-transparent"
-                        }`}
-                      >
-                        ✓
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Slider Volume Musik */}
-              <div className="flex flex-col gap-2 rounded-2xl bg-[#f7f2ff] p-3 border-2 border-purple-100 mt-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-[#2a2830] font-bold">
-                    Volume Musik Latar
-                  </span>
-                  <span className="game-font text-sm text-[#7251a8] font-bold">
-                    {isMuted ? 0 : bgmVolume}%
-                  </span>
+                      {currentTrack === track.id && (
+                        <span className="size-3 rounded-full bg-[#7251a8]" />
+                      )}
+                    </button>
+                  ))}
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={isMuted ? 0 : bgmVolume}
-                  onChange={(e) => setBgmVolume(Number(e.target.value))}
-                  className="w-full accent-[#7251a8] cursor-pointer h-2.5"
-                />
-              </div>
-
-              {/* Slider Volume Efek Suara (SFX) */}
-              <div className="flex flex-col gap-2 rounded-2xl bg-[#f7f2ff] p-3 border-2 border-purple-100">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-[#2a2830] font-bold">
-                    Volume Efek Suara (SFX)
-                  </span>
-                  <span className="game-font text-sm text-[#7251a8] font-bold">
-                    {isMuted ? 0 : sfxVolume}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={isMuted ? 0 : sfxVolume}
-                  onChange={(e) => setSfxVolume(Number(e.target.value))}
-                  className="w-full accent-[#7251a8] cursor-pointer h-2.5"
-                />
-              </div>
-
-              {/* Toggle Master Sound */}
-              <div className="flex items-center justify-between rounded-2xl bg-[#f7f2ff] p-3 border-2 border-purple-100">
-                <span className="text-xs sm:text-sm text-[#2a2830] font-bold">
-                  Aktifkan Semua Suara Game
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    toggleMute();
-                    playClick();
-                  }}
-                  className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors cursor-pointer ${
-                    !isMuted ? "bg-[#1cd8a4]" : "bg-zinc-400"
-                  }`}
-                >
-                  <span
-                    className={`inline-block size-5 transform rounded-full bg-white transition-transform ${
-                      !isMuted ? "translate-x-8" : "translate-x-1"
-                    }`}
-                  />
-                </button>
               </div>
             </div>
           </div>
