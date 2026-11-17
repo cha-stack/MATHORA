@@ -144,15 +144,13 @@ function PretestContent() {
 
   return (
     <div className="flex w-full flex-col items-center">
-      {/* Modal Papan Coretan */}
-      <ScratchpadModal
+            <ScratchpadModal
         isOpen={isScratchpadOpen}
         onClose={() => setIsScratchpadOpen(false)}
         title={`Coretan Hitungan - Soal #${currentIndex + 1}`}
       />
 
-      {/* Header Badge */}
-      <div className="mb-4">
+            <div className="mb-4">
         <div className="rounded-[32px] border-[7px] border-white bg-[#fdffd3] px-8 py-2.5 shadow-[0px_5px_0px_0px_#aaafaf]">
           <h2 className="game-font text-3xl sm:text-4xl text-[#2a2830] font-bold tracking-wider uppercase text-center">
             QUIZ • PRE-TEST
@@ -160,11 +158,9 @@ function PretestContent() {
         </div>
       </div>
 
-      {/* Main Big Glass Card (Sesuai Desain Figma 183:247) */}
-      <div className="relative w-full max-w-4xl rounded-[32px] sm:rounded-[38px] border-[7px] border-white bg-[#e4d3ff]/80 p-6 sm:p-9 shadow-2xl backdrop-blur-xs flex flex-col justify-between min-h-[480px]">
+            <div className="relative w-full max-w-4xl rounded-[32px] sm:rounded-[38px] border-[7px] border-white bg-[#e4d3ff]/80 p-6 sm:p-9 shadow-2xl backdrop-blur-xs flex flex-col justify-between min-h-[480px]">
         
-        {/* Top Section: Dua Persamaan Linear Jika Tersedia */}
-        {currentQ.equations && (
+                {currentQ.equations && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mb-5">
             <div className="flex flex-col items-center justify-center rounded-[24px] border-[5px] border-white bg-[#e4d3ff]/70 p-4 shadow-[0px_4px_0px_0px_#aaafaf]">
               <span className="game-font text-2xl sm:text-3xl text-black font-bold tracking-wide">
@@ -186,8 +182,7 @@ function PretestContent() {
           </div>
         )}
 
-        {/* Question Text */}
-        <div className="mb-5">
+                <div className="mb-5">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold uppercase tracking-wider text-purple-900 bg-white/70 px-3 py-1 rounded-full shadow-xs">
               Soal {currentIndex + 1} dari {questions.length} • {currentQ.context || "SPLDV"}
@@ -199,8 +194,7 @@ function PretestContent() {
           </p>
         </div>
 
-        {/* Options List A, B, C, D */}
-        <div className="flex flex-col gap-3 my-auto">
+                <div className="flex flex-col gap-3 my-auto">
           {currentQ.options.map((opt, idx) => {
             const isSelected = selectedOption === idx;
             const isCorrect = idx === currentQ.correctIndex;
@@ -258,26 +252,22 @@ function PretestContent() {
           })}
         </div>
 
-        {/* Explanation */}
-        {showAnswer && (
+                {showAnswer && (
           <div className="mt-4 rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-4 text-emerald-950 text-xs sm:text-sm font-semibold animate-in fade-in duration-200">
             <span className="font-bold block mb-1">💡 Pembahasan Kunci Jawaban:</span>
             {currentQ.explanation}
           </div>
         )}
 
-        {/* Peringatan Pilih Jawaban Terlebih Dahulu (Non-prompt alert) */}
-        {validationWarning && (
+                {validationWarning && (
           <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl border-2 border-amber-400 bg-amber-100/95 px-4 py-2.5 text-amber-950 font-bold text-xs sm:text-sm shadow-sm animate-pulse">
             <span className="text-base sm:text-lg">⚠️</span>
             <span>{validationWarning}</span>
           </div>
         )}
 
-        {/* Bottom Actions Row (Sesuai Figma: Tombol Buka Coretan + Periksa dan Tampilkan Hasil) */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-purple-300/60">
-          {/* Tombol Buka Coretan */}
-          <button
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-purple-300/60">
+                    <button
             onClick={() => {
               playClick();
               setIsScratchpadOpen(true);
@@ -288,8 +278,7 @@ function PretestContent() {
             <span>Buka Coretan</span>
           </button>
 
-          {/* Tombol Periksa dan Tampilkan Hasil */}
-          <button
+                    <button
             onClick={handleTampilkanHasil}
             disabled={showAnswer}
             className={`flex items-center gap-2 rounded-[18px] border-[4px] border-white px-6 py-2.5 shadow-[0px_4px_0px_0px_#028560] game-font text-sm sm:text-base font-bold transition-all ${
@@ -305,8 +294,7 @@ function PretestContent() {
 
       </div>
 
-      {/* Floating Bottom Prev/Next Arrows (Sesuai Figma Navigasi Panah Kiri & Kanan) */}
-      <div className="flex w-full max-w-4xl items-center justify-between mt-4 px-2">
+            <div className="flex w-full max-w-4xl items-center justify-between mt-4 px-2">
         <button
           onClick={handlePrev}
           disabled={currentIndex === 0}

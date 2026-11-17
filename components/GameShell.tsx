@@ -30,7 +30,6 @@ export default function GameShell({
   });
   const { isMuted, toggleMute, playClick } = useSound();
 
-  // Client-Side Auth Guard: Proteksi akses halaman guru & siswa
   useEffect(() => {
     const user = getCurrentUser();
     if (user) {
@@ -121,8 +120,7 @@ export default function GameShell({
 
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-x-hidden bg-gradient-to-b from-[#482b78] via-[#65439e] to-[#916dcb] select-none p-2 sm:p-6 md:p-8">
-      {/* Background Math Formula Doodles */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-25">
+            <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-25">
         <div className="absolute top-10 -right-8 w-60 sm:w-80 md:w-[420px] rotate-[22deg]">
           <Image
             src="/images/math-formula.png"
@@ -163,12 +161,9 @@ export default function GameShell({
         </div>
       </div>
 
-      {/* Top Navbar Header with Navigation & Sound Controls */}
-      <header className="relative z-20 flex w-full max-w-7xl items-center justify-between rounded-[22px] sm:rounded-[32px] border-[4px] sm:border-[7px] border-white bg-[#d3e9ff] px-2.5 sm:px-6 py-2 sm:py-3 shadow-[0px_5px_0px_0px_#aaafaf]">
-        {/* Sisi Kiri: Menu Hamburger + Tombol Kembali + Logo */}
-        <div className="flex items-center gap-2 sm:gap-3.5">
-          {/* Menu / Hamburger Button */}
-          <button
+            <header className="relative z-20 flex w-full max-w-7xl items-center justify-between rounded-[22px] sm:rounded-[32px] border-[4px] sm:border-[7px] border-white bg-[#d3e9ff] px-2.5 sm:px-6 py-2 sm:py-3 shadow-[0px_5px_0px_0px_#aaafaf]">
+                <div className="flex items-center gap-2 sm:gap-3.5">
+                    <button
             onClick={() => {
               playClick();
               setSidebarOpen(true);
@@ -190,8 +185,7 @@ export default function GameShell({
             </svg>
           </button>
 
-          {/* Back Button (jika showBack & resolvedBackUrl aktif) */}
-          {showBack && resolvedBackUrl && (
+                    {showBack && resolvedBackUrl && (
             <Link
               href={resolvedBackUrl}
               onClick={handleBackClick}
@@ -209,8 +203,7 @@ export default function GameShell({
             </Link>
           )}
 
-          {/* Logo & PKM Subtitle */}
-          <Link href={homeUrl} className="flex flex-col ml-0.5 sm:ml-1 shrink-0">
+                    <Link href={homeUrl} className="flex flex-col ml-0.5 sm:ml-1 shrink-0">
             <span className="game-title-nav text-xl sm:text-3xl md:text-4xl font-bold tracking-wider uppercase leading-none">
               MATHORA
             </span>
@@ -226,10 +219,8 @@ export default function GameShell({
           )}
         </div>
 
-        {/* Sisi Kanan: Tombol Suara / Musik + Profil User */}
-        <div className="flex items-center gap-2 sm:gap-3.5">
-          {/* Tombol Suara / Musik (Pindah ke atas) */}
-          <button
+                <div className="flex items-center gap-2 sm:gap-3.5">
+                    <button
             onClick={() => {
               playClick();
               toggleMute();
@@ -269,8 +260,7 @@ export default function GameShell({
             )}
           </button>
 
-          {/* User Profile Avatar Link */}
-          <Link href="/settings" className="flex items-center gap-2 group cursor-pointer" title="Pengaturan Akun">
+                    <Link href="/settings" className="flex items-center gap-2 group cursor-pointer" title="Pengaturan Akun">
             <div className="hidden lg:flex flex-col text-right">
               <span className="game-font text-sm md:text-base text-[#2a2830] font-bold max-w-[100px] truncate">
                 {currentUser?.username || "Pemain"}
@@ -289,13 +279,11 @@ export default function GameShell({
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <div className="relative z-10 my-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center py-2.5 sm:py-4">
+            <div className="relative z-10 my-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center py-2.5 sm:py-4">
         {children}
       </div>
 
-      {/* Sidebar Overlay Modal */}
-      {sidebarOpen && (
+            {sidebarOpen && (
         <div className="fixed inset-0 z-50 flex items-stretch">
           <div
             onClick={() => setSidebarOpen(false)}
@@ -315,8 +303,7 @@ export default function GameShell({
                 </svg>
               </button>
 
-              {/* Menu Item 1: Home Dashboard */}
-              <Link
+                            <Link
                 href={homeUrl}
                 onClick={() => setSidebarOpen(false)}
                 className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${isHomeActive
@@ -332,8 +319,7 @@ export default function GameShell({
                 <span className={`game-font text-2xl ${isHomeActive ? "text-[#2a2830] font-bold" : "text-[#422376]"}`}>Home</span>
               </Link>
 
-              {/* Menu Item 2: Materi */}
-              <Link
+                            <Link
                 href="/materi"
                 onClick={() => setSidebarOpen(false)}
                 className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${isMateriActive
@@ -349,8 +335,7 @@ export default function GameShell({
                 <span className={`game-font text-2xl ${isMateriActive ? "text-[#2a2830] font-bold" : "text-[#422376]"}`}>Materi</span>
               </Link>
 
-              {/* Menu Item 3: Game Kompetitif (Tarik Tambang) */}
-              <Link
+                            <Link
                 href="/game-kompetitif"
                 onClick={() => setSidebarOpen(false)}
                 className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${isKompetitifActive
@@ -364,8 +349,7 @@ export default function GameShell({
                 <span className={`game-font text-2xl ${isKompetitifActive ? "text-[#2a2830] font-bold" : "text-[#422376]"}`}>Kompetitif</span>
               </Link>
 
-              {/* Menu Khusus Guru: Kuis & Bank Soal */}
-              {isGuru && (
+                            {isGuru && (
                 <Link
                   href="/bank-soal"
                   onClick={() => setSidebarOpen(false)}
@@ -381,8 +365,7 @@ export default function GameShell({
                 </Link>
               )}
 
-              {/* Menu Item 4: Pengaturan */}
-              <Link
+                            <Link
                 href="/settings"
                 onClick={() => setSidebarOpen(false)}
                 className={`group flex items-center gap-3 rounded-2xl p-2 transition-all ${isSettingsActive
@@ -416,8 +399,7 @@ export default function GameShell({
         </div>
       )}
 
-      {/* Modal Dialog Konfirmasi Keluar Akun */}
-      {showLogoutModal && (
+            {showLogoutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="relative w-full max-w-sm rounded-[32px] border-[6px] border-white bg-white p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center">
             <div className="size-16 rounded-full bg-red-100 flex items-center justify-center text-3xl mb-3 shadow-inner">

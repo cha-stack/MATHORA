@@ -23,8 +23,7 @@ export default function DashboardGuru() {
   return (
     <GameShell showBack={false}>
       <div className="flex w-full flex-col items-center">
-        {/* Welcome Header */}
-        <div className="w-full text-left px-2 sm:px-6 mb-8 sm:mb-10">
+                <div className="w-full text-left px-2 sm:px-6 mb-8 sm:mb-10">
           <div className="inline-block rounded-full bg-[#1cd8a4] px-4 py-1 text-xs sm:text-sm font-bold text-[#144837] mb-2 shadow">
             Panel Pendidik &amp; Pengampu • SMP Islam Parung
           </div>
@@ -36,10 +35,8 @@ export default function DashboardGuru() {
           </p>
         </div>
 
-        {/* 3 Main Action Cards for Teacher */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8 w-full max-w-6xl px-2">
-          {/* Card 1: Kuis & Bank Soal */}
-          <Link
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8 w-full max-w-6xl px-2">
+                    <Link
             href="/bank-soal"
             className="group relative flex flex-col justify-between rounded-[24px] sm:rounded-[36px] border-[4px] sm:border-[8px] border-white bg-gradient-to-b from-[#fef08a] to-[#fde047] p-5 sm:p-8 shadow-[0px_6px_0px_0px_#aaafaf] sm:shadow-[0px_8px_0px_0px_#aaafaf] transition-all hover:scale-103 active:translate-y-1 active:shadow-none cursor-pointer min-h-[250px] sm:min-h-[280px]"
           >
@@ -63,8 +60,7 @@ export default function DashboardGuru() {
             </div>
           </Link>
 
-          {/* Card 2: Game Kompetitif (Tarik Tambang) */}
-          <Link
+                    <Link
             href="/game-kompetitif"
             className="group relative flex flex-col justify-between rounded-[24px] sm:rounded-[36px] border-[4px] sm:border-[8px] border-white bg-gradient-to-b from-[#ffd3d3] to-[#fca5a5] p-5 sm:p-8 shadow-[0px_6px_0px_0px_#aaafaf] sm:shadow-[0px_8px_0px_0px_#aaafaf] transition-all hover:scale-103 active:translate-y-1 active:shadow-none cursor-pointer min-h-[250px] sm:min-h-[280px]"
           >
@@ -88,8 +84,7 @@ export default function DashboardGuru() {
             </div>
           </Link>
 
-          {/* Card 3: Modul Materi (SPLDV & Bangun Ruang) */}
-          <Link
+                    <Link
             href="/materi"
             className="group relative flex flex-col justify-between rounded-[24px] sm:rounded-[36px] border-[4px] sm:border-[8px] border-white bg-gradient-to-b from-[#d3e9ff] to-[#bae6fd] p-5 sm:p-8 shadow-[0px_6px_0px_0px_#aaafaf] sm:shadow-[0px_8px_0px_0px_#aaafaf] transition-all hover:scale-103 active:translate-y-1 active:shadow-none cursor-pointer min-h-[250px] sm:min-h-[280px]"
           >

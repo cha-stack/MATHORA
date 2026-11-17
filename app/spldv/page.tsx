@@ -84,10 +84,8 @@ export default function SpldvMenuPage() {
   return (
     <GameShell backUrl="/materi" showBack={true}>
       <div className="flex w-full flex-col items-center">
-        {/* Main Glass/Soft Card Container */}
-        <div className="relative w-full max-w-4xl rounded-[32px] sm:rounded-[42px] border-[7px] border-white bg-[#e4d3ff]/80 p-6 sm:p-10 shadow-2xl backdrop-blur-xs flex flex-col items-center">
-          {/* Header Title */}
-          <div className="text-center mb-6 sm:mb-8">
+                <div className="relative w-full max-w-4xl rounded-[32px] sm:rounded-[42px] border-[7px] border-white bg-[#e4d3ff]/80 p-6 sm:p-10 shadow-2xl backdrop-blur-xs flex flex-col items-center">
+                    <div className="text-center mb-6 sm:mb-8">
             <span className="inline-block rounded-full bg-[#f8f298] px-4 py-1 text-xs sm:text-sm font-bold text-[#422376] mb-2 shadow">
               {isGuru ? "Modul Materi Guru (5 Tahap)" : "Alur Pembelajaran Bertingkat (5 Tahap)"}
             </span>
@@ -101,8 +99,7 @@ export default function SpldvMenuPage() {
             </p>
           </div>
 
-          {/* List 5 Section Berjejer ke Bawah */}
-          <div className="flex flex-col gap-5 sm:gap-6 w-full">
+                    <div className="flex flex-col gap-5 sm:gap-6 w-full">
             {SPLDV_SECTIONS.map((sec) => {
               const st = secStates[sec.num] || {
                 unlocked: sec.num === 1,
@@ -174,8 +171,7 @@ export default function SpldvMenuPage() {
                     </div>
                   ) : isOpen ? (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {/* 1. Pre-Test */}
-                      <div className="flex flex-col gap-1.5">
+                                            <div className="flex flex-col gap-1.5">
                         <Link
                           href={`/spldv/pretest?section=${sec.num}`}
                           onClick={playClick}
@@ -202,8 +198,7 @@ export default function SpldvMenuPage() {
                         )}
                       </div>
 
-                      {/* 2. Materi */}
-                      {st.pretest ? (
+                                            {st.pretest ? (
                         <Link
                           href={`/spldv/materi?section=${sec.num}`}
                           onClick={playClick}
@@ -232,8 +227,7 @@ export default function SpldvMenuPage() {
                         </div>
                       )}
 
-                      {/* 3. Post-Test */}
-                      <div className="flex flex-col gap-1.5">
+                                            <div className="flex flex-col gap-1.5">
                         {st.materi ? (
                           <Link
                             href={`/spldv/posttest?section=${sec.num}`}

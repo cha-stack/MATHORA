@@ -1133,7 +1133,6 @@ export default function BangunRuangMateriPage() {
 
   type Pt3D = { x: number; y: number; z: number };
 
-  // Proyeksi 3D Objek dengan Skala Normalisasi Proporsional (Aman untuk angka besar > 12 hingga ribuan!)
   const project3D = (x: number, y: number, z: number): Pt3D => {
     const cosY = Math.cos(rotY);
     const sinY = Math.sin(rotY);
@@ -1301,11 +1300,9 @@ export default function BangunRuangMateriPage() {
   return (
     <GameShell backUrl="/materi" showBack={true}>
       <div className="flex w-full flex-col items-center">
-        {/* Main Big Glass Container */}
-        <div className="relative w-full max-w-6xl rounded-[22px] sm:rounded-[44px] border-[3px] sm:border-[8px] border-white bg-[#d5cfeb]/95 p-2.5 sm:p-6 md:p-8 shadow-2xl backdrop-blur-xs flex flex-col gap-3.5 sm:gap-5">
+                <div className="relative w-full max-w-6xl rounded-[22px] sm:rounded-[44px] border-[3px] sm:border-[8px] border-white bg-[#d5cfeb]/95 p-2.5 sm:p-6 md:p-8 shadow-2xl backdrop-blur-xs flex flex-col gap-3.5 sm:gap-5">
           
-          {/* Header Title & Sub-Navigation Tabs */}
-          <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h2 className="game-font text-2xl sm:text-4xl text-[#2a2830] font-semibold tracking-wide">
@@ -1316,8 +1313,7 @@ export default function BangunRuangMateriPage() {
                 </p>
               </div>
 
-              {/* Pemilih Nilai Pi untuk bangun lengkung */}
-              {currentCfg.category === "lengkung" && (
+                            {currentCfg.category === "lengkung" && (
                 <div className="flex items-center gap-2 bg-white/80 border-2 border-white px-3 py-1.5 rounded-2xl shadow-xs self-start sm:self-auto">
                   <span className="text-xs font-semibold text-gray-700">Nilai π:</span>
                   {(["22/7", "3.14"] as const).map((pm) => (
@@ -1335,8 +1331,7 @@ export default function BangunRuangMateriPage() {
               )}
             </div>
 
-            {/* 3 Tab Mode Utama Bangun Ruang */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-white/75 rounded-2xl border-2 border-white shadow-xs">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-white/75 rounded-2xl border-2 border-white shadow-xs">
               <button
                 onClick={() => { playClick(); setActiveViewTab("lab3d"); }}
                 className={`rounded-xl py-2 sm:py-2.5 px-3 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
@@ -1366,8 +1361,7 @@ export default function BangunRuangMateriPage() {
               </button>
             </div>
 
-            {/* Quick Shape Selector Khusus Mobile (Agar siswa/guru di HP tidak perlu scroll jauh ke bawah) */}
-            {activeViewTab === "lab3d" && (
+                        {activeViewTab === "lab3d" && (
               <div className="lg:hidden flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 w-full">
                 {(["kubus", "balok", "prisma", "limas", "tabung", "kerucut", "bola"] as ShapeType[]).map((shape) => {
                   const isSel = selectedShape === shape;
@@ -1393,11 +1387,9 @@ export default function BangunRuangMateriPage() {
           {activeViewTab === "lab3d" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-5 w-full items-start">
             
-            {/* KOLOM KIRI (8 Kolom): 3D Canvas Box + 2-POV Panel + Proses Hitung Manual */}
-            <div className="lg:col-span-8 flex flex-col rounded-[20px] sm:rounded-[32px] border-[3px] sm:border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-2.5 sm:p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
+                        <div className="lg:col-span-8 flex flex-col rounded-[20px] sm:rounded-[32px] border-[3px] sm:border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-2.5 sm:p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
               
-              {/* Header Box Interaksi 3D */}
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                   <div className="flex items-center gap-1 rounded-full border-2 border-white/60 bg-white/20 px-2.5 sm:px-3 py-0.5 sm:py-1 text-[11px] sm:text-xs font-semibold shadow-xs">
                     <span>🖐️</span>
@@ -1460,8 +1452,7 @@ export default function BangunRuangMateriPage() {
                 </span>
               </div>
 
-              {/* 3D Visual Stage */}
-              <div
+                            <div
                 onPointerDown={(e) => {
                   isDragging.current = true;
                   lastPos.current = { x: e.clientX, y: e.clientY };
@@ -1471,7 +1462,6 @@ export default function BangunRuangMateriPage() {
                   const dx = e.clientX - lastPos.current.x;
                   const dy = e.clientY - lastPos.current.y;
                   setRotY((prev) => prev + dx * 0.015);
-                  // Inversi sumbu Y agar gerakan geser atas/bawah alami di layar sentuh/papan interaktif
                   setRotX((prev) => Math.max(-1.45, Math.min(1.45, prev - dy * 0.015)));
                   lastPos.current = { x: e.clientX, y: e.clientY };
                 }}
@@ -1479,8 +1469,7 @@ export default function BangunRuangMateriPage() {
                 onPointerLeave={() => { isDragging.current = false; }}
                 className="relative w-full h-[260px] sm:h-[280px] rounded-[24px] bg-[#126b7c]/50 border-2 border-white/30 flex items-center justify-center cursor-grab active:cursor-grabbing select-none overflow-hidden my-2 shadow-inner touch-none"
               >
-                {/* Live Dimensi Badge di Pojok Kiri Bawah */}
-                <div className="absolute bottom-3 left-3 z-20 flex flex-wrap gap-1.5">
+                                <div className="absolute bottom-3 left-3 z-20 flex flex-wrap gap-1.5">
                   <span className="bg-black/40 backdrop-blur-xs border border-white/30 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg">
                     {currentCfg.pLabel}: {fmtNum(numP)} cm
                   </span>
@@ -1498,8 +1487,7 @@ export default function BangunRuangMateriPage() {
 
                 {!showJaring ? (
                   <svg viewBox="0 0 380 270" className="w-full h-full">
-                    {/* KUBUS & BALOK 3D DEPTH-SORTED */}
-                    {(selectedShape === "kubus" || selectedShape === "balok") && (
+                                        {(selectedShape === "kubus" || selectedShape === "balok") && (
                       <g>
                         {boxFaces.map((f, idx) => (
                           <polygon
@@ -1516,8 +1504,7 @@ export default function BangunRuangMateriPage() {
                       </g>
                     )}
 
-                    {/* PRISMA SEGITIGA 3D DEPTH-SORTED */}
-                    {selectedShape === "prisma" && (
+                                        {selectedShape === "prisma" && (
                       <g>
                         {prismaFaces.map((f, idx) => (
                           <polygon
@@ -1534,8 +1521,7 @@ export default function BangunRuangMateriPage() {
                       </g>
                     )}
 
-                    {/* LIMAS SEGI EMPAT 3D DEPTH-SORTED */}
-                    {selectedShape === "limas" && (
+                                        {selectedShape === "limas" && (
                       <g>
                         {limasFaces.map((f, idx) => (
                           <polygon
@@ -1552,8 +1538,7 @@ export default function BangunRuangMateriPage() {
                       </g>
                     )}
 
-                    {/* TABUNG 3D INTERAKTIF */}
-                    {selectedShape === "tabung" && (
+                                        {selectedShape === "tabung" && (
                       <g>
                         {cylDrawItems.map((item, idx) => (
                           <polygon
@@ -1580,8 +1565,7 @@ export default function BangunRuangMateriPage() {
                       </g>
                     )}
 
-                    {/* KERUCUT 3D INTERAKTIF */}
-                    {selectedShape === "kerucut" && (
+                                        {selectedShape === "kerucut" && (
                       <g>
                         {coneDrawItems.map((item, idx) => (
                           <polygon
@@ -1615,8 +1599,7 @@ export default function BangunRuangMateriPage() {
                       </g>
                     )}
 
-                    {/* BOLA 3D INTERAKTIF (GRID LINTANG & BUJUR 360°) */}
-                    {selectedShape === "bola" && (
+                                        {selectedShape === "bola" && (
                       <g>
                         <defs>
                           <radialGradient id="gradBall2" cx="38%" cy="35%" r="65%">
@@ -1738,11 +1721,9 @@ export default function BangunRuangMateriPage() {
                 )}
               </div>
 
-              {/* ─── PANEL KALKULASI 2 POV (DUA SUDUT PANDANG) ─── */}
-              <div className="rounded-[18px] sm:rounded-[24px] bg-[#f8f7fc] p-2.5 sm:p-5 text-[#2a2830] border-2 border-white shadow-md mt-2 flex flex-col gap-3.5 sm:gap-4">
+                            <div className="rounded-[18px] sm:rounded-[24px] bg-[#f8f7fc] p-2.5 sm:p-5 text-[#2a2830] border-2 border-white shadow-md mt-2 flex flex-col gap-3.5 sm:gap-4">
                 
-                {/* Switch Tab 2 POV */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-1 bg-purple-100 rounded-2xl border border-purple-200">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-1 bg-purple-100 rounded-2xl border border-purple-200">
                   <button
                     onClick={() => { playClick(); setPovMode("dimensi_to_hasil"); setReverseError(null); }}
                     className={`rounded-xl py-2 px-3 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
@@ -1773,11 +1754,9 @@ export default function BangunRuangMateriPage() {
                   </button>
                 </div>
 
-                {/* KONTEN POV 1: INPUT MANUAL BEBAS + SLIDER INTERAKTIF */}
-                {povMode === "dimensi_to_hasil" ? (
+                                {povMode === "dimensi_to_hasil" ? (
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    {/* Kiri: Kontrol Ukuran (Input Ketik Angka Bebas + Slider Hingga 100) */}
-                    <div className="md:col-span-7 flex flex-col gap-3 md:border-r border-gray-300 md:pr-4">
+                                        <div className="md:col-span-7 flex flex-col gap-3 md:border-r border-gray-300 md:pr-4">
                       <div className="flex items-center justify-between border-b border-gray-200 pb-1">
                         <h4 className="font-bold text-sm text-[#2a2830]">
                           Atur Ukuran Dimensi (cm)
@@ -1787,8 +1766,7 @@ export default function BangunRuangMateriPage() {
                         </span>
                       </div>
 
-                      {/* Dimensi P (Semua bentuk punya) */}
-                      <div className="flex flex-col gap-1">
+                                            <div className="flex flex-col gap-1">
                         <div className="flex items-center justify-between text-xs font-semibold gap-2">
                           <span className="text-gray-700">{currentCfg.pLabel}</span>
                           <div className="flex items-center gap-1">
@@ -1814,8 +1792,7 @@ export default function BangunRuangMateriPage() {
                         />
                       </div>
 
-                      {/* Dimensi L (Untuk Balok, Prisma, Limas) */}
-                      {currentCfg.hasL && (
+                                            {currentCfg.hasL && (
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between text-xs font-semibold gap-2">
                             <span className="text-gray-700">{currentCfg.lLabel}</span>
@@ -1843,8 +1820,7 @@ export default function BangunRuangMateriPage() {
                         </div>
                       )}
 
-                      {/* Dimensi T (Untuk Balok, Prisma, Limas, Tabung, Kerucut) */}
-                      {currentCfg.hasT && (
+                                            {currentCfg.hasT && (
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between text-xs font-semibold gap-2">
                             <span className="text-gray-700">{currentCfg.tLabel}</span>
@@ -1873,8 +1849,7 @@ export default function BangunRuangMateriPage() {
                       )}
                     </div>
 
-                    {/* Kanan: Hasil Volume & Luas Permukaan */}
-                    <div className="md:col-span-5 flex flex-col justify-center gap-2.5">
+                                        <div className="md:col-span-5 flex flex-col justify-center gap-2.5">
                       <h4 className="font-bold text-sm text-[#2a2830] border-b border-gray-200 pb-1">
                         Hasil Perhitungan
                       </h4>
@@ -1934,8 +1909,7 @@ export default function BangunRuangMateriPage() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-                      {/* Input Nilai Volume atau Luas Permukaan */}
-                      <div className="sm:col-span-5">
+                                            <div className="sm:col-span-5">
                         <label className="block text-xs font-bold text-gray-700 mb-1">
                           Masukkan Nilai {knownTarget === "volume" ? "Volume (cm³)" : "Luas Permukaan (cm²)"}:
                         </label>
@@ -1950,8 +1924,7 @@ export default function BangunRuangMateriPage() {
                         />
                       </div>
 
-                      {/* Input Pendamping jika bangun butuh lebih dari 1 variabel */}
-                      {selectedShape !== "kubus" && selectedShape !== "bola" && (
+                                            {selectedShape !== "kubus" && selectedShape !== "bola" && (
                         <div className="sm:col-span-4 flex gap-2">
                           {(selectedShape === "tabung" || selectedShape === "kerucut") && knownTarget === "volume" ? (
                             <div className="w-full">
@@ -2034,8 +2007,7 @@ export default function BangunRuangMateriPage() {
                   </div>
                 )}
 
-                {/* PROSES PERHITUNGAN MANUAL (LANGKAH DEMI LANGKAH) */}
-                <div className="rounded-2xl bg-amber-50/90 border border-amber-200 p-3.5 text-left">
+                                <div className="rounded-2xl bg-amber-50/90 border border-amber-200 p-3.5 text-left">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 mb-1.5">
                     <span>📝</span>
                     <span>Proses Hitung Manual (Langkah demi Langkah):</span>
@@ -2054,11 +2026,9 @@ export default function BangunRuangMateriPage() {
 
             </div>
 
-            {/* KOLOM KANAN (4 Kolom): Materi Bangun Ruang & Eksplorasi Interaktif */}
-            <div className="lg:col-span-4 flex flex-col gap-3.5 sm:gap-5">
+                        <div className="lg:col-span-4 flex flex-col gap-3.5 sm:gap-5">
               
-              {/* CARD 1: Pilihan Bentuk Bangun Ruang (7 Bentuk Lengkap) */}
-              <div className="flex flex-col rounded-[20px] sm:rounded-[32px] border-[3px] sm:border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-3.5 sm:p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
+                            <div className="flex flex-col rounded-[20px] sm:rounded-[32px] border-[3px] sm:border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-3.5 sm:p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
                 <h3 className="game-font text-xl sm:text-2xl font-semibold mb-3 text-center">
                   Materi Bangun Ruang
                 </h3>
@@ -2082,8 +2052,7 @@ export default function BangunRuangMateriPage() {
                   })}
                 </div>
 
-                {/* Ringkasan Elemen Bangun */}
-                <div className="mt-4 pt-3 border-t border-white/30 text-xs font-medium flex flex-col gap-1.5 text-white/95">
+                                <div className="mt-4 pt-3 border-t border-white/30 text-xs font-medium flex flex-col gap-1.5 text-white/95">
                   <div className="flex items-center gap-1.5">
                     <span className="size-2 rounded-full bg-red-400 shrink-0"></span>
                     <span>{currentCfg.sisiDesc}</span>
@@ -2099,8 +2068,7 @@ export default function BangunRuangMateriPage() {
                 </div>
               </div>
 
-              {/* CARD 2: Eksplorasi Interaktif */}
-              <div className="flex flex-col rounded-[20px] sm:rounded-[32px] border-[3px] sm:border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-3.5 sm:p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
+                            <div className="flex flex-col rounded-[20px] sm:rounded-[32px] border-[3px] sm:border-[6px] border-white bg-gradient-to-b from-[#1b8da3] to-[#126b7c] p-3.5 sm:p-5 shadow-[0px_6px_0px_0px_#aaafaf] text-white">
                 <h3 className="game-font text-xl sm:text-2xl font-semibold mb-3 text-center">
                   Eksplorasi Interaktif
                 </h3>
@@ -2143,8 +2111,7 @@ export default function BangunRuangMateriPage() {
                   </button>
                 </div>
 
-                {/* Rumus Cepat Bangun Terpilih */}
-                <div className="mt-4 pt-3 border-t border-white/30 flex flex-col gap-2 text-xs">
+                                <div className="mt-4 pt-3 border-t border-white/30 flex flex-col gap-2 text-xs">
                   <div className="rounded-xl bg-black/25 p-2.5">
                     <span className="text-amber-200 font-bold block">Rumus Volume:</span>
                     <span className="font-semibold text-white">{currentMateri.rumusVol}</span>
@@ -2167,11 +2134,9 @@ export default function BangunRuangMateriPage() {
           </div>
           )}
 
-          {/* TAB 2: MATERI KONSEP, RUMUS & CONTOH SOAL */}
-          {activeViewTab === "materi" && (
+                    {activeViewTab === "materi" && (
             <div className="flex flex-col gap-5 animate-in fade-in duration-200">
-              {/* Pilihan Bentuk Bangun */}
-              <div className="flex flex-wrap gap-2 justify-center bg-white/75 p-3 rounded-2xl border-2 border-white shadow-xs">
+                            <div className="flex flex-wrap gap-2 justify-center bg-white/75 p-3 rounded-2xl border-2 border-white shadow-xs">
                 {(["kubus", "balok", "prisma", "limas", "tabung", "kerucut", "bola"] as ShapeType[]).map((shape) => {
                   const isSel = selectedShape === shape;
                   return (
@@ -2193,8 +2158,7 @@ export default function BangunRuangMateriPage() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                {/* Kiri: Pengertian, Sifat, Rumus */}
-                <div className="lg:col-span-7 flex flex-col gap-4">
+                                <div className="lg:col-span-7 flex flex-col gap-4">
                   <div className="rounded-[28px] border-4 border-white bg-white p-5 sm:p-6 shadow">
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                       <h3 className="game-font text-2xl sm:text-3xl text-[#2a2830] font-semibold">
@@ -2252,8 +2216,7 @@ export default function BangunRuangMateriPage() {
                   </div>
                 </div>
 
-                {/* Kanan: Contoh Benda Nyata & Contoh Soal Interaktif */}
-                <div className="lg:col-span-5 flex flex-col gap-4">
+                                <div className="lg:col-span-5 flex flex-col gap-4">
                   <div className="rounded-[28px] border-4 border-white bg-[#f8f298] p-5 shadow">
                     <h4 className="font-bold text-sm text-[#422376] mb-1">🏠 Contoh Benda di Sekitar:</h4>
                     <p className="text-xs sm:text-sm font-semibold text-[#2a2830]">
@@ -2262,8 +2225,7 @@ export default function BangunRuangMateriPage() {
                   </div>
 
                   <div className="rounded-[28px] border-4 border-white bg-white p-5 shadow flex flex-col gap-3 flex-1">
-                    {/* Header Tantangan */}
-                    <div className="flex flex-wrap items-center justify-between border-b border-gray-200 pb-2 gap-2">
+                                        <div className="flex flex-wrap items-center justify-between border-b border-gray-200 pb-2 gap-2">
                       <div className="flex items-center gap-2">
                         <span className="rounded-full bg-[#e05f1e] text-white px-3 py-1 text-xs font-bold">
                           🎯 Tantangan Hitung {currentCfg.name}
@@ -2290,8 +2252,7 @@ export default function BangunRuangMateriPage() {
                       </div>
                     </div>
 
-                    {/* Soal Cerita */}
-                    <div className="bg-amber-50/70 border border-amber-200/80 p-3.5 rounded-2xl flex flex-col gap-1.5">
+                                        <div className="bg-amber-50/70 border border-amber-200/80 p-3.5 rounded-2xl flex flex-col gap-1.5">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800">
                         Pertanyaan Soal #{curChallengeIdx + 1}:
                       </span>
@@ -2300,11 +2261,9 @@ export default function BangunRuangMateriPage() {
                       </p>
                     </div>
 
-                    {/* Mini Interactive Challenge Input (Bisa Jawab Keduanya: Volume + Luas Permukaan!) */}
-                    <div className="rounded-2xl bg-purple-50 border border-purple-200 p-3.5 flex flex-col gap-3">
+                                        <div className="rounded-2xl bg-purple-50 border border-purple-200 p-3.5 flex flex-col gap-3">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {/* Input Jawaban A */}
-                        <div className="flex flex-col gap-1">
+                                                <div className="flex flex-col gap-1">
                           <label className="text-xs font-bold text-[#422376]">
                             1. {currentChallenge.fieldA.label}:
                           </label>
@@ -2324,8 +2283,7 @@ export default function BangunRuangMateriPage() {
                           </div>
                         </div>
 
-                        {/* Input Jawaban B (Jika ada, seperti Luas Permukaan) */}
-                        {currentChallenge.fieldB && (
+                                                {currentChallenge.fieldB && (
                           <div className="flex flex-col gap-1">
                             <label className="text-xs font-bold text-[#422376]">
                               2. {currentChallenge.fieldB.label}:
@@ -2387,8 +2345,7 @@ export default function BangunRuangMateriPage() {
                       </div>
                     </div>
 
-                    {/* Langkah Pembahasan Dinamis Sesuai Soal Aktif */}
-                    {showExampleSteps && (
+                                        {showExampleSteps && (
                       <div className="rounded-2xl bg-emerald-50/80 border border-emerald-200 p-3.5 flex flex-col gap-1.5 animate-in fade-in">
                         <div className="flex items-center justify-between border-b border-emerald-200 pb-1">
                           <span className="text-xs font-bold text-emerald-900">
@@ -2418,11 +2375,9 @@ export default function BangunRuangMateriPage() {
             </div>
           )}
 
-          {/* TAB 3: PERBANDINGAN 7 BANGUN RUANG + FILTER + KUIS CEPAT */}
-          {activeViewTab === "perbandingan" && (
+                    {activeViewTab === "perbandingan" && (
             <div className="flex flex-col gap-4 animate-in fade-in duration-200">
-              {/* Filter & Kuis Cepat Interaktif */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
                 <div className="md:col-span-5 rounded-[24px] border-4 border-white bg-[#f8f298] p-4 shadow flex flex-col justify-between gap-2">
                   <div>
                     <span className="text-xs font-bold uppercase text-[#422376]">⚡ Tebak Cepat Rumus!</span>
@@ -2549,8 +2504,7 @@ export default function BangunRuangMateriPage() {
             </div>
           )}
 
-          {/* Footer Back & Navigation (Tanpa link salah ke SPLDV) */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-purple-200">
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-purple-200">
             <Link
               href="/materi"
               className="flex items-center gap-2 rounded-2xl border-4 border-white bg-[#5e65e9] px-6 py-2.5 text-white game-font text-base font-semibold shadow hover:scale-103"

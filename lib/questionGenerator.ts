@@ -12,8 +12,6 @@
 
 import type { QuestionItem } from "./questions";
 
-// ─── Utility ─────────────────────────────────────────────────────────────────
-
 /** Acak integer dalam rentang [min, max] inklusif */
 function randInt(min: number, max: number, rng: () => number = Math.random): number {
   return Math.floor(rng() * (max - min + 1)) + min;
@@ -79,8 +77,6 @@ function makeRng(seed?: number): () => number {
   };
 }
 
-// ─── Tipe Soal ───────────────────────────────────────────────────────────────
-
 export type QuestionTopic =
   | "spldv_eliminasi"       // Himpunan penyelesaian SPLDV angka bulat
   | "spldv_cerita"          // Soal cerita (harga barang, usia, panjang)
@@ -96,8 +92,6 @@ export interface GenerateOptions {
   count?: number;          // Jumlah soal yang dibuat (default: 1)
   difficulty?: "easy" | "medium" | "hard"; // Tingkat kesulitan (default: medium)
 }
-
-// ─── Konteks Soal Cerita SPLDV ──────────────────────────────────────────────
 
 interface StoryContext {
   varA: string;  // nama barang A (misal: "pensil")
@@ -116,8 +110,6 @@ const STORY_CONTEXTS: StoryContext[] = [
   { varA: "kaos", varB: "celana", unitA: "buah", unitB: "buah" },
   { varA: "batagor", varB: "siomay", unitA: "porsi", unitB: "porsi" },
 ];
-
-// ─── Generator Per Topik ──────────────────────────────────────────────────────
 
 /**
  * SPLDV Eliminasi:
@@ -540,8 +532,6 @@ function genBangunLimas(id: string, rng: () => number, difficulty: string): Ques
     };
   }
 }
-
-// ─── Fungsi Utama ─────────────────────────────────────────────────────────────
 
 const ALL_TOPICS: QuestionTopic[] = [
   "spldv_eliminasi",

@@ -43,8 +43,6 @@ export const supabase = isSupabaseConfigured
     })
   : null;
 
-// ─── TIPE DATA TABEL SUPABASE ────────────────────────────────────────────────
-
 export interface DbUser {
   id?: string;
   username: string;
@@ -85,8 +83,6 @@ export interface DbGameScore {
   winner?: string;
   created_at?: string;
 }
-
-// ─── HELPER CRUD SUPABASE ────────────────────────────────────────────────────
 
 /**
  * Registrasi user baru ke tabel 'users' Supabase

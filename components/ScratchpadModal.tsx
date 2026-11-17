@@ -163,11 +163,9 @@ export default function ScratchpadModal({
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-between pointer-events-none animate-in fade-in duration-150">
       
-      {/* Top Floating Glass Toolbar (Pointer-events aktif) */}
-      <div className="pointer-events-auto mx-auto mt-3 w-[95%] max-w-4xl rounded-[26px] border-[5px] border-white bg-[#d5cfeb]/95 p-3 sm:p-4 shadow-2xl backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
+            <div className="pointer-events-auto mx-auto mt-3 w-[95%] max-w-4xl rounded-[26px] border-[5px] border-white bg-[#d5cfeb]/95 p-3 sm:p-4 shadow-2xl backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
         
-        {/* Title & Badge */}
-        <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
           <span className="flex size-9 items-center justify-center rounded-2xl bg-[#5e65e9] text-white font-bold text-lg shadow">
             ✏️
           </span>
@@ -181,11 +179,9 @@ export default function ScratchpadModal({
           </div>
         </div>
 
-        {/* Toolbar Controls */}
-        <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2.5">
           
-          {/* Tombol Undo & Redo */}
-          <div className="flex items-center gap-1 bg-white/80 p-1 rounded-xl border border-purple-200 shadow-xs">
+                    <div className="flex items-center gap-1 bg-white/80 p-1 rounded-xl border border-purple-200 shadow-xs">
             <button
               onClick={handleUndo}
               disabled={!canUndo}
@@ -221,8 +217,7 @@ export default function ScratchpadModal({
             </button>
           </div>
 
-          {/* Warna Pensil */}
-          <div className="flex items-center gap-1.5 bg-white/80 px-2.5 py-1 rounded-xl border border-purple-200 shadow-xs">
+                    <div className="flex items-center gap-1.5 bg-white/80 px-2.5 py-1 rounded-xl border border-purple-200 shadow-xs">
             {[
               { name: "Biru", hex: "#2563eb" },
               { name: "Merah", hex: "#dc2626" },
@@ -243,8 +238,7 @@ export default function ScratchpadModal({
             ))}
           </div>
 
-          {/* Ketebalan Garis */}
-          <div className="hidden sm:flex items-center gap-1 bg-white/80 px-2 py-1 rounded-xl border border-purple-200">
+                    <div className="hidden sm:flex items-center gap-1 bg-white/80 px-2 py-1 rounded-xl border border-purple-200">
             {[3, 5, 8].map((w) => (
               <button
                 key={w}
@@ -262,8 +256,7 @@ export default function ScratchpadModal({
             ))}
           </div>
 
-          {/* Tombol Hapus & Tutup */}
-          <button
+                    <button
             onClick={clearCanvas}
             className="rounded-xl border-2 border-white bg-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow hover:bg-amber-600 cursor-pointer active:scale-95"
           >
@@ -280,8 +273,7 @@ export default function ScratchpadModal({
         </div>
       </div>
 
-      {/* Fullscreen Transparent Interactive Canvas */}
-      <div
+            <div
         className="pointer-events-auto relative flex-1 w-full my-1 cursor-crosshair touch-none bg-transparent"
       >
         <canvas
@@ -296,14 +288,12 @@ export default function ScratchpadModal({
           className="w-full h-full"
         />
 
-        {/* Small Watermark Hint */}
-        <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/40 backdrop-blur-xs px-4 py-1 text-xs font-bold text-white shadow">
+                <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/40 backdrop-blur-xs px-4 py-1 text-xs font-bold text-white shadow">
           ✍️ Coret di mana saja pada layar untuk menghitung
         </div>
       </div>
 
-      {/* Bottom Minimal Hint */}
-      <div className="pointer-events-none h-6" />
+            <div className="pointer-events-none h-6" />
 
     </div>
   );

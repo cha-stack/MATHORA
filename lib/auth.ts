@@ -600,8 +600,6 @@ export async function loginWithGoogle(
   }
 }
 
-// ─── SISTEM TINGKATAN & PROGRESSION LOCK MATERI ──────────────────────────────
-
 export interface SingleSectionProgress {
   unlocked: boolean;
   pretest: boolean;

@@ -126,8 +126,7 @@ export default function LoginSiswa() {
 
   return (
     <main className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-hidden bg-gradient-to-b from-[#482b78] via-[#65439e] to-[#916dcb] select-none p-4 sm:p-8">
-      {/* Background Math Formula Doodles */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-85">
+            <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-85">
         <div className="absolute top-10 -right-8 w-60 sm:w-80 md:w-[420px] rotate-[22deg]">
           <Image
             src="/images/math-formula.png"
@@ -186,17 +185,14 @@ export default function LoginSiswa() {
         </div>
       </div>
 
-      {/* Header Title Section */}
-      <div className="relative z-10 mt-6 sm:mt-10 md:mt-12 flex flex-col items-center text-center">
+            <div className="relative z-10 mt-6 sm:mt-10 md:mt-12 flex flex-col items-center text-center">
         <h1 className="game-title-mathora text-6xl sm:text-8xl md:text-9xl lg:text-[130px] font-bold tracking-wider uppercase leading-none">
           MATHORA
         </h1>
       </div>
 
-      {/* Center Card Login Siswa */}
-      <div className="relative z-10 my-auto flex w-full max-w-xl flex-col items-center px-4 py-4">
-        {/* Soft Purple/Grey Card Container */}
-        <div className="w-full rounded-[32px] sm:rounded-[38px] bg-[#d5cfeb]/95 p-6 sm:p-10 shadow-2xl backdrop-blur-xs flex flex-col items-center">
+            <div className="relative z-10 my-auto flex w-full max-w-xl flex-col items-center px-4 py-4">
+                <div className="w-full rounded-[32px] sm:rounded-[38px] bg-[#d5cfeb]/95 p-6 sm:p-10 shadow-2xl backdrop-blur-xs flex flex-col items-center">
           <h2 className="game-font text-3xl sm:text-4xl text-[#2a2830] mb-6 sm:mb-8 font-bold">
             Login Siswa
           </h2>
@@ -207,8 +203,7 @@ export default function LoginSiswa() {
             </div>
           )}
 
-          {/* Tombol Masuk dengan Google */}
-          <button
+                    <button
             type="button"
             onClick={handleGoogleLogin}
             disabled={isGoogleLoading || isLoading}
@@ -224,8 +219,7 @@ export default function LoginSiswa() {
               </>
             ) : (
               <>
-                {/* Google Logo SVG */}
-                <svg viewBox="0 0 48 48" className="h-6 w-6 flex-shrink-0">
+                                <svg viewBox="0 0 48 48" className="h-6 w-6 flex-shrink-0">
                   <path fill="#4285F4" d="M46.145 24.504c0-1.636-.146-3.2-.418-4.709H24v8.906h12.418c-.536 2.891-2.163 5.342-4.608 6.99v5.814h7.464c4.364-4.019 6.871-9.941 6.871-16.001z"/>
                   <path fill="#34A853" d="M24 47c6.274 0 11.536-2.082 15.382-5.641l-7.464-5.814c-2.082 1.395-4.745 2.218-7.918 2.218-6.09 0-11.248-4.112-13.09-9.643H3.19v6.009C7.019 42.455 15.028 47 24 47z"/>
                   <path fill="#FBBC05" d="M10.91 28.12A14.98 14.98 0 0110 24c0-1.436.246-2.826.682-4.12v-6.009H3.19A23.985 23.985 0 000 24c0 3.864.927 7.527 2.564 10.754l8.346-6.634z"/>
@@ -236,16 +230,14 @@ export default function LoginSiswa() {
             )}
           </button>
 
-          {/* Divider "atau" */}
-          <div className="w-full flex items-center gap-3 my-1">
+                    <div className="w-full flex items-center gap-3 my-1">
             <div className="flex-1 h-px bg-[#8e78ca]/40" />
             <span className="game-font text-sm text-[#555] font-bold select-none">atau</span>
             <div className="flex-1 h-px bg-[#8e78ca]/40" />
           </div>
 
           <form id="login-siswa-form" onSubmit={handleSubmit} className="w-full flex flex-col gap-4 sm:gap-5">
-            {/* Username Input */}
-            <div className="relative w-full">
+                        <div className="relative w-full">
               <input
                 type="text"
                 placeholder="Username"
@@ -258,8 +250,7 @@ export default function LoginSiswa() {
               />
             </div>
 
-            {/* Password Input with Eye Toggle */}
-            <div className="relative w-full flex items-center">
+                        <div className="relative w-full flex items-center">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
@@ -308,10 +299,8 @@ export default function LoginSiswa() {
           </form>
         </div>
 
-        {/* Action Buttons Below Card (Regis & Login) */}
-        <div className="mt-8 flex w-full justify-center gap-6 sm:gap-10">
-          {/* Regis Button */}
-          <Link
+                <div className="mt-8 flex w-full justify-center gap-6 sm:gap-10">
+                    <Link
             href="/login/siswa/regist"
             onClick={playClick}
             className="group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white bg-[#3499d0] shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
@@ -321,10 +310,10 @@ export default function LoginSiswa() {
             </span>
           </Link>
 
-          {/* Login Button with Rate Limiting Shield */}
-          <button
+                    <button
             type="submit"
             form="login-siswa-form"
+            onClick={handleSubmit}
             disabled={isLoading || cooldown > 0}
             className={`group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 touch-manipulation ${
               cooldown > 0
@@ -338,8 +327,7 @@ export default function LoginSiswa() {
           </button>
         </div>
 
-        {/* Lupa Password Link */}
-        <div className="mt-3 text-center">
+                <div className="mt-3 text-center">
           <Link
             href="/login/lupa-password"
             className="text-xs sm:text-sm font-bold text-white/90 hover:text-white underline drop-shadow-sm"
@@ -349,11 +337,9 @@ export default function LoginSiswa() {
         </div>
       </div>
 
-      {/* Bottom Left Controls (Back Button) */}
-      <div className="relative z-10 flex w-full max-w-7xl items-end justify-between px-2 sm:px-6 mb-2 sm:mb-4">
+            <div className="relative z-10 flex w-full max-w-7xl items-end justify-between px-2 sm:px-6 mb-2 sm:mb-4">
         <div className="flex flex-col items-start gap-4">
-          {/* Back Button -> Kembali ke /login */}
-          <Link
+                    <Link
             href="/login"
             onClick={playClick}
             aria-label="Kembali ke pilihan login"

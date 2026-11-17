@@ -279,22 +279,19 @@ export default function SettingsPage() {
   return (
     <GameShell backUrl={backUrl} showBack={true}>
       <div className="flex w-full flex-col items-center px-2 sm:px-4 py-2">
-        {/* Settings Box */}
-        <div className="relative w-full max-w-4xl rounded-[32px] sm:rounded-[42px] border-[7px] border-white bg-[#e4d3ff]/85 p-4 sm:p-8 md:p-10 shadow-2xl backdrop-blur-xs flex flex-col items-center">
+                <div className="relative w-full max-w-4xl rounded-[32px] sm:rounded-[42px] border-[7px] border-white bg-[#e4d3ff]/85 p-4 sm:p-8 md:p-10 shadow-2xl backdrop-blur-xs flex flex-col items-center">
           <h2 className="game-font text-3xl sm:text-5xl text-[#2a2830] mb-6 font-bold text-center">
             Pengaturan Akun &amp; Karakter
           </h2>
 
           <div className="flex flex-col gap-6 w-full max-w-2xl">
-            {/* BAGIAN 1: PENGATURAN PROFIL & KARAKTER (CHIBIFORGE LANGSUNG DISINI) */}
-            <form onSubmit={handleSaveProfile} className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-4 sm:p-6 shadow">
+                        <form onSubmit={handleSaveProfile} className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-4 sm:p-6 shadow">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-purple-100 pb-3">
                 <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
                   Profil &amp; Karakter Avatar
                 </span>
 
-                {/* Toggle Mode: ChibiForge vs Maskot */}
-                <div className="flex items-center rounded-xl bg-purple-100 p-1 border border-purple-200 text-xs font-bold text-[#4c3575]">
+                                <div className="flex items-center rounded-xl bg-purple-100 p-1 border border-purple-200 text-xs font-bold text-[#4c3575]">
                   <button
                     type="button"
                     onClick={() => { playClick(); setAvatarMode("chibi"); }}
@@ -327,13 +324,10 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* JIKA MODE CHIBIFORGE AKTIF: STUDIO TERTANAM LANGSUNG DI SINI */}
-              {avatarMode === "chibi" && (
+                            {avatarMode === "chibi" && (
                 <div className="flex flex-col gap-3 rounded-2xl bg-[#f8f5fc] p-3 sm:p-4 border-2 border-[#8e78ca]/30">
-                  {/* Top Bar: Preview + Action Buttons */}
-                  <div className="flex flex-col sm:flex-row items-center gap-4">
-                    {/* Live Canvas Preview Mini */}
-                    <div className="relative size-36 sm:size-44 shrink-0 rounded-2xl border-2 border-[#8e78ca]/30 bg-white shadow-inner overflow-hidden flex items-center justify-center">
+                                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                                        <div className="relative size-36 sm:size-44 shrink-0 rounded-2xl border-2 border-[#8e78ca]/30 bg-white shadow-inner overflow-hidden flex items-center justify-center">
                       <CharacterStudioRenderer
                         ref={rendererRef}
                         config={charConfig}
@@ -342,8 +336,7 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    {/* Kontrol & Aksi Cepat Karakter */}
-                    <div className="flex flex-col justify-between h-full gap-2 w-full">
+                                        <div className="flex flex-col justify-between h-full gap-2 w-full">
                       <div>
                         <div className="flex items-center gap-1.5">
                           <span className="size-2.5 rounded-full bg-[#7c3aed]" />
@@ -385,8 +378,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  {/* Kategori Tabs Kustomisasi Karakter */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-2 border-t border-purple-200/60 scrollbar-thin">
+                                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-2 border-t border-purple-200/60 scrollbar-thin">
                     {CHIBI_CATEGORIES.map((cat) => {
                       const isActive = chibiCategory === cat.id;
                       return (
@@ -410,8 +402,7 @@ export default function SettingsPage() {
                     })}
                   </div>
 
-                  {/* Palet Warna jika Kategori Mendukung Warna */}
-                  {curCatMeta.hasColor && curCatMeta.colorField && curCatMeta.paletteKey && (
+                                    {curCatMeta.hasColor && curCatMeta.colorField && curCatMeta.paletteKey && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-1 bg-white/70 p-2 rounded-xl border border-purple-100">
                       <span className="text-[10px] font-bold uppercase text-[#6b52b8] mr-1">
                         Warna {curCatMeta.label}:
@@ -451,8 +442,7 @@ export default function SettingsPage() {
                         );
                       })}
 
-                      {/* Custom Color Input */}
-                      <label className="flex items-center gap-1 ml-1 cursor-pointer" title="Warna Kustom">
+                                            <label className="flex items-center gap-1 ml-1 cursor-pointer" title="Warna Kustom">
                         <input
                           type="color"
                           value={
@@ -473,10 +463,8 @@ export default function SettingsPage() {
                     </div>
                   )}
 
-                  {/* Grid Item Sesuai Kategori yang Dipilih */}
-                  <div className="max-h-48 overflow-y-auto pr-1 pt-1">
-                    {/* RAMBUT */}
-                    {chibiCategory === "rambut" && (
+                                    <div className="max-h-48 overflow-y-auto pr-1 pt-1">
+                                        {chibiCategory === "rambut" && (
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                         {HAIR_OPTIONS.map((opt) => (
                           <button
@@ -493,8 +481,7 @@ export default function SettingsPage() {
                             }`}
                           >
                             <div className="size-12 rounded-lg bg-white overflow-hidden flex items-center justify-center">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
+                                                            <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
                             </div>
                             <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
                               {opt.label}
@@ -509,8 +496,7 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    {/* MATA */}
-                    {chibiCategory === "mata" && (
+                                        {chibiCategory === "mata" && (
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {EYE_OPTIONS.map((opt) => (
                           <button
@@ -527,8 +513,7 @@ export default function SettingsPage() {
                             }`}
                           >
                             <div className="size-12 rounded-lg bg-white overflow-hidden flex items-center justify-center">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
+                                                            <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
                             </div>
                             <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
                               {opt.label}
@@ -543,8 +528,7 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    {/* OUTFIT */}
-                    {chibiCategory === "outfit" && (
+                                        {chibiCategory === "outfit" && (
                       <div className="grid grid-cols-3 gap-2">
                         {OUTFIT_OPTIONS.map((opt) => (
                           <button
@@ -561,8 +545,7 @@ export default function SettingsPage() {
                             }`}
                           >
                             <div className="size-14 rounded-lg bg-white overflow-hidden flex items-center justify-center">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
+                                                            <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
                             </div>
                             <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
                               {opt.label}
@@ -577,8 +560,7 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    {/* AKSESORIS */}
-                    {chibiCategory === "aksesoris" && (
+                                        {chibiCategory === "aksesoris" && (
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                         {ACCESSORY_OPTIONS.map((opt) => (
                           <button
@@ -615,8 +597,7 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    {/* BLUSH */}
-                    {chibiCategory === "blush" && (
+                                        {chibiCategory === "blush" && (
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {BLUSH_OPTIONS.map((opt) => (
                           <button
@@ -653,8 +634,7 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    {/* TELINGA */}
-                    {chibiCategory === "telinga" && (
+                                        {chibiCategory === "telinga" && (
                       <div className="grid grid-cols-2 gap-2">
                         {EAR_OPTIONS.map((opt) => (
                           <button
@@ -671,8 +651,7 @@ export default function SettingsPage() {
                             }`}
                           >
                             <div className="size-12 rounded-lg bg-white overflow-hidden flex items-center justify-center">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
+                                                            <img src={opt.preview} alt={opt.label} className="w-full h-full object-contain" />
                             </div>
                             <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
                               {opt.label}
@@ -687,8 +666,7 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    {/* ALIS */}
-                    {chibiCategory === "alis" && (
+                                        {chibiCategory === "alis" && (
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {EYEBROW_OPTIONS.map((opt) => (
                           <button
@@ -705,8 +683,7 @@ export default function SettingsPage() {
                             }`}
                           >
                             <div className="size-11 rounded-lg bg-white overflow-hidden flex items-center justify-center">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={opt.line} alt={opt.label} className="w-full h-full object-contain" />
+                                                            <img src={opt.line} alt={opt.label} className="w-full h-full object-contain" />
                             </div>
                             <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
                               {opt.label}
@@ -721,8 +698,7 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    {/* HIDUNG */}
-                    {chibiCategory === "hidung" && (
+                                        {chibiCategory === "hidung" && (
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {NOSE_OPTIONS.map((opt) => (
                           <button
@@ -739,8 +715,7 @@ export default function SettingsPage() {
                             }`}
                           >
                             <div className="size-11 rounded-lg bg-white overflow-hidden flex items-center justify-center">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={opt.line} alt={opt.label} className="w-full h-full object-contain" />
+                                                            <img src={opt.line} alt={opt.label} className="w-full h-full object-contain" />
                             </div>
                             <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
                               {opt.label}
@@ -755,8 +730,7 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    {/* MULUT */}
-                    {chibiCategory === "mulut" && (
+                                        {chibiCategory === "mulut" && (
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                         {MOUTH_OPTIONS.map((opt) => (
                           <button
@@ -773,8 +747,7 @@ export default function SettingsPage() {
                             }`}
                           >
                             <div className="size-11 rounded-lg bg-white overflow-hidden flex items-center justify-center">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={opt.line} alt={opt.label} className="w-full h-full object-contain" />
+                                                            <img src={opt.line} alt={opt.label} className="w-full h-full object-contain" />
                             </div>
                             <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
                               {opt.label}
@@ -789,15 +762,13 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    {/* BADAN & KULIT */}
-                    {chibiCategory === "badan" && (
+                                        {chibiCategory === "badan" && (
                       <div className="p-3 bg-purple-50 rounded-xl text-center text-xs text-[#555] font-semibold">
                         Gunakan palet warna di atas untuk menyesuaikan warna kulit karakter.
                       </div>
                     )}
 
-                    {/* LATAR */}
-                    {chibiCategory === "latar" && (
+                                        {chibiCategory === "latar" && (
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                         {COLOR_PALETTES.bg.map((opt) => (
                           <button
@@ -826,8 +797,7 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* JIKA MODE MASKOT CEPAT AKTIF */}
-              {avatarMode === "maskot" && (
+                            {avatarMode === "maskot" && (
                 <div>
                   <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-2">
                     Pilihan Maskot Klasik:
@@ -860,8 +830,7 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* Username Input */}
-              <div className="mt-2">
+                            <div className="mt-2">
                 <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
                   Nama Pengguna (Username):
                 </label>
@@ -874,8 +843,7 @@ export default function SettingsPage() {
                 />
               </div>
 
-              {/* Tombol Simpan Perubahan Profil */}
-              <button
+                            <button
                 type="submit"
                 disabled={isSaving}
                 className="w-full rounded-2xl bg-[#1cd8a4] border-3 border-white py-3.5 text-center text-lg sm:text-xl font-bold game-font text-[#144837] shadow-[0px_4px_0px_0px_#028560] hover:brightness-105 active:translate-y-1 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
@@ -884,8 +852,7 @@ export default function SettingsPage() {
               </button>
             </form>
 
-            {/* BAGIAN 2: KEAMANAN & KATA SANDI */}
-            <form onSubmit={handleSavePassword} className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
+                        <form onSubmit={handleSavePassword} className="flex flex-col gap-4 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
               <div className="flex items-center justify-between">
                 <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
                   Keamanan &amp; Kata Sandi
@@ -906,8 +873,7 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* Kata Sandi Lama */}
-              {hasPassword && (
+                            {hasPassword && (
                 <div className="relative flex items-center">
                   <input
                     type={showOldPassword ? "text" : "password"}
@@ -937,8 +903,7 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* Kata Sandi Baru */}
-              <div className="relative flex items-center">
+                            <div className="relative flex items-center">
                 <input
                   type={showNewPassword ? "text" : "password"}
                   value={newPasswordInput}
@@ -966,8 +931,7 @@ export default function SettingsPage() {
                 </button>
               </div>
 
-              {/* Konfirmasi Kata Sandi Baru */}
-              <input
+                            <input
                 type={showNewPassword ? "text" : "password"}
                 value={confirmPasswordInput}
                 onChange={(e) => setConfirmPasswordInput(e.target.value)}
@@ -984,14 +948,12 @@ export default function SettingsPage() {
               </button>
             </form>
 
-            {/* BAGIAN 3: PENGATURAN MUSIK & AUDIO */}
-            <div className="flex flex-col gap-5 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
+                        <div className="flex flex-col gap-5 rounded-3xl border-4 border-white bg-white/95 p-5 shadow">
               <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
                 Audio &amp; Musik Latar
               </span>
 
-              {/* Volume BGM */}
-              <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-center text-sm font-bold text-[#2a2830]">
                   <span>Volume Musik (BGM)</span>
                   <span className="text-purple-700 font-bold">{Math.round(bgmVolume * 100)}%</span>
@@ -1007,8 +969,7 @@ export default function SettingsPage() {
                 />
               </div>
 
-              {/* Volume Efek Suara (SFX) */}
-              <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-center text-sm font-bold text-[#2a2830]">
                   <span>Volume Efek Suara (SFX)</span>
                   <span className="text-purple-700 font-bold">{Math.round(sfxVolume * 100)}%</span>
@@ -1024,8 +985,7 @@ export default function SettingsPage() {
                 />
               </div>
 
-              {/* Pilihan Lagu Latar */}
-              <div className="flex flex-col gap-2 pt-2 border-t border-purple-100">
+                            <div className="flex flex-col gap-2 pt-2 border-t border-purple-100">
                 <span className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider">
                   Pilihan Musik Latar:
                 </span>

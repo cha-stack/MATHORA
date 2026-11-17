@@ -82,7 +82,6 @@ export default function BankSoalPage() {
     }
   };
 
-  // Infinite Next: jika sudah sampai di soal terakhir, otomatis generate soal baru di kategori tersebut!
   const handleNext = () => {
     playClick();
     if (safeIndex < filteredQuestions.length - 1) {
@@ -97,15 +96,13 @@ export default function BankSoalPage() {
   return (
     <GameShell backUrl="/dashboard/guru" showBack={true}>
       <div className="flex w-full flex-col items-center">
-        {/* Modal Papan Coretan */}
-        <ScratchpadModal
+                <ScratchpadModal
           isOpen={isScratchpadOpen}
           onClose={() => setIsScratchpadOpen(false)}
           title={`Coretan Hitungan Guru - Soal #${safeIndex + 1}`}
         />
 
-        {/* Header Badge */}
-        <div className="mb-3">
+                <div className="mb-3">
           <div className="rounded-[32px] border-[7px] border-white bg-[#fdffd3] px-8 py-2 shadow-[0px_5px_0px_0px_#aaafaf]">
             <h2 className="game-font text-2xl sm:text-4xl text-[#2a2830] font-bold tracking-wider uppercase text-center">
               KUIS &amp; BANK SOAL
@@ -113,8 +110,7 @@ export default function BankSoalPage() {
           </div>
         </div>
 
-        {/* Filter Bar (Hanya 4 Kategori Asli) */}
-        <div className="flex flex-wrap items-center gap-2 justify-center mb-5 bg-white/70 p-2 rounded-2xl border-2 border-white shadow">
+                <div className="flex flex-wrap items-center gap-2 justify-center mb-5 bg-white/70 p-2 rounded-2xl border-2 border-white shadow">
           {[
             { id: "ALL",    label: `Semua (${allQuestions.length})` },
             { id: "S1",     label: `SPLDV Sec 1 (${countS1})` },
@@ -141,11 +137,9 @@ export default function BankSoalPage() {
 
         {currentQ ? (
           <>
-            {/* Main Big Glass Card (Sesuai Desain Figma 183:247) */}
-            <div className="relative w-full max-w-4xl rounded-[32px] sm:rounded-[38px] border-[7px] border-white bg-[#e4d3ff]/80 p-6 sm:p-9 shadow-2xl backdrop-blur-xs flex flex-col justify-between min-h-[480px]">
+                        <div className="relative w-full max-w-4xl rounded-[32px] sm:rounded-[38px] border-[7px] border-white bg-[#e4d3ff]/80 p-6 sm:p-9 shadow-2xl backdrop-blur-xs flex flex-col justify-between min-h-[480px]">
               
-              {/* Dua Persamaan Linear Jika Tersedia */}
-              {currentQ.equations && (
+                            {currentQ.equations && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mb-5">
                   <div className="flex flex-col items-center justify-center rounded-[24px] border-[5px] border-white bg-[#e4d3ff]/70 p-4 shadow-[0px_4px_0px_0px_#aaafaf]">
                     <span className="game-font text-2xl sm:text-3xl text-black font-bold tracking-wide">
@@ -167,8 +161,7 @@ export default function BankSoalPage() {
                 </div>
               )}
 
-              {/* Question Header & Context */}
-              <div className="mb-5">
+                            <div className="mb-5">
                 <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-purple-900 bg-white/70 px-3 py-1 rounded-full shadow-xs">
@@ -192,8 +185,7 @@ export default function BankSoalPage() {
                 </p>
               </div>
 
-              {/* Options List A, B, C, D */}
-              <div className="flex flex-col gap-3 my-auto">
+                            <div className="flex flex-col gap-3 my-auto">
                 {currentQ.options.map((opt, idx) => {
                   const isSelected = selectedAnswers[currentQ.id] === idx;
                   const isCorrect = idx === currentQ.correctIndex;
@@ -251,16 +243,14 @@ export default function BankSoalPage() {
                 })}
               </div>
 
-              {/* Explanation */}
-              {shownAnswers[currentQ.id] && (
+                            {shownAnswers[currentQ.id] && (
                 <div className="mt-4 rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-4 text-emerald-950 text-xs sm:text-sm font-semibold animate-in fade-in duration-200">
                   <span className="font-bold block mb-1">💡 Pembahasan Kunci Jawaban:</span>
                   {currentQ.explanation}
                 </div>
               )}
 
-              {/* Bottom Actions Row (Sesuai Figma: Buka Coretan + Periksa dan Tampilkan Hasil) */}
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-purple-300/60">
+                            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-purple-300/60">
                 <button
                   onClick={() => {
                     playClick();
@@ -287,8 +277,7 @@ export default function BankSoalPage() {
 
             </div>
 
-            {/* Slide Navigation Arrows */}
-            <div className="flex w-full max-w-4xl items-center justify-between mt-4 px-2">
+                        <div className="flex w-full max-w-4xl items-center justify-between mt-4 px-2">
               <button
                 onClick={handlePrev}
                 disabled={safeIndex === 0}

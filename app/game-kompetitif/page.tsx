@@ -8,8 +8,6 @@ import { useSound } from "@/components/SoundContext";
 import { getCurrentUser } from "@/lib/auth";
 import { sbSaveGameScore } from "@/lib/supabase";
 
-// ─── TIPE & DATA MATERI (FIGMA 85:131) ────────────────────────────────────────
-
 interface MateriOption {
   id: string;
   name: string;
@@ -70,9 +68,7 @@ function makeQuestion(materi: string, diff: "easy" | "medium" | "hard"): MathQue
   ];
   const effectiveMateri = materi === "CAMPURAN" ? pick(allTopics) : materi;
 
-  // ═══════════════════════════════════════════════════════════════════════════
   // 1. SPLDV (5 VARIASI: ELIMINASI, SUBSTITUSI, SOAL CERITA PARKIR, BELANJA, UMUR)
-  // ═══════════════════════════════════════════════════════════════════════════
   if (effectiveMateri === "SPLDV") {
     const variant = randInt(0, 4);
 
@@ -167,9 +163,7 @@ function makeQuestion(materi: string, diff: "easy" | "medium" | "hard"): MathQue
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
   // 2. BANGUN RUANG (6 VARIASI: VOLUME, MENCARI RUSUK, LUAS PERMUKAAN, TABUNG, KERUCUT, SIFAT)
-  // ═══════════════════════════════════════════════════════════════════════════
   if (effectiveMateri === "BANGUN_RUANG") {
     const variant = randInt(0, 5);
 
@@ -262,9 +256,7 @@ function makeQuestion(materi: string, diff: "easy" | "medium" | "hard"): MathQue
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
   // 3. BANGUN DATAR (PYTHAGORAS, LINGKARAN, SEGITIGA, PERSEGI PANJANG, BELAH KETUPAT)
-  // ═══════════════════════════════════════════════════════════════════════════
   if (effectiveMateri === "BANGUN_DATAR") {
     const variant = randInt(0, 4);
 
@@ -355,9 +347,7 @@ function makeQuestion(materi: string, diff: "easy" | "medium" | "hard"): MathQue
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
   // 4. BENTUK ALJABAR (PERSAMAAN 1 & 2 RUAS, NILAI FUNGSI, SOAL CERITA LOGIKA)
-  // ═══════════════════════════════════════════════════════════════════════════
   if (effectiveMateri === "BENTUK_ALJABAR") {
     const variant = randInt(0, 3);
 
@@ -420,9 +410,7 @@ function makeQuestion(materi: string, diff: "easy" | "medium" | "hard"): MathQue
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
   // 5. PERSAMAAN KUADRAT (AKAR MURNI, FAKTORISASI, JUMLAH/KALI AKAR)
-  // ═══════════════════════════════════════════════════════════════════════════
   if (effectiveMateri === "PERSAMAAN_KUADRAT") {
     const variant = randInt(0, 2);
 
@@ -467,10 +455,8 @@ function makeQuestion(materi: string, diff: "easy" | "medium" | "hard"): MathQue
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
   // 6. OPERASI DASAR (HITUNGAN MURNI: +, -, ×, ÷, KABATAKU, KURUNG, KUADRAT/AKAR)
   // TIDAK MENGGUNAKAN SOAL CERITA (LANGSUNG PERSAMAAN HITUNG CEPAT)
-  // ═══════════════════════════════════════════════════════════════════════════
   const variantOp = randInt(0, 6);
 
   if (variantOp === 0) {
@@ -671,8 +657,7 @@ function CalculatorPanel({
         </h4>
       </div>
 
-      {/* Layar Input Kalkulator */}
-      <div
+            <div
         className={`w-full ${
           compactSide ? "h-10 sm:h-14 text-lg sm:text-3xl px-2.5 sm:px-4 mb-2 sm:mb-3" : "h-12 sm:h-14 text-2xl sm:text-3xl px-4 mb-2.5 sm:mb-3"
         } bg-white border-[3px] sm:border-[4px] border-[#7251a8] rounded-xl flex items-center justify-end font-mono font-bold text-[#1e1b4b] shadow-inner tracking-wider select-none overflow-x-auto`}
@@ -686,8 +671,7 @@ function CalculatorPanel({
         )}
       </div>
 
-      {/* Tombol-Tombol Keypad 4 Kolom */}
-      <div className={`grid grid-cols-4 ${compactSide ? "gap-1 sm:gap-2" : "gap-1.5 sm:gap-2"} w-full`}>
+            <div className={`grid grid-cols-4 ${compactSide ? "gap-1 sm:gap-2" : "gap-1.5 sm:gap-2"} w-full`}>
         {["1", "2", "3"].map((n) => (
           <button key={n} disabled={disabled} onClick={() => onKeyPress(n, target)} className={numBtnClass}>
             {n}
@@ -749,7 +733,6 @@ export default function GameKompetitifPage() {
     setBackDashboard(u?.role === "guru" ? "/dashboard/guru" : "/dashboard/siswa");
   }, []);
 
-  // ─── STATE UTAMA GAME ───────────────────────────────────────────────────────
   const [gameState, setGameState] = useState<"lobby" | "playing" | "gameover">("lobby");
 
   const PREFS_KEY = "mathora_game_prefs";
@@ -825,7 +808,6 @@ export default function GameKompetitifPage() {
   // Mode tata letak HP Portrait untuk 1 vs 1 ("side" = berdampingan di bawah soal, "tabletop" = P2 di atas menghadap lawan 180°)
   const [mobilePortraitMode, setMobilePortraitMode] = useState<"side" | "tabletop">("side");
 
-  // ─── KONTROL ORIENTASI LANDSCAPE HP ─────────────────────────────────────────
   const [isMobilePortrait, setIsMobilePortrait] = useState(false);
 
   useEffect(() => {
@@ -871,7 +853,6 @@ export default function GameKompetitifPage() {
 
   const aiTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // ─── CEK KEMENANGAN AKHIR ──────────────────────────────────────────────────
   const finishGame = useCallback((p1: number, p2: number) => {
     let resultWinner: "Pemain 1" | "Pemain 2" | "AI Bot" | "Seri / Imbang" = "Seri / Imbang";
     if (p1 > p2) {
@@ -914,7 +895,6 @@ export default function GameKompetitifPage() {
     return false;
   }, [gameMode]);
 
-  // ─── PINDAH SOAL BERIKUTNYA ────────────────────────────────────────────────
   const nextRound = useCallback(() => {
     setP1Input("");
     setP2Input("");
@@ -923,7 +903,6 @@ export default function GameKompetitifPage() {
     setRoundLocked(false);
   }, [selectedMateri, difficulty]);
 
-  // ─── MULAI PERMAINAN (5 MENIT) ─────────────────────────────────────────────
   const handleStartGame = () => {
     playClick();
     if (typeof window !== "undefined" && (window.innerWidth <= 900 || window.innerHeight > window.innerWidth)) {
@@ -945,7 +924,6 @@ export default function GameKompetitifPage() {
     setGameState("playing");
   };
 
-  // ─── SUBMIT JAWABAN PEMAIN 1 ───────────────────────────────────────────────
   const handleP1Submit = useCallback(() => {
     if (gameState !== "playing" || winner || roundLocked) return;
 
@@ -992,7 +970,6 @@ export default function GameKompetitifPage() {
     }
   }, [gameState, winner, roundLocked, p1Input, currentQ, scoreP1, scoreP2, playCorrect, playWrong, playClick, checkEarlyKO, nextRound]);
 
-  // ─── SUBMIT JAWABAN PEMAIN 2 ───────────────────────────────────────────────
   const handleP2Submit = useCallback(() => {
     if (gameState !== "playing" || winner || gameMode === "vsAI" || roundLocked) return;
 
@@ -1038,7 +1015,6 @@ export default function GameKompetitifPage() {
     }
   }, [gameState, winner, gameMode, roundLocked, p2Input, currentQ, scoreP1, scoreP2, playCorrect, playWrong, playClick, checkEarlyKO, nextRound]);
 
-  // ─── LOGIKA AI BOT (BILA MODE vs AI) ───────────────────────────────────────
   useEffect(() => {
     if (gameState !== "playing" || gameMode !== "vsAI" || winner || roundLocked) return;
 
@@ -1090,7 +1066,6 @@ export default function GameKompetitifPage() {
     };
   }, [currentQ, gameState, gameMode, difficulty, winner, roundLocked, scoreP1, scoreP2, checkEarlyKO, nextRound, playCorrect, playClick]);
 
-  // ─── COUNTDOWN TIMER (5 MENIT TOTAL) ───────────────────────────────────────
   useEffect(() => {
     if (gameState !== "playing" || winner) return;
 
@@ -1107,7 +1082,6 @@ export default function GameKompetitifPage() {
     return () => clearInterval(interval);
   }, [gameState, timeLeft, winner, scoreP1, scoreP2, finishGame, playWrong]);
 
-  // ─── DUKUNGAN KEYBOARD FISIK (UNTUK PEMAIN 1) ──────────────────────────────
   useEffect(() => {
     if (gameState !== "playing" || winner || roundLocked) return;
 
@@ -1182,10 +1156,7 @@ export default function GameKompetitifPage() {
     <GameShell backUrl={backDashboard} showBack={true}>
       <div className="flex w-full flex-col items-center">
 
-        {/* ═══════════════════════════════════════════════════════════════════════
-            1. LOBBY PEMILIHAN MATERI & MODE (FIGMA 85:131 & 87:277)
-           ═══════════════════════════════════════════════════════════════════════ */}
-        {gameState === "lobby" && (
+                {gameState === "lobby" && (
           <div className="w-full max-w-5xl animate-in fade-in zoom-in-95 duration-200">
             <div className="rounded-[26px] sm:rounded-[36px] border-[5px] sm:border-[7px] border-white bg-[#ffd3d3] p-4 sm:p-6 shadow-2xl backdrop-blur-xs">
               
@@ -1200,8 +1171,7 @@ export default function GameKompetitifPage() {
                   Adu cepat mengetik jawaban kalkulator untuk menarik tali lawan!
                 </p>
 
-                {/* Banner Saran Landscape untuk Pengguna HP */}
-                {isMobilePortrait && (
+                                {isMobilePortrait && (
                   <div className="mt-3 mx-auto max-w-xl rounded-2xl border-2 sm:border-3 border-amber-300 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 p-2.5 sm:p-3 text-white shadow-lg flex items-center justify-between gap-2.5 animate-in fade-in">
                     <div className="flex items-center gap-2 text-left">
                       <span className="text-2xl animate-pulse">📱🔄</span>
@@ -1227,8 +1197,7 @@ export default function GameKompetitifPage() {
                 )}
               </div>
 
-              {/* Grid 12 Materi */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3.5 mb-5 sm:mb-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3.5 mb-5 sm:mb-6">
                 {MATERI_LIST.map((m) => {
                   const isSelected = selectedMateri === m.id;
                   return (
@@ -1260,8 +1229,7 @@ export default function GameKompetitifPage() {
                 })}
               </div>
 
-              {/* Aturan Kemenangan & Knockout Banner */}
-              <div className="mb-4 rounded-2xl border-2 border-white/80 bg-white/70 p-3 sm:p-3.5 text-xs sm:text-sm text-[#2a2830] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+                            <div className="mb-4 rounded-2xl border-2 border-white/80 bg-white/70 p-3 sm:p-3.5 text-xs sm:text-sm text-[#2a2830] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
                 <div className="flex items-center gap-2">
                   <span className="text-xl sm:text-2xl">🎯</span>
                   <div>
@@ -1273,8 +1241,7 @@ export default function GameKompetitifPage() {
                 </div>
               </div>
 
-              {/* Pilihan Mode & Kesulitan */}
-              <div className="flex flex-col md:flex-row items-center justify-between gap-3.5 sm:gap-4 border-t-2 border-white/60 pt-4 sm:pt-5">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-3.5 sm:gap-4 border-t-2 border-white/60 pt-4 sm:pt-5">
                 <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                   <span className="text-xs sm:text-sm font-bold text-[#2a2830]">Mode:</span>
                   <div className="flex rounded-2xl border-[3px] sm:border-4 border-white bg-white/70 p-1 shadow-sm">
@@ -1329,14 +1296,10 @@ export default function GameKompetitifPage() {
           </div>
         )}
 
-        {/* ═══════════════════════════════════════════════════════════════════════
-            2. ARENA TARIK TAMBANG DENGAN KALKULATOR (RESPONSIF HP PORTRAIT & DESKTOP)
-           ═══════════════════════════════════════════════════════════════════════ */}
-        {gameState !== "lobby" && (
+                {gameState !== "lobby" && (
           <div className="flex w-full max-w-5xl flex-col items-center">
 
-            {/* Banner Otomatis Saran Landscape di HP saat Bermain */}
-            {isMobilePortrait && (
+                        {isMobilePortrait && (
               <div className="w-full mb-2 px-3 py-1.5 rounded-xl border-2 border-amber-300 bg-amber-500/95 text-white flex items-center justify-between gap-2 shadow animate-in fade-in">
                 <span className="text-[11px] font-bold flex items-center gap-1">
                   <span>📱🔄</span>
@@ -1354,11 +1317,9 @@ export default function GameKompetitifPage() {
               </div>
             )}
 
-            {/* ARENA VISUAL TARIK TAMBANG DUA KARAKTER */}
-            <div className="relative w-full rounded-[22px] sm:rounded-[32px] border-[5px] sm:border-[7px] border-white bg-[#d3e9ff] p-2.5 sm:p-4 shadow-2xl backdrop-blur-xs flex flex-col items-center mb-2 sm:mb-3 overflow-hidden">
+                        <div className="relative w-full rounded-[22px] sm:rounded-[32px] border-[5px] sm:border-[7px] border-white bg-[#d3e9ff] p-2.5 sm:p-4 shadow-2xl backdrop-blur-xs flex flex-col items-center mb-2 sm:mb-3 overflow-hidden">
               
-              {/* Baris Kontrol Atas Arena (Non-overlapping di layar HP sempit) */}
-              <div className="flex w-full items-center justify-between gap-2 z-30 mb-1">
+                            <div className="flex w-full items-center justify-between gap-2 z-30 mb-1">
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     onClick={() => {
@@ -1372,8 +1333,7 @@ export default function GameKompetitifPage() {
                     <span>Selesai</span>
                   </button>
 
-                  {/* Tombol Kunci / Putar Landscape di HP */}
-                  <button
+                                    <button
                     onClick={() => {
                       playClick();
                       requestLandscapeMode();
@@ -1386,14 +1346,12 @@ export default function GameKompetitifPage() {
                   </button>
                 </div>
 
-                {/* Badge Syarat Kemenangan di Layar Besar */}
-                <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 border border-purple-200 text-xs font-bold text-purple-900 shadow-xs">
+                                <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 border border-purple-200 text-xs font-bold text-purple-900 shadow-xs">
                   <span>🎯</span>
                   <span>Menang: Selisih 5 Poin (K.O.) atau Skor Tertinggi 5 Menit</span>
                 </div>
 
-                {/* Tombol Switch Tata Letak HP Portrait (Khusus 1 vs 1 di Layar HP < 640px) */}
-                {gameMode === "1vs1" && (
+                                {gameMode === "1vs1" && (
                   <button
                     onClick={() => {
                       playClick();
@@ -1407,8 +1365,7 @@ export default function GameKompetitifPage() {
                   </button>
                 )}
 
-                {/* Balon Ucapan Komik Dinamis */}
-                <div className="relative bg-white/95 border-2 sm:border-3 border-[#2a2830] px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md shrink-0 transition-transform duration-200 hover:scale-105">
+                                <div className="relative bg-white/95 border-2 sm:border-3 border-[#2a2830] px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md shrink-0 transition-transform duration-200 hover:scale-105">
                   <span className="game-font text-sm sm:text-2xl font-bold text-[#2a2830] tracking-wide uppercase">
                     {cheerReaction}
                   </span>
@@ -1416,19 +1373,15 @@ export default function GameKompetitifPage() {
                 </div>
               </div>
 
-              {/* Lintasan Tarik Tambang Stickman */}
-              <div className="relative w-full h-24 sm:h-36 flex items-center justify-center overflow-hidden my-0.5 sm:my-1">
+                            <div className="relative w-full h-24 sm:h-36 flex items-center justify-center overflow-hidden my-0.5 sm:my-1">
                 
-                {/* Garis Tengah Lapangan Merah */}
-                <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-1 bg-[#a14343] z-10" />
+                                <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-1 bg-[#a14343] z-10" />
 
-                {/* Kontainer Karakter & Tali Bergerak Sesuai Skor */}
-                <div
+                                <div
                   style={{ transform: `translateX(${ropeShiftPct}%)` }}
                   className="relative z-20 transition-transform duration-500 ease-out flex items-center justify-center w-full max-w-2xl px-4 sm:px-8"
                 >
-                  {/* Stickman Kiri (Pemain 1) */}
-                  <div
+                                    <div
                     className={`flex flex-col items-center shrink-0 -mr-2 transition-transform duration-300 ${
                       scoreP1 > scoreP2 ? "-rotate-12 scale-105" : scoreP1 < scoreP2 ? "rotate-6 scale-95" : ""
                     }`}
@@ -1445,8 +1398,7 @@ export default function GameKompetitifPage() {
                     </svg>
                   </div>
 
-                  {/* Tali Tambang & Pita Merah Tengah */}
-                  <div className="relative flex-1 h-4 sm:h-5 flex items-center justify-center mx-1">
+                                    <div className="relative flex-1 h-4 sm:h-5 flex items-center justify-center mx-1">
                     <div className="absolute inset-x-0 h-2.5 sm:h-3.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#b45309] rounded-full border-2 border-[#78350f] shadow-inner" />
                     <div className="relative z-20 flex flex-col items-center">
                       <div className="size-4 sm:size-5 rounded-full bg-[#fd363a] border-2 border-white shadow-md flex items-center justify-center text-white text-[8px] sm:text-[10px] font-bold">
@@ -1456,8 +1408,7 @@ export default function GameKompetitifPage() {
                     </div>
                   </div>
 
-                  {/* Stickman Kanan (Pemain 2 / AI) */}
-                  <div
+                                    <div
                     className={`flex flex-col items-center shrink-0 -ml-2 transition-transform duration-300 ${
                       scoreP2 > scoreP1 ? "rotate-12 scale-105" : scoreP2 < scoreP1 ? "-rotate-6 scale-95" : ""
                     }`}
@@ -1477,25 +1428,21 @@ export default function GameKompetitifPage() {
 
               </div>
 
-              {/* Notifikasi Ronde Terakhir (Bila Ada) */}
-              {lastRoundNotice && (
+                            {lastRoundNotice && (
                 <div className="text-[11px] sm:text-xs font-bold text-[#144837] bg-white/90 px-3 sm:px-4 py-0.5 sm:py-1 rounded-full shadow mt-0.5 text-center">
                   {lastRoundNotice}
                 </div>
               )}
             </div>
 
-            {/* BAR POIN, PEDANG VS, DAN TIMER 5 MENIT KOTAK MERAH */}
-            <div className="flex w-full items-center justify-between gap-2 px-1 sm:px-6 mb-2.5 sm:mb-4">
-              {/* Poin Pemain 1 */}
-              <div className="flex items-center gap-1.5 whitespace-nowrap">
+                        <div className="flex w-full items-center justify-between gap-2 px-1 sm:px-6 mb-2.5 sm:mb-4">
+                            <div className="flex items-center gap-1.5 whitespace-nowrap">
                 <span className="game-font text-lg sm:text-4xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
                   {scoreP1} <span className="text-xs sm:text-2xl font-semibold">poin</span>
                 </span>
               </div>
 
-              {/* Indikator Pedang VS & Kotak Timer 5 Menit di Tengah */}
-              <div className="flex flex-col items-center shrink-0">
+                            <div className="flex flex-col items-center shrink-0">
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
                   <div className="w-6 sm:w-20 h-1 sm:h-1.5 bg-[#36abe5] rounded-full shadow" />
                   <span className="text-base sm:text-2xl filter drop-shadow">⚔️</span>
@@ -1511,21 +1458,16 @@ export default function GameKompetitifPage() {
                 </div>
               </div>
 
-              {/* Poin Pemain 2 / AI */}
-              <div className="flex items-center gap-1.5 flex-row-reverse whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 flex-row-reverse whitespace-nowrap">
                 <span className="game-font text-lg sm:text-4xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
                   {scoreP2} <span className="text-xs sm:text-2xl font-semibold">poin</span>
                 </span>
               </div>
             </div>
 
-            {/* ═══════════════════════════════════════════════════════════════════════
-                AREA BATTLE: PORTRAIT HP FLEKSIBEL (< 640px) & 3 KOLOM LANDSCAPE/DESKTOP (>= 640px)
-               ═══════════════════════════════════════════════════════════════════════ */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-4 w-full items-stretch">
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-4 w-full items-stretch">
 
-              {/* KARTU SOAL (Selalu di atas kalkulator pada HP Portrait agar langsung terbaca tanpa scroll!) */}
-              <div
+                            <div
                 className={`${
                   gameMode === "1vs1" && mobilePortraitMode === "tabletop"
                     ? "order-2 sm:order-2"
@@ -1543,8 +1485,7 @@ export default function GameKompetitifPage() {
                     {currentQ.question}
                   </p>
 
-                  {/* Display Persamaan Jika Ada (SPLDV / Aljabar) */}
-                  {currentQ.equationDisplay && (
+                                    {currentQ.equationDisplay && (
                     <div className="bg-white/85 border-2 border-amber-300 rounded-xl sm:rounded-2xl p-2 sm:p-3 my-1.5 sm:my-2 shadow-inner inline-block text-left max-w-full overflow-x-auto">
                       {currentQ.equationDisplay.map((eq, i) => (
                         <div key={i} className="font-mono text-sm sm:text-base lg:text-lg font-bold text-[#1e1b4b]">
@@ -1562,8 +1503,7 @@ export default function GameKompetitifPage() {
                 </div>
               </div>
 
-              {/* BAR STATUS AI COMPACT KHUSUS HP PORTRAIT (Mode vsAI agar layar tidak boros oleh keypad mati) */}
-              {gameMode === "vsAI" && (
+                            {gameMode === "vsAI" && (
                 <div className="order-2 sm:hidden w-full rounded-2xl border-[3px] border-white bg-[rgba(228,211,255,0.92)] px-3.5 py-2 shadow-md flex items-center justify-between gap-2">
                   <span className="game-font text-sm font-bold text-[#2a2830]">🤖 AI Bot</span>
                   <span className="font-mono text-sm font-bold text-[#5b3d8f] bg-white/90 px-3 py-0.5 rounded-lg border border-purple-200">
@@ -1572,8 +1512,7 @@ export default function GameKompetitifPage() {
                 </div>
               )}
 
-              {/* MODE 1 vs 1 TABLETOP HP (P2 di Atas Diputar 180°, P1 di Bawah) */}
-              {gameMode === "1vs1" && mobilePortraitMode === "tabletop" ? (
+                            {gameMode === "1vs1" && mobilePortraitMode === "tabletop" ? (
                 <>
                   <CalculatorPanel
                     title="Pemain 1"
@@ -1626,16 +1565,12 @@ export default function GameKompetitifPage() {
           </div>
         )}
 
-        {/* ═══════════════════════════════════════════════════════════════════════
-            3. POPUP MODAL KEMENANGAN (FIGMA 90:608)
-           ═══════════════════════════════════════════════════════════════════════ */}
-        {gameState === "gameover" && winner && (
+                {gameState === "gameover" && winner && (
           <>
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(127,114,150,0.75)] p-3 sm:p-4 backdrop-blur-xs animate-in fade-in duration-200">
               <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[36px] border-[5px] sm:border-[7px] border-white bg-[#fffbd3] p-5 sm:p-8 shadow-2xl flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
                 
-                {/* Teks Kemenangan Sesuai Figma 90:747 dengan Highlight Nama Juara */}
-                <h3 className="game-font text-2xl sm:text-4xl text-black font-bold mb-2 sm:mb-3 leading-tight">
+                                <h3 className="game-font text-2xl sm:text-4xl text-black font-bold mb-2 sm:mb-3 leading-tight">
                   {winner === "Seri / Imbang" ? (
                     <>
                       Permainan Selesai!
@@ -1664,22 +1599,19 @@ export default function GameKompetitifPage() {
                   )}
                 </h3>
 
-                {/* Trophy & Emojis Kemenangan */}
-                <div className="my-3 sm:my-4 text-5xl sm:text-7xl flex items-center gap-3 animate-bounce">
+                                <div className="my-3 sm:my-4 text-5xl sm:text-7xl flex items-center gap-3 animate-bounce">
                   <span>🏆</span>
                   <span>🎉</span>
                   <span className="text-4xl sm:text-5xl animate-pulse">✨</span>
                 </div>
 
-                {/* Keterangan Kemenangan Knockout bila terjadi */}
-                {koReason && (
+                                {koReason && (
                   <div className="mb-3 px-3 py-1.5 rounded-xl bg-amber-100 border-2 border-amber-300 text-xs sm:text-sm font-bold text-amber-900 shadow-xs">
                     ⚡ {koReason}
                   </div>
                 )}
 
-                {/* Skor Akhir dengan Highlight Pemenang */}
-                <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold mb-5 sm:mb-6 bg-white/70 px-3 sm:px-4 py-1.5 rounded-full border border-amber-200 shadow-xs">
+                                <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold mb-5 sm:mb-6 bg-white/70 px-3 sm:px-4 py-1.5 rounded-full border border-amber-200 shadow-xs">
                   <span className="text-gray-600">Skor akhir:</span>
                   <span
                     className={`px-2 py-0.5 rounded-md font-bold ${
@@ -1702,8 +1634,7 @@ export default function GameKompetitifPage() {
                   </span>
                 </div>
 
-                {/* 2 Tombol Sesuai Figma 90:744 & 90:745 */}
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full justify-center">
+                                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full justify-center">
                   <button
                     onClick={handleStartGame}
                     className="rounded-[24px] sm:rounded-[28px] border-[5px] sm:border-[6px] border-white bg-[#94f291] py-3 sm:py-3.5 px-6 game-font text-lg sm:text-xl font-bold text-black shadow-[0px_5px_0px_0px_#aaafaf] hover:scale-105 active:translate-y-1 transition-all cursor-pointer flex-1"
@@ -1725,13 +1656,11 @@ export default function GameKompetitifPage() {
               </div>
             </div>
 
-            {/* Efek Petasan & Kembang Api Kemenangan Heboh di DEPAN Modal (z-[100]) */}
-            {winner !== "Seri / Imbang" && <CelebrationEffects zIndexClass="z-[100]" />}
+                        {winner !== "Seri / Imbang" && <CelebrationEffects zIndexClass="z-[100]" />}
           </>
         )}
 
-        {/* Modal Konfirmasi Berhenti / Keluar Permainan Berjalan */}
-        {showExitConfirm && (
+                {showExitConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
             <div className="relative w-full max-w-sm rounded-[32px] border-[6px] border-white bg-white p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center">
               <span className="text-5xl mb-3">🏁</span>

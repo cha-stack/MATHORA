@@ -87,8 +87,7 @@ export default function LoginGuru() {
 
   return (
     <main className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-hidden bg-gradient-to-b from-[#482b78] via-[#65439e] to-[#916dcb] select-none p-4 sm:p-8">
-      {/* Background Math Formula Doodles */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-85">
+            <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-85">
         <div className="absolute top-10 -right-8 w-60 sm:w-80 md:w-[420px] rotate-[22deg]">
           <Image
             src="/images/math-formula.png"
@@ -147,17 +146,14 @@ export default function LoginGuru() {
         </div>
       </div>
 
-      {/* Header Title Section */}
-      <div className="relative z-10 mt-6 sm:mt-10 md:mt-12 flex flex-col items-center text-center">
+            <div className="relative z-10 mt-6 sm:mt-10 md:mt-12 flex flex-col items-center text-center">
         <h1 className="game-title-mathora text-6xl sm:text-8xl md:text-9xl lg:text-[130px] font-bold tracking-wider uppercase leading-none">
           MATHORA
         </h1>
       </div>
 
-      {/* Center Card Login Guru */}
-      <div className="relative z-10 my-auto flex w-full max-w-xl flex-col items-center px-4 py-4">
-        {/* Soft Purple/Grey Card Container */}
-        <div className="w-full rounded-[32px] sm:rounded-[38px] bg-[#d5cfeb]/95 p-6 sm:p-10 shadow-2xl backdrop-blur-xs flex flex-col items-center">
+            <div className="relative z-10 my-auto flex w-full max-w-xl flex-col items-center px-4 py-4">
+                <div className="w-full rounded-[32px] sm:rounded-[38px] bg-[#d5cfeb]/95 p-6 sm:p-10 shadow-2xl backdrop-blur-xs flex flex-col items-center">
           <span className="rounded-full bg-[#e05f1e] px-4 py-1 text-xs font-bold text-white mb-3 shadow-xs">
             Panel Pendidik &amp; Pengampu • SMP Islam Parung
           </span>
@@ -172,8 +168,7 @@ export default function LoginGuru() {
           )}
 
           <form id="login-guru-form" onSubmit={handleSubmit} className="w-full flex flex-col gap-4 sm:gap-5">
-            {/* Username Input */}
-            <div className="relative w-full">
+                        <div className="relative w-full">
               <input
                 type="text"
                 placeholder="Username Guru"
@@ -186,8 +181,7 @@ export default function LoginGuru() {
               />
             </div>
 
-            {/* Password Input with Eye Toggle */}
-            <div className="relative w-full flex items-center">
+                        <div className="relative w-full flex items-center">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
@@ -236,10 +230,8 @@ export default function LoginGuru() {
           </form>
         </div>
 
-        {/* Action Buttons Below Card (Regis Guru dengan Kode Rahasia & Login) */}
-        <div className="mt-8 flex w-full justify-center gap-6 sm:gap-10">
-          {/* Regis Button */}
-          <Link
+                <div className="mt-8 flex w-full justify-center gap-6 sm:gap-10">
+                    <Link
             href="/login/guru/regist"
             onClick={playClick}
             className="group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white bg-[#3499d0] shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 hover:scale-103 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
@@ -249,10 +241,10 @@ export default function LoginGuru() {
             </span>
           </Link>
 
-          {/* Login Button with Rate Limiting Shield */}
-          <button
+                    <button
             type="submit"
             form="login-guru-form"
+            onClick={handleSubmit}
             disabled={isLoading || cooldown > 0}
             className={`group relative flex h-16 sm:h-[72px] flex-1 max-w-[210px] items-center justify-center rounded-[20px] sm:rounded-[22px] border-[5px] sm:border-[6px] border-white shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 touch-manipulation ${cooldown > 0
               ? "bg-gray-400 cursor-not-allowed opacity-80"
@@ -265,8 +257,7 @@ export default function LoginGuru() {
           </button>
         </div>
 
-        {/* Lupa Password Link */}
-        <div className="mt-3 text-center">
+                <div className="mt-3 text-center">
           <Link
             href="/login/lupa-password"
             className="text-xs sm:text-sm font-bold text-white/90 hover:text-white underline drop-shadow-sm"
@@ -276,11 +267,9 @@ export default function LoginGuru() {
         </div>
       </div>
 
-      {/* Bottom Left Controls (Back Button) */}
-      <div className="relative z-10 flex w-full max-w-7xl items-end justify-between px-2 sm:px-6 mb-2 sm:mb-4">
+            <div className="relative z-10 flex w-full max-w-7xl items-end justify-between px-2 sm:px-6 mb-2 sm:mb-4">
         <div className="flex flex-col items-start gap-4">
-          {/* Back Button -> Kembali ke /login */}
-          <Link
+                    <Link
             href="/login"
             onClick={playClick}
             aria-label="Kembali ke pilihan login"

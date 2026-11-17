@@ -61,10 +61,8 @@ export default function TestReviewBreakdown({
 
   return (
     <div className="flex w-full flex-col items-center animate-in zoom-in-95 duration-200 py-2 sm:py-4">
-      {/* Container Utama Hasil Tes */}
-      <div className="relative w-full max-w-4xl rounded-[32px] sm:rounded-[40px] border-[7px] border-white bg-[#e4d3ff]/95 p-5 sm:p-8 shadow-2xl backdrop-blur-xs flex flex-col items-center text-center">
-        {/* Badge Jenis Tes */}
-        <span
+            <div className="relative w-full max-w-4xl rounded-[32px] sm:rounded-[40px] border-[7px] border-white bg-[#e4d3ff]/95 p-5 sm:p-8 shadow-2xl backdrop-blur-xs flex flex-col items-center text-center">
+                <span
           className={`rounded-full px-4 py-1 text-xs sm:text-sm font-bold shadow ${
             isPosttest ? "bg-[#16a34a] text-white" : "bg-[#1cd8a4] text-[#144837]"
           }`}
@@ -72,13 +70,11 @@ export default function TestReviewBreakdown({
           {isPosttest ? "Evaluasi Akhir • Post-Test" : "Evaluasi Awal • Pre-Test"}
         </span>
 
-        {/* Judul Hasil */}
-        <h2 className="game-font text-2xl sm:text-4xl text-[#2a2830] font-bold my-3">
+                <h2 className="game-font text-2xl sm:text-4xl text-[#2a2830] font-bold my-3">
           Hasil {isPosttest ? "Post-Test" : "Pre-Test"} Section {sectionNum}
         </h2>
 
-        {/* Lingkaran Poin Besar 3D */}
-        <div className="relative my-3 flex size-36 sm:size-44 mx-auto items-center justify-center rounded-full border-[7px] border-white bg-gradient-to-b from-[#f8f298] to-[#f4ad21] shadow-[0px_6px_0px_0px_#aaafaf]">
+                <div className="relative my-3 flex size-36 sm:size-44 mx-auto items-center justify-center rounded-full border-[7px] border-white bg-gradient-to-b from-[#f8f298] to-[#f4ad21] shadow-[0px_6px_0px_0px_#aaafaf]">
           <div className="flex flex-col items-center">
             <span className="game-font text-5xl sm:text-6xl font-bold text-[#2a2830]">
               {finalScore}
@@ -89,14 +85,12 @@ export default function TestReviewBreakdown({
           </div>
         </div>
 
-        {/* Ringkasan Skor & Feedback */}
-        <p className="text-base sm:text-lg font-bold text-[#2a2830]">
+                <p className="text-base sm:text-lg font-bold text-[#2a2830]">
           Kamu menjawab benar <span className="text-emerald-700 font-extrabold">{correctCount}</span> dari{" "}
           <span className="font-extrabold">{totalQuestions}</span> soal ({finalScore}%).
         </p>
 
-        {/* Pesan Motivasi */}
-        <p className="text-xs sm:text-sm font-semibold text-gray-700 mt-1 max-w-xl">
+                <p className="text-xs sm:text-sm font-semibold text-gray-700 mt-1 max-w-xl">
           {isPosttest ? (
             isLulus ? (
               <span className="text-emerald-800">
@@ -118,15 +112,13 @@ export default function TestReviewBreakdown({
           )}
         </p>
 
-        {/* Alert Pembuka Section (Khusus Post-Test Jika Lulus) */}
-        {isPosttest && isLulus && sectionNum < 5 && (
+                {isPosttest && isLulus && sectionNum < 5 && (
           <div className="my-3 w-full max-w-lg rounded-2xl bg-emerald-100 border-2 border-emerald-400 p-2.5 text-xs sm:text-sm font-bold text-emerald-900 shadow-xs">
             🔓 Selamat! Section {sectionNum + 1} sekarang sudah TERBUKA!
           </div>
         )}
 
-        {/* Kartu Statistik Cepat */}
-        <div className="my-4 grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-lg">
+                <div className="my-4 grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-lg">
           <div className="rounded-2xl border-2 border-white bg-white/80 p-2.5 shadow-xs">
             <span className="block text-[11px] sm:text-xs font-bold text-gray-600">Total Soal</span>
             <span className="game-font text-lg sm:text-2xl font-bold text-purple-950">{totalQuestions}</span>
@@ -141,8 +133,7 @@ export default function TestReviewBreakdown({
           </div>
         </div>
 
-        {/* Tombol Aksi Atas */}
-        <div className="mt-2 flex flex-wrap gap-3 justify-center w-full">
+                <div className="mt-2 flex flex-wrap gap-3 justify-center w-full">
           {backHref && (
             <Link
               href={backHref}
@@ -172,8 +163,7 @@ export default function TestReviewBreakdown({
           </Link>
         </div>
 
-        {/* PEMBAHASAN & REKAP DETAIL SOAL */}
-        <div className="mt-8 w-full border-t border-purple-300/80 pt-6 text-left">
+                <div className="mt-8 w-full border-t border-purple-300/80 pt-6 text-left">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <h3 className="game-font text-xl sm:text-2xl font-bold text-[#2a2830] flex items-center gap-2">
@@ -185,8 +175,7 @@ export default function TestReviewBreakdown({
               </p>
             </div>
 
-            {/* Filter Pills */}
-            <div className="inline-flex rounded-2xl bg-white/70 p-1 border-2 border-white self-start sm:self-auto shadow-xs">
+                        <div className="inline-flex rounded-2xl bg-white/70 p-1 border-2 border-white self-start sm:self-auto shadow-xs">
               <button
                 type="button"
                 onClick={() => {
@@ -226,8 +215,7 @@ export default function TestReviewBreakdown({
             </div>
           </div>
 
-          {/* Daftar Soal */}
-          <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4">
             {filteredQuestions.map(({ q, idx, userAns, isAnswered, isCorrect }) => (
               <div
                 key={q.id || idx}
@@ -237,8 +225,7 @@ export default function TestReviewBreakdown({
                     : "border-rose-300 bg-white/95"
                 }`}
               >
-                {/* Header Soal: Nomor + Context + Status Benar/Salah */}
-                <div className="flex items-center justify-between gap-2 mb-3">
+                                <div className="flex items-center justify-between gap-2 mb-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="rounded-full bg-[#5e65e9] px-3 py-0.5 text-xs font-bold text-white shadow-xs">
                       Soal #{idx + 1}
@@ -263,8 +250,7 @@ export default function TestReviewBreakdown({
                   )}
                 </div>
 
-                {/* Persamaan Dua Linear Jika Ada */}
-                {q.equations && (
+                                {q.equations && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                     <div className="rounded-xl border-2 border-purple-200 bg-purple-50/70 p-2.5 text-center">
                       <span className="game-font text-base sm:text-lg font-bold text-[#2a2830]">
@@ -285,13 +271,11 @@ export default function TestReviewBreakdown({
                   </div>
                 )}
 
-                {/* Teks Pertanyaan */}
-                <p className="text-base sm:text-lg font-bold text-[#2a2830] mb-3 leading-relaxed">
+                                <p className="text-base sm:text-lg font-bold text-[#2a2830] mb-3 leading-relaxed">
                   {q.question}
                 </p>
 
-                {/* Pilihan Jawaban A, B, C, D dengan Penanda Status */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 my-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 my-2">
                   {q.options.map((opt, optIdx) => {
                     const isUserChoice = userAns === optIdx;
                     const isCorrectAnswer = optIdx === q.correctIndex;
@@ -340,8 +324,7 @@ export default function TestReviewBreakdown({
                   })}
                 </div>
 
-                {/* Kotak Pembahasan & Langkah Penyelesaian */}
-                <div className="mt-3 rounded-2xl border-2 border-amber-300 bg-amber-50/90 p-3.5 sm:p-4 text-[#2a2830]">
+                                <div className="mt-3 rounded-2xl border-2 border-amber-300 bg-amber-50/90 p-3.5 sm:p-4 text-[#2a2830]">
                   <div className="flex items-center gap-1.5 font-bold text-amber-900 text-xs sm:text-sm mb-1">
                     <span>💡</span>
                     <span>Langkah Penyelesaian / Pembahasan:</span>
@@ -354,8 +337,7 @@ export default function TestReviewBreakdown({
             ))}
           </div>
 
-          {/* Tombol Aksi Bawah */}
-          <div className="mt-8 flex flex-wrap gap-3 justify-center w-full">
+                    <div className="mt-8 flex flex-wrap gap-3 justify-center w-full">
             <button
               onClick={() => {
                 playClick();

@@ -26,8 +26,7 @@ export default function MateriIndexPage() {
   return (
     <GameShell backUrl={backDashboard} showBack={true}>
       <div className="flex w-full flex-col items-center">
-        {/* Header */}
-        <div className="w-full text-center px-4 mb-8">
+                <div className="w-full text-center px-4 mb-8">
           <div className="inline-block rounded-full bg-[#f8f298] px-4 py-1 text-xs sm:text-sm font-bold text-[#422376] mb-2 shadow">
             Kurikulum Matematika SMP Islam Parung
           </div>
@@ -39,10 +38,8 @@ export default function MateriIndexPage() {
           </p>
         </div>
 
-        {/* 2 Big Cards: SPLDV & Bangun Ruang */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 w-full max-w-4xl px-2 sm:px-4">
-          {/* Card 1: SPLDV */}
-          <Link
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 w-full max-w-4xl px-2 sm:px-4">
+                    <Link
             href="/spldv"
             className="group relative flex flex-col justify-between rounded-[24px] sm:rounded-[36px] border-[4px] sm:border-[8px] border-white bg-gradient-to-b from-[#fef08a] to-[#fde047] p-5 sm:p-8 shadow-[0px_6px_0px_0px_#aaafaf] sm:shadow-[0px_8px_0px_0px_#aaafaf] transition-all hover:scale-103 active:translate-y-1 active:shadow-none cursor-pointer min-h-[260px] sm:min-h-[300px]"
           >
@@ -67,8 +64,7 @@ export default function MateriIndexPage() {
             </div>
           </Link>
 
-          {/* Card 2: Bangun Ruang */}
-          <Link
+                    <Link
             href="/bangun-ruang/materi"
             className="group relative flex flex-col justify-between rounded-[24px] sm:rounded-[36px] border-[4px] sm:border-[8px] border-white bg-gradient-to-b from-[#d3e9ff] to-[#bae6fd] p-5 sm:p-8 shadow-[0px_6px_0px_0px_#aaafaf] sm:shadow-[0px_8px_0px_0px_#aaafaf] transition-all hover:scale-103 active:translate-y-1 active:shadow-none cursor-pointer min-h-[260px] sm:min-h-[300px]"
           >

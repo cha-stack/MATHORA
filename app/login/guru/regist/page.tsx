@@ -108,8 +108,7 @@ export default function RegistGuru() {
         )}
 
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3.5">
-          {/* Kode Rahasia Pendidik */}
-          <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-3 shadow-xs">
+                    <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-3 shadow-xs">
             <label className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5 mb-1">
               <span>🔑</span>
               <span>Kode Rahasia Pendidik:</span>

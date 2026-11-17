@@ -23,8 +23,7 @@ export default function DashboardSiswa() {
   return (
     <GameShell showBack={false}>
       <div className="flex w-full flex-col items-center">
-        {/* Welcome Text */}
-        <div className="w-full text-left px-2 sm:px-6 mb-6 sm:mb-8">
+                <div className="w-full text-left px-2 sm:px-6 mb-6 sm:mb-8">
           <div className="inline-block rounded-full bg-[#f8f298] px-4 py-1 text-xs sm:text-sm font-bold text-[#422376] mb-2 shadow">
             Siswa SMP Islam Parung
           </div>
@@ -36,10 +35,8 @@ export default function DashboardSiswa() {
           </p>
         </div>
 
-        {/* Siswa Punya 2 Fitur Utama: Materi & Game Kompetitif */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-4xl px-2">
-          {/* Card 1: Materi Pembelajaran */}
-          <Link
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-4xl px-2">
+                    <Link
             href="/materi"
             className="group relative flex flex-col justify-between rounded-[36px] border-[8px] border-white bg-gradient-to-b from-[#fef08a] to-[#fde047] p-8 shadow-[0px_8px_0px_0px_#aaafaf] transition-all hover:scale-103 active:translate-y-1 active:shadow-none cursor-pointer min-h-[280px]"
           >
@@ -63,8 +60,7 @@ export default function DashboardSiswa() {
             </div>
           </Link>
 
-          {/* Card 2: Game Kompetitif Tarik Tambang */}
-          <Link
+                    <Link
             href="/game-kompetitif"
             className="group relative flex flex-col justify-between rounded-[36px] border-[8px] border-white bg-gradient-to-b from-[#ffd3d3] to-[#fca5a5] p-8 shadow-[0px_8px_0px_0px_#aaafaf] transition-all hover:scale-103 active:translate-y-1 active:shadow-none cursor-pointer min-h-[280px]"
           >

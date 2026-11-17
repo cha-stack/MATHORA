@@ -23,8 +23,7 @@ export default function Home() {
 
   return (
     <main className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-hidden bg-gradient-to-b from-[#482b78] via-[#65439e] to-[#916dcb] select-none p-4 sm:p-6">
-      {/* Background Math Formula Wallpaper Pattern - Merata, Rapi & Estetik */}
-      <div
+            <div
         className="pointer-events-none absolute inset-0 opacity-15"
         style={{
           backgroundImage: "url('/images/math-formula.png')",
@@ -33,43 +32,34 @@ export default function Home() {
         }}
       />
 
-      {/* Top Spacer for Balance */}
-      <div className="w-full h-2 sm:h-6 shrink-0" />
+            <div className="w-full h-2 sm:h-6 shrink-0" />
 
-      {/* Central Hero: Title + Subtitle + Play Button (Tersusun Padu & Tidak Renggang) */}
-      <div className="relative z-10 my-auto flex flex-col items-center justify-center text-center px-4 max-w-3xl">
-        {/* Badge PKM */}
-        <div className="mb-2 sm:mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#f8f298] px-4 sm:px-5 py-1 sm:py-1.5 text-xs sm:text-sm font-bold text-[#422376] shadow-md border-2 border-white">
+            <div className="relative z-10 my-auto flex flex-col items-center justify-center text-center px-4 max-w-3xl">
+                <div className="mb-2 sm:mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#f8f298] px-4 sm:px-5 py-1 sm:py-1.5 text-xs sm:text-sm font-bold text-[#422376] shadow-md border-2 border-white">
           <span>🎓</span>
           <span>PKM SMP ISLAM PARUNG</span>
         </div>
 
-        {/* Big Game Title */}
-        <h1 className="game-title-mathora text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-wider uppercase leading-none drop-shadow-md">
+                <h1 className="game-title-mathora text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-wider uppercase leading-none drop-shadow-md">
           MATHORA
         </h1>
 
-        {/* Subtitle */}
-        <div className="game-title-sub mt-1.5 sm:mt-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-wide uppercase leading-tight">
+                <div className="game-title-sub mt-1.5 sm:mt-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-wide uppercase leading-tight">
           <p className="m-0">BELAJAR</p>
           <p className="m-0 -mt-1 sm:-mt-2">MATEMATIKA</p>
         </div>
 
-        {/* Play Button - Berjarak Dekat & Proporsional */}
-        <div className="mt-6 sm:mt-8 md:mt-10 flex flex-col items-center">
+                <div className="mt-6 sm:mt-8 md:mt-10 flex flex-col items-center">
           <Link
             href="/login"
             onClick={handlePlayClick}
             aria-label="Mulai Game - Menuju Pilihan Login"
             className="group relative flex items-center justify-center transition-all duration-200 hover:scale-108 active:scale-95 focus:outline-none cursor-pointer"
           >
-            {/* Play Button Outer Soft Glow */}
-            <div className="absolute -inset-2.5 rounded-full bg-[#1cd8a4]/30 blur-md group-hover:bg-[#1cd8a4]/50 transition-all" />
+                        <div className="absolute -inset-2.5 rounded-full bg-[#1cd8a4]/30 blur-md group-hover:bg-[#1cd8a4]/50 transition-all" />
 
-            {/* Main Round Container with Border and 3D shadow */}
-            <div className="relative flex size-20 sm:size-24 md:size-28 lg:size-32 items-center justify-center rounded-full border-[6px] sm:border-[7px] border-white bg-gradient-to-b from-[#1cd8a4] to-[#04b886] shadow-[0px_7px_0px_0px_#028560,0px_12px_18px_rgba(0,0,0,0.35)] group-hover:brightness-105 group-active:shadow-[0px_3px_0px_0px_#028560] group-active:translate-y-[4px]">
-              {/* Play Triangle Icon */}
-              <div className="ml-2 sm:ml-2.5 md:ml-3 flex items-center justify-center">
+                        <div className="relative flex size-20 sm:size-24 md:size-28 lg:size-32 items-center justify-center rounded-full border-[6px] sm:border-[7px] border-white bg-gradient-to-b from-[#1cd8a4] to-[#04b886] shadow-[0px_7px_0px_0px_#028560,0px_12px_18px_rgba(0,0,0,0.35)] group-hover:brightness-105 group-active:shadow-[0px_3px_0px_0px_#028560] group-active:translate-y-[4px]">
+                            <div className="ml-2 sm:ml-2.5 md:ml-3 flex items-center justify-center">
                 <svg
                   viewBox="0 0 24 24"
                   fill="currentColor"
@@ -83,10 +73,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Bottom Footer Controls */}
-      <div className="relative z-10 flex w-full max-w-7xl items-end justify-between px-2 sm:px-6 pb-2 sm:pb-4 shrink-0">
-        {/* Exit Button */}
-        <button
+            <div className="relative z-10 flex w-full max-w-7xl items-end justify-between px-2 sm:px-6 pb-2 sm:pb-4 shrink-0">
+                <button
           onClick={handleExit}
           className="group relative flex items-center justify-center rounded-[16px] sm:rounded-[20px] border-[4px] sm:border-[5px] border-white bg-[#e05f1e] px-5 py-2 sm:px-8 sm:py-2.5 shadow-[0px_5px_0px_0px_#aaafaf] transition-all duration-150 hover:brightness-105 active:translate-y-[3px] active:shadow-[0px_2px_0px_0px_#aaafaf] cursor-pointer"
         >
@@ -95,8 +83,7 @@ export default function Home() {
           </span>
         </button>
 
-        {/* Right Corner Button (Audio / Settings) */}
-        <button
+                <button
           onClick={handleToggleSound}
           title={isMuted ? "Aktifkan Musik" : "Bisukan Musik"}
           aria-label="Pengaturan Suara"
@@ -134,8 +121,7 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Exit Confirmation Modal */}
-      {showExitModal && (
+            {showExitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
           <div className="relative flex flex-col items-center rounded-3xl border-4 border-white bg-gradient-to-b from-[#65439e] to-[#482b78] p-6 sm:p-8 text-center shadow-2xl max-w-sm w-full">
             <h2 className="game-font text-2xl sm:text-3xl font-bold text-white mb-3">

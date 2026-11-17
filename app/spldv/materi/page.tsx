@@ -276,8 +276,7 @@ function SpldvMateriContent() {
   return (
     <div className="flex w-full flex-col items-center">
       <div className="relative w-full max-w-5xl rounded-[28px] sm:rounded-[42px] border-[5px] sm:border-[7px] border-white bg-[#e4d3ff]/90 p-3.5 sm:p-8 shadow-2xl backdrop-blur-xs flex flex-col items-center min-h-[600px] justify-between">
-        {/* Top Progress & Title */}
-        <div className="w-full flex flex-col items-center">
+                <div className="w-full flex flex-col items-center">
           <div className="flex items-center gap-2 mb-2 text-center">
             <span className="rounded-full bg-[#7251a8] px-3.5 py-0.5 text-[11px] sm:text-xs font-bold text-white shadow text-center">
               Section {sectionNum} dari 5 • {SECTION_TITLES[sectionNum]}
@@ -308,8 +307,7 @@ function SpldvMateriContent() {
           </h2>
         </div>
 
-        {/* ══════════════ SECTION 1: PENGERTIAN & KONSEP SPLDV ══════════════ */}
-        {sectionNum === 1 && (
+                {sectionNum === 1 && (
           <>
             {slide === 1 && (
               <div className="w-full flex flex-col items-center gap-4 my-auto animate-in fade-in duration-200 py-2">
@@ -522,8 +520,7 @@ function SpldvMateriContent() {
           </>
         )}
 
-        {/* ══════════════ SECTION 2: VARIABEL, KOEFISIEN & KONSTANTA ══════════════ */}
-        {sectionNum === 2 && (
+                {sectionNum === 2 && (
           <>
             {slide === 1 && (
               <div className="w-full flex flex-col items-center gap-4 my-auto animate-in fade-in duration-200 py-2">
@@ -771,8 +768,7 @@ function SpldvMateriContent() {
           </>
         )}
 
-        {/* ══════════════ SECTION 3: METODE ELIMINASI & SUBSTITUSI ══════════════ */}
-        {sectionNum === 3 && (
+                {sectionNum === 3 && (
           <>
             {slide === 1 && (
               <div className="w-full flex flex-col gap-3.5 my-auto animate-in fade-in duration-200 py-2">
@@ -986,8 +982,7 @@ function SpldvMateriContent() {
           </>
         )}
 
-        {/* ══════════════ SECTION 4: METODE CAMPURAN & GRAFIK ══════════════ */}
-        {sectionNum === 4 && (
+                {sectionNum === 4 && (
           <>
             {slide === 1 && (
               <div className="w-full rounded-2xl border-4 border-white bg-white p-5 shadow text-left flex flex-col gap-3 my-auto animate-in fade-in duration-200">
@@ -1014,8 +1009,7 @@ function SpldvMateriContent() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
-                  {/* TAHAP 1: ELIMINASI x */}
-                  <div className={`rounded-xl p-3.5 border flex flex-col gap-2.5 transition-all ${
+                                    <div className={`rounded-xl p-3.5 border flex flex-col gap-2.5 transition-all ${
                     mixStage >= 2 ? "bg-emerald-50/80 border-emerald-300" : "bg-amber-50/80 border-amber-300"
                   }`}>
                     <b className="text-amber-950 font-bold">Tahap 1: Eliminasi x (Kurangkan (1) - (2))</b>
@@ -1082,8 +1076,7 @@ function SpldvMateriContent() {
                     )}
                   </div>
 
-                  {/* TAHAP 2: SUBSTITUSI y = 5 */}
-                  <div className={`rounded-xl p-3.5 border flex flex-col gap-2.5 transition-all ${
+                                    <div className={`rounded-xl p-3.5 border flex flex-col gap-2.5 transition-all ${
                     mixStage === 3
                       ? "bg-emerald-50 border-emerald-400"
                       : mixStage === 2
@@ -1168,8 +1161,7 @@ function SpldvMateriContent() {
                 <div className="flex flex-col items-center">
                   <div className="relative size-[250px] sm:size-[270px] rounded-2xl border-4 border-white bg-white shadow overflow-hidden">
                     <svg viewBox="0 0 300 300" className="w-full h-full">
-                      {/* Grid Garis Koordinat (-15 s/d +15) */}
-                      {[-15, -12, -9, -6, -3, 3, 6, 9, 12, 15].map((i) => (
+                                            {[-15, -12, -9, -6, -3, 3, 6, 9, 12, 15].map((i) => (
                         <g key={i}>
                           <line
                             x1={150 + i * GRAPH_SCALE}
@@ -1190,21 +1182,17 @@ function SpldvMateriContent() {
                         </g>
                       ))}
 
-                      {/* Sumbu X & Sumbu Y Utama */}
-                      <line x1="0" y1="150" x2="300" y2="150" stroke="#7251a8" strokeWidth="2.5" />
+                                            <line x1="0" y1="150" x2="300" y2="150" stroke="#7251a8" strokeWidth="2.5" />
                       <line x1="150" y1="0" x2="150" y2="300" stroke="#7251a8" strokeWidth="2.5" />
 
-                      {/* Label Sumbu X & Y */}
-                      <text x="286" y="144" fill="#7251a8" fontSize="11" fontWeight="bold">X</text>
+                                            <text x="286" y="144" fill="#7251a8" fontSize="11" fontWeight="bold">X</text>
                       <text x="156" y="14" fill="#7251a8" fontSize="11" fontWeight="bold">Y</text>
                       <text x="153" y="163" fill="#7251a8" fontSize="9" fontWeight="bold">0</text>
 
-                      {/* Garis 1 & Garis 2 */}
-                      {renderLine(a1, b1, c1, "#e0457b")}
+                                            {renderLine(a1, b1, c1, "#e0457b")}
                       {renderLine(a2, b2, c2, "#0f9d8a")}
 
-                      {/* Titik Potong */}
-                      {hasSingleSolution && (
+                                            {hasSingleSolution && (
                         <circle
                           cx={150 + solX * GRAPH_SCALE}
                           cy={150 - solY * GRAPH_SCALE}
@@ -1338,8 +1326,7 @@ function SpldvMateriContent() {
           </>
         )}
 
-        {/* ══════════════ SECTION 5: APLIKASI SOAL CERITA KONTEKSTUAL ══════════════ */}
-        {sectionNum === 5 && (
+                {sectionNum === 5 && (
           <>
             {slide === 1 && (
               <div className="w-full flex flex-col gap-3.5 my-auto animate-in fade-in duration-200 py-2 text-center">
@@ -1503,8 +1490,7 @@ function SpldvMateriContent() {
           </>
         )}
 
-        {/* Bottom Slide Nav */}
-        <div className="flex w-full items-center justify-between gap-1 sm:gap-2 pt-3 sm:pt-4 border-t border-white/50">
+                <div className="flex w-full items-center justify-between gap-1 sm:gap-2 pt-3 sm:pt-4 border-t border-white/50">
           <button
             onClick={() => { playClick(); if (slide > 1) setSlide(slide - 1); }}
             disabled={slide === 1}

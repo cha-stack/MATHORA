@@ -433,7 +433,6 @@ export const BANK_SOAL_GURU: QuestionItem[] = [
   },
 ];
 
-// ─── Helper: Gabungkan Soal Statis + Generated ───────────────────────────────
 // Lazy-import agar tidak circular. Fungsi ini dipanggil di client saat runtime.
 
 let _bankSeq = 0;
