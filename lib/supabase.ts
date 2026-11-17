@@ -267,7 +267,8 @@ export async function sbCheckUserHasPassword(identifier: string): Promise<boolea
 export async function sbUpdateUserPassword(
   identifier: string,
   newPassword: string,
-  oldPassword?: string
+  oldPassword?: string,
+  forceReset = false
 ): Promise<{ success: boolean; message: string }> {
   if (!supabase) return { success: false, message: "Supabase belum terhubung." };
 
@@ -287,8 +288,8 @@ export async function sbUpdateUserPassword(
 
     const hasExistingPassword = Boolean(user.password && user.password.trim() !== "");
 
-    // Jika user sudah punya password sebelumnya, verifikasi password lama
-    if (hasExistingPassword) {
+    // Jika user sudah punya password sebelumnya dan tidak memilih reset mandiri, verifikasi password lama
+    if (hasExistingPassword && !forceReset) {
       if (!oldPassword || !oldPassword.trim()) {
         return { success: false, message: "Harap masukkan password saat ini (password lama) Anda!" };
       }

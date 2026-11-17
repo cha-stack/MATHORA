@@ -477,7 +477,8 @@ export async function checkUserHasPassword(username?: string): Promise<boolean> 
  */
 export async function changeAccountPassword(
   newPassword: string,
-  oldPassword?: string
+  oldPassword?: string,
+  forceReset = false
 ): Promise<{ success: boolean; message: string }> {
   const currentUser = getCurrentUser();
   if (!currentUser) {
@@ -492,7 +493,7 @@ export async function changeAccountPassword(
 
   // 1. Update di Supabase
   if (isSupabaseConfigured) {
-    const sbRes = await sbUpdateUserPassword(currentUser.username, newPassword, oldPassword);
+    const sbRes = await sbUpdateUserPassword(currentUser.username, newPassword, oldPassword, forceReset);
     if (!sbRes.success) {
       return sbRes;
     }

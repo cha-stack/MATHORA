@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import Image from "next/image";
 import GameShell from "@/components/GameShell";
 import { useSound, AVAILABLE_TRACKS, BgmTrack } from "@/components/SoundContext";
 import CharacterStudioRenderer, { CharacterRendererHandle } from "@/components/CharacterStudioRenderer";
@@ -27,13 +26,6 @@ import {
   changeAccountPassword,
   UserAccount,
 } from "@/lib/auth";
-
-const AVATAR_OPTIONS = [
-  { id: "avatar-1", path: "/images/avatar-1.svg", label: "Kucing Ceria (Edukasi)" },
-  { id: "avatar-2", path: "/images/avatar-2.svg", label: "Kacamata Pintar (Cendekia)" },
-  { id: "avatar-3", path: "/images/avatar-3.svg", label: "Bintang Juara (Matematika)" },
-  { id: "avatar-guru", path: "/images/avatar-guru.svg", label: "Topi Toga (Pendidik)" },
-];
 
 type ChibiCategory =
   | "rambut"
@@ -98,13 +90,12 @@ export default function SettingsPage() {
   const [saveError, setSaveError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Mode Karakter: ChibiForge vs Maskot Cepat
-  const [avatarMode, setAvatarMode] = useState<"chibi" | "maskot">("chibi");
   const [chibiCategory, setChibiCategory] = useState<ChibiCategory>("rambut");
   const [charConfig, setCharConfig] = useState<CharacterConfig>(DEFAULT_CHARACTER);
 
   // State Keamanan Password
   const [hasPassword, setHasPassword] = useState<boolean>(true);
+  const [forgotOldPassword, setForgotOldPassword] = useState<boolean>(false);
   const [oldPasswordInput, setOldPasswordInput] = useState("");
   const [newPasswordInput, setNewPasswordInput] = useState("");
   const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
@@ -126,11 +117,6 @@ export default function SettingsPage() {
         const savedChar = localStorage.getItem(`mathora_char_cfg_${active.username}`);
         if (savedChar) {
           setCharConfig(JSON.parse(savedChar));
-          setAvatarMode("chibi");
-        } else if (active.avatar?.startsWith("data:image")) {
-          setAvatarMode("chibi");
-        } else if (active.avatar?.includes("avatar-")) {
-          setAvatarMode("maskot");
         }
       } catch {
         // Ignore
@@ -171,7 +157,7 @@ export default function SettingsPage() {
     setPasswordMsg("");
     setPasswordError("");
 
-    if (hasPassword && !oldPasswordInput.trim()) {
+    if (hasPassword && !forgotOldPassword && !oldPasswordInput.trim()) {
       playWrong();
       setPasswordError("Harap masukkan kata sandi saat ini (kata sandi lama) Anda!");
       return;
@@ -204,7 +190,7 @@ export default function SettingsPage() {
     playClick();
     setIsSavingPassword(true);
     try {
-      const res = await changeAccountPassword(newPasswordInput, oldPasswordInput);
+      const res = await changeAccountPassword(newPasswordInput, oldPasswordInput, forgotOldPassword);
       setIsSavingPassword(false);
       if (!res.success) {
         playWrong();
@@ -216,6 +202,7 @@ export default function SettingsPage() {
         playCorrect();
         setPasswordMsg(res.message);
         setHasPassword(true);
+        setForgotOldPassword(false);
         setOldPasswordInput("");
         setNewPasswordInput("");
         setConfirmPasswordInput("");
@@ -244,8 +231,8 @@ export default function SettingsPage() {
     try {
       let finalAvatar = selectedAvatar;
 
-      // Jika menggunakan mode ChibiForge, render dan gunakan data URL PNG
-      if (avatarMode === "chibi" && rendererRef.current) {
+      // Render dan gunakan data URL PNG dari ChibiForge
+      if (rendererRef.current) {
         const dataUrl = rendererRef.current.exportDataUrl();
         if (dataUrl) {
           finalAvatar = dataUrl;
@@ -290,27 +277,9 @@ export default function SettingsPage() {
                 <span className="game-font text-xl sm:text-2xl text-[#2a2830] font-bold">
                   Profil &amp; Karakter Avatar
                 </span>
-
-                                <div className="flex items-center rounded-xl bg-purple-100 p-1 border border-purple-200 text-xs font-bold text-[#4c3575]">
-                  <button
-                    type="button"
-                    onClick={() => { playClick(); setAvatarMode("chibi"); }}
-                    className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                      avatarMode === "chibi" ? "bg-[#7c3aed] text-white shadow-xs" : "hover:bg-purple-200"
-                    }`}
-                  >
-                    ✨ Karakter 2D (ChibiForge)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { playClick(); setAvatarMode("maskot"); }}
-                    className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                      avatarMode === "maskot" ? "bg-[#7c3aed] text-white shadow-xs" : "hover:bg-purple-200"
-                    }`}
-                  >
-                    🐾 Maskot Cepat
-                  </button>
-                </div>
+                <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-[#7c3aed] border border-purple-200">
+                  ✨ Studio Karakter 2D
+                </span>
               </div>
 
               {saveMessage && (
@@ -324,8 +293,7 @@ export default function SettingsPage() {
                 </div>
               )}
 
-                            {avatarMode === "chibi" && (
-                <div className="flex flex-col gap-3 rounded-2xl bg-[#f8f5fc] p-3 sm:p-4 border-2 border-[#8e78ca]/30">
+              <div className="flex flex-col gap-3 rounded-2xl bg-[#f8f5fc] p-3 sm:p-4 border-2 border-[#8e78ca]/30">
                                     <div className="flex flex-col sm:flex-row items-center gap-4">
                                         <div className="relative size-36 sm:size-44 shrink-0 rounded-2xl border-2 border-[#8e78ca]/30 bg-white shadow-inner overflow-hidden flex items-center justify-center">
                       <CharacterStudioRenderer
@@ -795,42 +763,8 @@ export default function SettingsPage() {
                     )}
                   </div>
                 </div>
-              )}
 
-                            {avatarMode === "maskot" && (
-                <div>
-                  <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-2">
-                    Pilihan Maskot Klasik:
-                  </label>
-                  <div className="grid grid-cols-4 gap-2.5">
-                    {AVATAR_OPTIONS.map((av) => (
-                      <button
-                        key={av.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAvatar(av.path);
-                          playClick();
-                        }}
-                        className={`group relative flex flex-col items-center rounded-2xl border-4 p-2 transition-all cursor-pointer ${
-                          selectedAvatar === av.path
-                            ? "border-[#7251a8] bg-[#f8f298] scale-105 shadow-md"
-                            : "border-transparent bg-purple-50 hover:bg-purple-100"
-                        }`}
-                        title={av.label}
-                      >
-                        <div className="relative size-12 sm:size-14 overflow-hidden rounded-full">
-                          <Image src={av.path} alt={av.label} fill unoptimized className="object-cover" />
-                        </div>
-                        <span className="text-[10px] font-bold text-[#2a2830] mt-1 text-center truncate w-full">
-                          {av.label.split(" ")[0]}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-                            <div className="mt-2">
+                <div className="mt-2">
                 <label className="text-xs font-bold text-[#2a2830]/80 uppercase tracking-wider block mb-1">
                   Nama Pengguna (Username):
                 </label>
@@ -874,32 +808,57 @@ export default function SettingsPage() {
               )}
 
                             {hasPassword && (
-                <div className="relative flex items-center">
-                  <input
-                    type={showOldPassword ? "text" : "password"}
-                    value={oldPasswordInput}
-                    onChange={(e) => setOldPasswordInput(e.target.value)}
-                    placeholder="Kata Sandi Saat Ini (Kata Sandi Lama)"
-                    className="w-full rounded-2xl bg-[#f8f7fc] pl-4 pr-12 py-3 text-base font-bold game-font text-[#333] border-2 border-[#8e78ca]/40 focus:border-[#7251a8] focus:outline-none transition-all shadow-inner"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowOldPassword(!showOldPassword)}
-                    className="absolute right-3 p-1 text-[#474451] hover:text-black cursor-pointer"
-                    aria-label="Lihat kata sandi lama"
-                  >
-                    {showOldPassword ? (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="size-5">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                        <line x1="1" y1="1" x2="23" y2="23" />
-                      </svg>
-                    ) : (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="size-5">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    )}
-                  </button>
+                <div className="flex flex-col gap-2">
+                  {!forgotOldPassword ? (
+                    <div className="relative flex items-center">
+                      <input
+                        type={showOldPassword ? "text" : "password"}
+                        value={oldPasswordInput}
+                        onChange={(e) => setOldPasswordInput(e.target.value)}
+                        placeholder="Kata Sandi Saat Ini (Kata Sandi Lama)"
+                        className="w-full rounded-2xl bg-[#f8f7fc] pl-4 pr-12 py-3 text-base font-bold game-font text-[#333] border-2 border-[#8e78ca]/40 focus:border-[#7251a8] focus:outline-none transition-all shadow-inner"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowOldPassword(!showOldPassword)}
+                        className="absolute right-3 p-1 text-[#474451] hover:text-black cursor-pointer"
+                        aria-label="Lihat kata sandi lama"
+                      >
+                        {showOldPassword ? (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="size-5">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                            <line x1="1" y1="1" x2="23" y2="23" />
+                          </svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="size-5">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-3 text-xs text-amber-900 font-semibold flex items-center gap-2">
+                      <span className="text-xl shrink-0">🛡️</span>
+                      <div>
+                        <b>Mode Pemulihan Mandiri:</b> Karena akun Anda sedang aktif, Anda dapat langsung membuat kata sandi baru di bawah tanpa perlu mengingat kata sandi lama.
+                      </div>
+                    </div>
+                  )}
+
+                  <label className="flex items-center gap-2 text-xs font-bold text-[#6b52b8] cursor-pointer hover:underline self-start">
+                    <input
+                      type="checkbox"
+                      checked={forgotOldPassword}
+                      onChange={(e) => {
+                        playClick();
+                        setForgotOldPassword(e.target.checked);
+                        setPasswordError("");
+                      }}
+                      className="size-4 rounded accent-[#7c3aed] cursor-pointer"
+                    />
+                    <span>Lupa kata sandi lama? (Reset langsung tanpa sandi lama)</span>
+                  </label>
                 </div>
               )}
 
