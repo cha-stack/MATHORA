@@ -1471,7 +1471,8 @@ export default function BangunRuangMateriPage() {
                   const dx = e.clientX - lastPos.current.x;
                   const dy = e.clientY - lastPos.current.y;
                   setRotY((prev) => prev + dx * 0.015);
-                  setRotX((prev) => prev + dy * 0.015);
+                  // Inversi sumbu Y agar gerakan geser atas/bawah alami di layar sentuh/papan interaktif
+                  setRotX((prev) => Math.max(-1.45, Math.min(1.45, prev - dy * 0.015)));
                   lastPos.current = { x: e.clientX, y: e.clientY };
                 }}
                 onPointerUp={() => { isDragging.current = false; }}
