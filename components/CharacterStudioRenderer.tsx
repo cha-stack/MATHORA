@@ -224,7 +224,7 @@ const CharacterStudioRenderer = forwardRef<CharacterRendererHandle, CharacterStu
       if (eyeLine) offCtx.drawImage(eyeLine, 0, 0, size, size);
 
       // 5. Eyebrows
-      if (eyebrowImg) drawTinted(offCtx, eyebrowImg, config.hairColor, size, size);
+      if (eyebrowImg) offCtx.drawImage(eyebrowImg, 0, 0, size, size);
 
       // 6. Nose
       if (noseImg) offCtx.drawImage(noseImg, 0, 0, size, size);

@@ -108,13 +108,13 @@ export const COLOR_PALETTES = {
 // Opsi Pilihan per Kategori
 export const HAIR_OPTIONS = [
   { id: "cute", label: "Cute / Bob", preview: "/characters/Hair/cute.png", line: "/characters/Hair/cute/line.png", fill: "/characters/Hair/cute/fill.png" },
-  { id: "1", label: "Gaya 1 (Poni)", preview: "/characters/Hair/1.png", line: "/characters/Hair/1/Layer 10_id57.png", fill: "/characters/Hair/1/Layer 9_id56.png" },
-  { id: "long hair", label: "Rambut Panjang", preview: "/characters/Hair/long hair.png", line: "/characters/Hair/long hair/Layer 16_id103.png", fill: "/characters/Hair/long hair/Layer 15_id99.png" },
+  { id: "1", label: "Gaya 1 (Poni)", preview: "/characters/Hair/1.png", line: "/characters/Hair/1/Layer 9_id56.png", fill: "/characters/Hair/1/Layer 10_id57.png" },
+  { id: "long hair", label: "Rambut Panjang", preview: "/characters/Hair/long hair.png", line: "/characters/Hair/long hair/Layer 15_id99.png", fill: "/characters/Hair/long hair/Layer 16_id103.png" },
   { id: "male", label: "Cowok Pendek", preview: "/characters/Hair/male.png", line: "/characters/Hair/male/line.png", fill: "/characters/Hair/male/fill.png" },
   { id: "male2", label: "Cowok Rapi", preview: "/characters/Hair/male2.png", line: "/characters/Hair/male2/line.png", fill: "/characters/Hair/male2/fill.png" },
   { id: "male3", label: "Cowok Belah", preview: "/characters/Hair/male3.png", line: "/characters/Hair/male3/line.png", fill: "/characters/Hair/male3/fill.png" },
-  { id: "reze", label: "Kuncir Cepol", preview: "/characters/Hair/reze.png", line: "/characters/Hair/reze/Layer 20_id198.png", fill: "/characters/Hair/reze/Layer 19_id194.png" },
-  { id: "shortHair", label: "Pendek Ceria", preview: "/characters/Hair/shortHair.png", line: "/characters/Hair/shortHair/Layer 14_id77.png", fill: "/characters/Hair/shortHair/Layer 13_id73.png" },
+  { id: "reze", label: "Kuncir Cepol", preview: "/characters/Hair/reze.png", line: "/characters/Hair/reze/Layer 19_id194.png", fill: "/characters/Hair/reze/Layer 20_id198.png" },
+  { id: "shortHair", label: "Pendek Ceria", preview: "/characters/Hair/shortHair.png", line: "/characters/Hair/shortHair/Layer 13_id73.png", fill: "/characters/Hair/shortHair/Layer 14_id77.png" },
   { id: "shorthair2", label: "Pendek Berantakan", preview: "/characters/Hair/shorthair2.png", line: "/characters/Hair/shorthair2/line.png", fill: "/characters/Hair/shorthair2/fill.png" },
   { id: "xinqiu", label: "Bob Belah Samping", preview: "/characters/Hair/xinqiu.png", line: "/characters/Hair/xinqiu/line.png", fill: "/characters/Hair/xinqiu/fill.png" },
 ];
